@@ -101,70 +101,155 @@ class ProductsManager {
         card.className = 'product-card';
         card.setAttribute('data-product-id', product.id);
 
-        // Get the first image or use placeholder
-        const firstImage = product.images.edges[0]?.node;
-        const imageUrl = firstImage?.url || '';
-        const imageAlt = firstImage?.altText || product.title;
-
-        // Format price
+        // Format price for display
         const minPrice = parseFloat(product.priceRange.minVariantPrice.amount);
         const maxPrice = parseFloat(product.priceRange.maxVariantPrice.amount);
         const currency = product.priceRange.minVariantPrice.currencyCode;
         
         let priceDisplay = '';
-        let priceRangeDisplay = '';
-        
         if (minPrice === maxPrice) {
             priceDisplay = this.formatPrice(minPrice, currency);
         } else {
             priceDisplay = `${this.formatPrice(minPrice, currency)} - ${this.formatPrice(maxPrice, currency)}`;
-            priceRangeDisplay = `<div class="product-price-range">Price varies by variant</div>`;
         }
 
-        // Clean and truncate description
-        const description = this.cleanDescription(product.description);
-        
-        // Availability status
-        const availabilityClass = product.availableForSale ? 'available' : 'unavailable';
-        const availabilityText = product.availableForSale ? 'In Stock' : 'Out of Stock';
-
-        // Tags (limit to first 3)
-        const tags = product.tags.slice(0, 3);
-        const tagsHtml = tags.length > 0 ? 
-            `<div class="product-tags">
-                ${tags.map(tag => `<span class="product-tag">${this.escapeHtml(tag)}</span>`).join('')}
-            </div>` : '';
-
-        // Vendor info
-        const vendorHtml = product.vendor ? 
-            `<div class="product-vendor">by ${this.escapeHtml(product.vendor)}</div>` : '';
-
-        card.innerHTML = `
-            <div class="product-image">
-                ${imageUrl ? 
-                    `<img src="${imageUrl}" alt="${this.escapeHtml(imageAlt)}" loading="lazy" onerror="this.parentElement.innerHTML='<span>No Image Available</span>'">` :
-                    '<span>No Image Available</span>'
-                }
-            </div>
-            <div class="product-info">
-                <h3 class="product-title">${this.escapeHtml(product.title)}</h3>
-                ${description ? `<p class="product-description">${description}</p>` : ''}
-                <div class="product-meta">
-                    <div class="product-price">${priceDisplay}</div>
-                    ${priceRangeDisplay}
-                    <span class="product-availability ${availabilityClass}">${availabilityText}</span>
-                    ${vendorHtml}
-                    ${tagsHtml}
-                </div>
+        // Create mobile banner
+        const mobileBanner = `
+            <div class="product-mobile-banner">
+                <div class="product-title">${this.escapeHtml(product.title)}</div>
+                <div class="product-price">${priceDisplay}</div>
             </div>
         `;
 
-        // Add click event for future product detail functionality
+        // Create image grid
+        const imageGrid = this.createImageGrid(product);
+
+        card.innerHTML = `
+            ${mobileBanner}
+            ${imageGrid}
+        `;
+
+        // Add hover events for desktop
+        this.addHoverEvents(card, product, priceDisplay);
+
+        // Add click event for modal
         card.addEventListener('click', () => {
             this.handleProductClick(product);
         });
 
         return card;
+    }
+
+    createImageGrid(product) {
+        const images = product.images.edges.map(edge => edge.node);
+        const imageCount = Math.min(images.length, 4); // Max 4 images
+        
+        let gridClass = '';
+        switch (imageCount) {
+            case 0:
+            case 1:
+                gridClass = 'grid-1';
+                break;
+            case 2:
+                gridClass = 'grid-2';
+                break;
+            case 3:
+                gridClass = 'grid-3';
+                break;
+            case 4:
+            default:
+                gridClass = 'grid-4';
+                break;
+        }
+
+        let gridItems = '';
+        
+        if (imageCount === 0) {
+            // No images - show placeholder
+            gridItems = `
+                <div class="product-image-item placeholder">
+                    <span>No Image Available</span>
+                </div>
+            `;
+        } else {
+            // Add actual images with size optimization
+            for (let i = 0; i < Math.min(4, imageCount); i++) {
+                const image = images[i];
+                // Use Shopify's image transformation to get smaller images
+                const optimizedUrl = this.getOptimizedImageUrl(image.url, 300);
+                gridItems += `
+                    <div class="product-image-item">
+                        <img src="${optimizedUrl}" alt="${this.escapeHtml(image.altText || product.title)}" loading="lazy" onerror="this.parentElement.innerHTML='<span>Image Error</span>'">
+                    </div>
+                `;
+            }
+            
+            // Fill remaining slots for grid-3 and grid-4 if needed
+            if (imageCount === 3) {
+                gridItems += `
+                    <div class="product-image-item placeholder">
+                        <span></span>
+                    </div>
+                `;
+            }
+        }
+
+        return `
+            <div class="product-image-grid ${gridClass}">
+                ${gridItems}
+            </div>
+        `;
+    }
+
+    addHoverEvents(card, product, priceDisplay) {
+        const popup = document.getElementById('hover-popup');
+        const popupTitle = document.getElementById('popup-title');
+        const popupPrice = document.getElementById('popup-price');
+
+        card.addEventListener('mouseenter', (e) => {
+            // Only show on desktop (non-touch devices)
+            if (!('ontouchstart' in window)) {
+                popupTitle.textContent = product.title;
+                popupPrice.textContent = priceDisplay;
+                popup.classList.add('visible');
+                this.updatePopupPosition(e);
+            }
+        });
+
+        card.addEventListener('mousemove', (e) => {
+            if (!('ontouchstart' in window) && popup.classList.contains('visible')) {
+                this.updatePopupPosition(e);
+            }
+        });
+
+        card.addEventListener('mouseleave', () => {
+            popup.classList.remove('visible');
+        });
+    }
+
+    updatePopupPosition(event) {
+        const popup = document.getElementById('hover-popup');
+        const offsetX = 15; // Fixed offset from cursor
+        const offsetY = 10;
+        
+        let x = event.clientX + offsetX;
+        let y = event.clientY + offsetY;
+        
+        // Prevent popup from going off-screen
+        const popupRect = popup.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        
+        if (x + popupRect.width > windowWidth) {
+            x = event.clientX - popupRect.width - offsetX;
+        }
+        
+        if (y + popupRect.height > windowHeight) {
+            y = event.clientY - popupRect.height - offsetY;
+        }
+        
+        popup.style.left = `${x}px`;
+        popup.style.top = `${y}px`;
     }
 
     formatPrice(amount, currency) {
@@ -586,6 +671,33 @@ class ProductsManager {
 
     getShopDomain() {
         return this.shopDomain;
+    }
+
+    getOptimizedImageUrl(originalUrl, maxWidth = 300) {
+        if (!originalUrl) return '';
+        
+        // Shopify image transformation - add size parameter
+        // Format: original_url + '_' + width + 'x' + height (optional) + '.jpg/png/etc'
+        // Or use the ?width= parameter for newer Shopify stores
+        
+        try {
+            const url = new URL(originalUrl);
+            
+            // Method 1: Use URL parameters (works with most Shopify stores)
+            url.searchParams.set('width', maxWidth.toString());
+            
+            return url.toString();
+        } catch (error) {
+            // Fallback: try the old format transformation
+            if (originalUrl.includes('.jpg') || originalUrl.includes('.png') || originalUrl.includes('.webp')) {
+                const extension = originalUrl.substring(originalUrl.lastIndexOf('.'));
+                const baseUrl = originalUrl.substring(0, originalUrl.lastIndexOf('.'));
+                return `${baseUrl}_${maxWidth}x${extension}`;
+            }
+            
+            // If all else fails, return original URL
+            return originalUrl;
+        }
     }
 
     cleanDescription(description, maxLength = 150) {
