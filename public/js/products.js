@@ -550,56 +550,69 @@ class ProductsManager {
 
     setupModalEventListeners(product) {
         const modal = document.getElementById('product-modal');
-        const closeButton = document.getElementById('modal-close');
-        const buyButton = document.getElementById('modal-buy-now');
-        const cartButton = document.getElementById('modal-add-cart');
-        const quantityInput = document.getElementById('modal-quantity-input');
-        const decreaseBtn = document.getElementById('quantity-decrease');
-        const increaseBtn = document.getElementById('quantity-increase');
         
-        // Remove existing listeners to prevent duplicates
-        const newModal = modal.cloneNode(true);
-        modal.parentNode.replaceChild(newModal, modal);
+        // Remove existing event listeners by storing references
+        if (this.modalEventListeners) {
+            this.modalEventListeners.forEach(({ element, event, handler }) => {
+                element.removeEventListener(event, handler);
+            });
+        }
+        
+        this.modalEventListeners = [];
         
         // Close modal events
-        const newCloseButton = document.getElementById('modal-close');
-        newCloseButton.addEventListener('click', () => this.closeModal());
+        const closeButton = document.getElementById('modal-close');
+        const closeHandler = () => this.closeModal();
+        closeButton.addEventListener('click', closeHandler);
+        this.modalEventListeners.push({ element: closeButton, event: 'click', handler: closeHandler });
         
-        newModal.addEventListener('click', (e) => {
-            if (e.target === newModal) {
+        const modalClickHandler = (e) => {
+            if (e.target === modal) {
                 this.closeModal();
             }
-        });
+        };
+        modal.addEventListener('click', modalClickHandler);
+        this.modalEventListeners.push({ element: modal, event: 'click', handler: modalClickHandler });
         
         // Keyboard events
-        document.addEventListener('keydown', this.handleModalKeydown.bind(this));
+        const keydownHandler = this.handleModalKeydown.bind(this);
+        document.addEventListener('keydown', keydownHandler);
+        this.modalEventListeners.push({ element: document, event: 'keydown', handler: keydownHandler });
         
         // Quantity controls
-        const newDecreaseBtn = document.getElementById('quantity-decrease');
-        const newIncreaseBtn = document.getElementById('quantity-increase');
-        const newQuantityInput = document.getElementById('modal-quantity-input');
+        const decreaseBtn = document.getElementById('quantity-decrease');
+        const increaseBtn = document.getElementById('quantity-increase');
+        const quantityInput = document.getElementById('modal-quantity-input');
         
-        newDecreaseBtn.addEventListener('click', () => {
-            const current = parseInt(newQuantityInput.value);
+        const decreaseHandler = () => {
+            const current = parseInt(quantityInput.value);
             if (current > 1) {
-                newQuantityInput.value = current - 1;
+                quantityInput.value = current - 1;
             }
-        });
+        };
+        decreaseBtn.addEventListener('click', decreaseHandler);
+        this.modalEventListeners.push({ element: decreaseBtn, event: 'click', handler: decreaseHandler });
         
-        newIncreaseBtn.addEventListener('click', () => {
-            const current = parseInt(newQuantityInput.value);
+        const increaseHandler = () => {
+            const current = parseInt(quantityInput.value);
             if (current < 10) {
-                newQuantityInput.value = current + 1;
+                quantityInput.value = current + 1;
             }
-        });
+        };
+        increaseBtn.addEventListener('click', increaseHandler);
+        this.modalEventListeners.push({ element: increaseBtn, event: 'click', handler: increaseHandler });
         
         // Buy Now button
-        const newBuyButton = document.getElementById('modal-buy-now');
-        newBuyButton.addEventListener('click', () => this.handleBuyNow());
+        const buyButton = document.getElementById('modal-buy-now');
+        const buyHandler = () => this.handleBuyNow();
+        buyButton.addEventListener('click', buyHandler);
+        this.modalEventListeners.push({ element: buyButton, event: 'click', handler: buyHandler });
         
         // Add to Cart button
-        const newCartButton = document.getElementById('modal-add-cart');
-        newCartButton.addEventListener('click', () => this.handleAddToCart());
+        const cartButton = document.getElementById('modal-add-cart');
+        const cartHandler = () => this.handleAddToCart();
+        cartButton.addEventListener('click', cartHandler);
+        this.modalEventListeners.push({ element: cartButton, event: 'click', handler: cartHandler });
     }
 
     handleModalKeydown(e) {
@@ -613,8 +626,13 @@ class ProductsManager {
         modal.style.display = 'none';
         document.body.classList.remove('modal-open');
         
-        // Remove keyboard listener
-        document.removeEventListener('keydown', this.handleModalKeydown);
+        // Remove all event listeners
+        if (this.modalEventListeners) {
+            this.modalEventListeners.forEach(({ element, event, handler }) => {
+                element.removeEventListener(event, handler);
+            });
+            this.modalEventListeners = [];
+        }
         
         // Clear stored data
         this.currentModalProduct = null;
@@ -628,18 +646,13 @@ class ProductsManager {
         }
         
         const quantity = parseInt(document.getElementById('modal-quantity-input').value);
-        const shopDomain = this.getShopDomain();
         
-        if (!shopDomain) {
-            alert('Shop configuration error. Please try again later.');
-            return;
+        // Use cart manager for quick buy (bypass cart modal)
+        if (window.cartManager) {
+            window.cartManager.quickBuy(this.currentModalProduct, this.selectedVariant, quantity);
+        } else {
+            alert('Cart system not available. Please try again.');
         }
-        
-        // Create Shopify checkout URL
-        const checkoutUrl = `https://${shopDomain}/cart/${this.selectedVariant.id.split('/').pop()}:${quantity}`;
-        
-        // Open checkout in new tab
-        window.open(checkoutUrl, '_blank');
         
         // Close modal
         this.closeModal();
@@ -652,21 +665,16 @@ class ProductsManager {
         }
         
         const quantity = parseInt(document.getElementById('modal-quantity-input').value);
-        const shopDomain = this.getShopDomain();
         
-        if (!shopDomain) {
-            alert('Shop configuration error. Please try again later.');
-            return;
+        // Use cart manager to add to cart
+        if (window.cartManager) {
+            window.cartManager.addToCart(this.currentModalProduct, this.selectedVariant, quantity);
+        } else {
+            alert('Cart system not available. Please try again.');
         }
         
-        // Create add to cart URL
-        const addToCartUrl = `https://${shopDomain}/cart/add?id=${this.selectedVariant.id.split('/').pop()}&quantity=${quantity}`;
-        
-        // Open in new tab
-        window.open(addToCartUrl, '_blank');
-        
-        // Show success message
-        alert(`Added ${quantity} ${this.currentModalProduct.title} to cart!`);
+        // Close modal
+        this.closeModal();
     }
 
     getShopDomain() {

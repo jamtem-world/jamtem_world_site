@@ -20,9 +20,10 @@ class ComponentLoader {
             if (targetElement) {
                 targetElement.innerHTML = html;
                 
-                // If it's the header, set up navigation active states
+                // If it's the header, set up navigation active states and mobile menu
                 if (componentName === 'header') {
                     this.setActiveNavigation();
+                    this.setupMobileMenu();
                 }
             } else {
                 console.warn(`Target element ${targetSelector} not found for ${componentName}`);
@@ -36,23 +37,92 @@ class ComponentLoader {
 
     setActiveNavigation() {
         const currentPath = window.location.pathname;
-        const navLinks = document.querySelectorAll('.nav-link');
+        const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link');
         
         navLinks.forEach(link => {
             link.classList.remove('active');
             
             // Determine which page we're on and set active state
-            if (currentPath === '/' || currentPath === '/index.html') {
+            if (currentPath === '/' || currentPath === '/index' || currentPath === '/index.html') {
                 if (link.getAttribute('data-page') === 'index') {
                     link.classList.add('active');
                 }
-            } else if (currentPath.includes('join.html')) {
+            } else if (currentPath === '/join' || currentPath === '/join.html') {
                 if (link.getAttribute('data-page') === 'join') {
+                    link.classList.add('active');
+                }
+            } else if (currentPath === '/products' || currentPath === '/products.html') {
+                if (link.getAttribute('data-page') === 'products') {
                     link.classList.add('active');
                 }
             }
             // Add more conditions here for other pages as needed
         });
+    }
+
+    setupMobileMenu() {
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileNavDropdown = document.getElementById('mobile-nav-dropdown');
+        
+        if (!mobileMenuToggle || !mobileNavDropdown) {
+            return; // Mobile menu elements not found
+        }
+
+        // Toggle mobile menu
+        mobileMenuToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const isActive = mobileNavDropdown.classList.contains('active');
+            
+            if (isActive) {
+                this.closeMobileMenu();
+            } else {
+                this.openMobileMenu();
+            }
+        });
+
+        // Close mobile menu when clicking on a link
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                this.closeMobileMenu();
+            });
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!mobileMenuToggle.contains(e.target) && !mobileNavDropdown.contains(e.target)) {
+                this.closeMobileMenu();
+            }
+        });
+
+        // Close mobile menu on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeMobileMenu();
+            }
+        });
+    }
+
+    openMobileMenu() {
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileNavDropdown = document.getElementById('mobile-nav-dropdown');
+        
+        if (mobileMenuToggle && mobileNavDropdown) {
+            mobileMenuToggle.classList.add('active');
+            mobileNavDropdown.classList.add('active');
+        }
+    }
+
+    closeMobileMenu() {
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileNavDropdown = document.getElementById('mobile-nav-dropdown');
+        
+        if (mobileMenuToggle && mobileNavDropdown) {
+            mobileMenuToggle.classList.remove('active');
+            mobileNavDropdown.classList.remove('active');
+        }
     }
 
     showFallback(componentName, targetSelector) {
@@ -67,10 +137,8 @@ class ComponentLoader {
                             <a href="/" style="text-decoration: none; color: inherit;">Jamtem World</a>
                         </h1>
                         <nav class="nav">
-                            <a href="/" class="nav-link">Products</a>
-                            <a href="/join.html" class="nav-link">Join Community</a>
-                            <a href="#" class="nav-link">About</a>
-                            <a href="#" class="nav-link">Contact</a>
+                            <a href="/products" class="nav-link" data-page="products">Products</a>
+                            <a href="/join" class="nav-link" data-page="join">Join Community</a>
                         </nav>
                     </div>
                 </header>

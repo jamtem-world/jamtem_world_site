@@ -60,14 +60,61 @@ async function uploadToCloudinary(imageFile: File): Promise<string> {
   return result.secure_url; // Return the HTTPS URL
 }
 
+// Route definitions for clean URLs
+const routes: Record<string, string> = {
+  '/': 'index.html',
+  '/index': 'index.html',
+  '/join': 'join.html',
+  '/products': 'products.html'
+};
+
+// Helper function to serve HTML files with proper headers
+async function serveHtmlFile(filePath: string): Promise<Response> {
+  try {
+    const fullPath = `public/${filePath}`;
+    const file = await Deno.readFile(fullPath);
+    return new Response(file, {
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
+  } catch (error) {
+    console.error(`Error serving ${filePath}:`, error);
+    return new Response('Page not found', { 
+      status: 404,
+      headers: { 'Content-Type': 'text/plain' }
+    });
+  }
+}
+
 const PORT = 8000;
 
 console.log(`🚀 Starting Deno server on http://localhost:${PORT}`);
 console.log(`📁 Serving static files from ./public directory`);
+console.log(`🔗 Server-side routing enabled for: ${Object.keys(routes).join(', ')}`);
 
 Deno.serve({ port: PORT }, async (req: Request) => {
   const url = new URL(req.url);
   const pathname = url.pathname;
+
+  // Handle redirects for legacy .html URLs
+  if (pathname === '/index.html') {
+    return Response.redirect(new URL('/', url.origin), 301);
+  }
+  if (pathname === '/join.html') {
+    return Response.redirect(new URL('/join', url.origin), 301);
+  }
+  if (pathname === '/products.html') {
+    return Response.redirect(new URL('/products', url.origin), 301);
+  }
+
+  // Handle server-side routes
+  if (routes[pathname]) {
+    return await serveHtmlFile(routes[pathname]);
+  }
 
   // Handle API routes for Shopify integration
   if (pathname.startsWith("/api/")) {
