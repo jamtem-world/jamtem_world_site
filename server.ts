@@ -65,7 +65,8 @@ const routes: Record<string, string> = {
   '/': 'index.html',
   '/index': 'index.html',
   '/join': 'join.html',
-  '/products': 'products.html'
+  '/products': 'products.html',
+  '/collage': 'collage.html'
 };
 
 // Helper function to serve HTML files with proper headers
@@ -145,6 +146,101 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           } 
         }
       );
+    }
+
+    // Handle collage data retrieval from Airtable
+    if (pathname === "/api/collage") {
+      if (req.method !== "GET") {
+        return new Response(
+          JSON.stringify({ error: "Method not allowed" }),
+          { 
+            status: 405, 
+            headers: { 
+              "Content-Type": "application/json",
+              ...corsHeaders 
+            } 
+          }
+        );
+      }
+
+      try {
+        const airtableApiKey = Deno.env.get("AIRTABLE_API_KEY");
+        const airtableBaseId = Deno.env.get("AIRTABLE_BASE_ID");
+        const airtableTableId = Deno.env.get("AIRTABLE_TABLE_ID");
+
+        if (!airtableApiKey || !airtableBaseId || !airtableTableId) {
+          return new Response(
+            JSON.stringify({ 
+              error: "Missing Airtable credentials. Please check your .env file." 
+            }),
+            { 
+              status: 500, 
+              headers: { 
+                "Content-Type": "application/json",
+                ...corsHeaders 
+              } 
+            }
+          );
+        }
+
+        // Fetch all records from Airtable
+        const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${airtableTableId}`;
+        
+        const airtableResponse = await fetch(airtableUrl, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${airtableApiKey}`,
+          },
+        });
+
+        if (!airtableResponse.ok) {
+          const errorData = await airtableResponse.json();
+          console.error("Airtable API error:", errorData);
+          throw new Error(`Airtable API error: ${airtableResponse.status} - ${errorData.error?.message || 'Unknown error'}`);
+        }
+
+        const result = await airtableResponse.json();
+        
+        // Transform the data to a cleaner format for the frontend
+        const members = result.records.map((record: any) => ({
+          id: record.id,
+          name: record.fields.Name || "",
+          craft: record.fields.Craft || "",
+          instagram: record.fields.Instagram || "",
+          bio: record.fields.Bio || "",
+          imageUrl: record.fields.Image && record.fields.Image[0] ? record.fields.Image[0].url : null
+        })).filter((member: any) => member.imageUrl); // Only include members with images
+
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            members: members,
+            count: members.length
+          }),
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ...corsHeaders,
+            },
+          }
+        );
+
+      } catch (error) {
+        console.error("Error fetching collage data:", error);
+        return new Response(
+          JSON.stringify({ 
+            error: "Failed to fetch community members. Please try again.",
+            details: error instanceof Error ? error.message : String(error)
+          }),
+          { 
+            status: 500, 
+            headers: { 
+              "Content-Type": "application/json",
+              ...corsHeaders 
+            } 
+          }
+        );
+      }
     }
 
     // Handle join form submission to Airtable
