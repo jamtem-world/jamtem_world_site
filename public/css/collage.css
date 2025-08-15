@@ -5,6 +5,10 @@
   min-height: 100vh;
   padding-top: 120px;
   padding-bottom: var(--spacing-xl);
+  display: flex;  
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Hero section for collage */
@@ -36,6 +40,85 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--spacing-lg);
+}
+
+/* 3D Sphere Container */
+.sphere-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sphere-canvas {
+  width: 100%;
+  max-width: 800px;
+  height: 600px;
+  border-radius: var(--border-radius);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-hover);
+  cursor: grab;
+}
+
+.sphere-canvas:active {
+  cursor: grabbing;
+}
+
+/* Sphere Controls */
+.sphere-controls {
+  margin-top: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.control-hint {
+  background: rgba(255, 255, 255, 0.1);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius);
+  backdrop-filter: blur(10px);
+  color: var(--white);
+  font-size: 1.4rem;
+  text-align: center;
+}
+
+.control-hint span {
+  display: inline-block;
+}
+
+/* View Toggle Buttons */
+.view-toggle {
+  text-align: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.toggle-view-btn {
+  background: var(--secondary-color);
+  color: var(--white);
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius);
+  font-size: 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow);
+}
+
+.toggle-view-btn:hover {
+  background: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.toggle-view-btn:active {
+  transform: translateY(0);
 }
 
 /* Dynamic grid system */
@@ -254,8 +337,23 @@
     font-size: 1.4rem;
   }
 
-  .collage-container {
+  .collage-container,
+  .sphere-container {
     padding: var(--spacing-md);
+  }
+
+  .sphere-canvas {
+    height: 400px;
+  }
+
+  .control-hint {
+    font-size: 1.2rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .toggle-view-btn {
+    font-size: 1.2rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
   }
 
   .collage-grid {

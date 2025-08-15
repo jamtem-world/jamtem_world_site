@@ -27,6 +27,16 @@
     <link rel="icon" type="image/png" href="media/images/logo.png">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/collage.css">
+    
+    <!-- Three.js and dependencies -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://esm.sh/three@0.158.0",
+            "three/addons/": "https://esm.sh/three@0.158.0/examples/jsm/"
+        }
+    }
+    </script>
 </head>
 <body>
     <!-- Header Component Placeholder -->
@@ -55,8 +65,22 @@
                 <button class="retry-btn" onclick="collageManager.loadMembers()">Retry</button>
             </div>
 
-            <!-- Collage Grid -->
+            <!-- 3D Sphere Container -->
+            <div id="sphere-container" class="sphere-container" style="display: none;">
+                <canvas id="sphere-canvas" class="sphere-canvas"></canvas>
+                <div class="sphere-controls">
+                    <div class="control-hint">
+                        <span>🖱️ Drag to rotate • 🔍 Scroll to zoom • 👆 Click to explore</span>
+                    </div>
+                    <button id="toggle-2d" class="toggle-view-btn">Switch to 2D Grid</button>
+                </div>
+            </div>
+
+            <!-- Collage Grid (2D Fallback) -->
             <div id="collage-container" class="collage-container" style="display: none;">
+                <div class="view-toggle">
+                    <button id="toggle-3d" class="toggle-view-btn">Switch to 3D Sphere</button>
+                </div>
                 <div id="collage-grid" class="collage-grid">
                     <!-- Dynamic grid items will be inserted here -->
                 </div>
@@ -110,5 +134,6 @@
     <script src="js/components.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/collage.js"></script>
+    <script type="module" src="js/collage-3d.js"></script>
 </body>
 </html>

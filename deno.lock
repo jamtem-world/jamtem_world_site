@@ -66,6 +66,16 @@
       "integrity": "75c0b1431873cd0d8b3d679015220204d36d3c7420d93b60acfc379eb0dc30af"
     }
   },
+  "redirects": {
+    "https://esm.sh/@types/three@~0.158.3/examples/jsm/controls/OrbitControls.d.ts": "https://esm.sh/@types/three@0.158.3/examples/jsm/controls/OrbitControls.d.ts",
+    "https://esm.sh/@types/three@~0.158.3/index.d.ts": "https://esm.sh/@types/three@0.158.3/index.d.ts"
+  },
+  "remote": {
+    "https://esm.sh/three@0.158.0": "abc32be2732822928e32fb202952c6007f387128997e0d8b55c434fb8054ce3c",
+    "https://esm.sh/three@0.158.0/denonext/examples/jsm/controls/OrbitControls.mjs": "f7bb8be589f9a8fbeb22dd20815f38670da7d72c13815161fb9bbeba509efa25",
+    "https://esm.sh/three@0.158.0/denonext/three.mjs": "317bf411bd47546809c330ed70b73fff292d8e6deee30e68c1be8374f023393a",
+    "https://esm.sh/three@0.158.0/examples/jsm/controls/OrbitControls.js": "f846de1bd869d99a5d2db9cc053c7d6969125ee5f0346ff415ced95bfd32c954"
+  },
   "workspace": {
     "dependencies": [
       "jsr:@std/dotenv@0.225",

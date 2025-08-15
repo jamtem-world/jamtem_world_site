@@ -4,10 +4,25 @@ class CollageManager {
         this.members = [];
         this.currentMember = null;
         this.gridContainer = null;
+        this.sphereContainer = null;
+        this.sphereCanvas = null;
         this.modal = null;
         this.isLoading = false;
+        this.sphereManager = null;
+        this.is3DMode = false;
+        this.webGLSupported = this.checkWebGLSupport();
         
         this.init();
+    }
+
+    checkWebGLSupport() {
+        try {
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            return !!gl;
+        } catch (e) {
+            return false;
+        }
     }
 
     init() {
@@ -21,6 +36,8 @@ class CollageManager {
 
     setupElements() {
         this.gridContainer = document.getElementById('collage-grid');
+        this.sphereContainer = document.getElementById('sphere-container');
+        this.sphereCanvas = document.getElementById('sphere-canvas');
         this.modal = document.getElementById('member-modal');
         
         if (!this.gridContainer) {
@@ -29,7 +46,26 @@ class CollageManager {
         }
 
         this.setupModalEvents();
+        this.setupViewToggleEvents();
         this.loadMembers();
+    }
+
+    setupViewToggleEvents() {
+        const toggle3DBtn = document.getElementById('toggle-3d');
+        const toggle2DBtn = document.getElementById('toggle-2d');
+
+        if (toggle3DBtn) {
+            toggle3DBtn.addEventListener('click', () => this.switchTo3D());
+        }
+
+        if (toggle2DBtn) {
+            toggle2DBtn.addEventListener('click', () => this.switchTo2D());
+        }
+
+        // Hide 3D toggle if WebGL is not supported
+        if (!this.webGLSupported && toggle3DBtn) {
+            toggle3DBtn.style.display = 'none';
+        }
     }
 
     setupModalEvents() {
@@ -279,11 +315,82 @@ class CollageManager {
     }
 
     hideAllStates() {
-        const states = ['loading', 'error', 'collage-container', 'no-members'];
+        const states = ['loading', 'error', 'collage-container', 'no-members', 'sphere-container'];
         states.forEach(id => {
             const element = document.getElementById(id);
             if (element) element.style.display = 'none';
         });
+    }
+
+    async switchTo3D() {
+        console.log('switchTo3D called');
+        console.log('WebGL supported:', this.webGLSupported);
+        console.log('Sphere canvas:', this.sphereCanvas);
+        console.log('Members count:', this.members.length);
+        console.log('Sphere container:', this.sphereContainer);
+
+        if (!this.webGLSupported) {
+            console.warn('Cannot switch to 3D: WebGL not supported');
+            alert('WebGL is not supported on this device. 3D view is not available.');
+            return;
+        }
+
+        if (!this.sphereCanvas) {
+            console.warn('Cannot switch to 3D: Sphere canvas not found');
+            alert('3D canvas element not found. Please refresh the page.');
+            return;
+        }
+
+        if (this.members.length === 0) {
+            console.warn('Cannot switch to 3D: No members loaded');
+            alert('No community members loaded. Please wait for data to load.');
+            return;
+        }
+
+        try {
+            console.log('Attempting to import 3D module...');
+            // Dynamically import the 3D module
+            const { default: SphereCollageManager } = await import('./collage-3d.js');
+            console.log('3D module imported successfully');
+            
+            if (!this.sphereManager) {
+                console.log('Creating new SphereCollageManager...');
+                this.sphereManager = new SphereCollageManager();
+            }
+
+            console.log('Initializing 3D sphere...');
+            const success = await this.sphereManager.init(this.sphereCanvas, this.members);
+            console.log('3D sphere initialization result:', success);
+            
+            if (success) {
+                this.is3DMode = true;
+                this.show3D();
+                console.log('Successfully switched to 3D sphere view');
+            } else {
+                throw new Error('Failed to initialize 3D sphere');
+            }
+        } catch (error) {
+            console.error('Error switching to 3D:', error);
+            alert(`Failed to load 3D view: ${error.message}`);
+            // Fallback to 2D
+            this.showGrid();
+        }
+    }
+
+    switchTo2D() {
+        if (this.sphereManager) {
+            this.sphereManager.dispose();
+        }
+        this.is3DMode = false;
+        this.showGrid();
+        console.log('Switched to 2D grid view');
+    }
+
+    show3D() {
+        this.hideAllStates();
+        if (this.sphereContainer) {
+            this.sphereContainer.style.display = 'block';
+        }
     }
 
     // Public method to retry loading (called from retry button)
@@ -294,6 +401,9 @@ class CollageManager {
 
 // Initialize the collage manager
 const collageManager = new CollageManager();
+
+// Make collageManager globally accessible for 3D module
+window.collageManager = collageManager;
 
 // Export for potential use in other scripts or debugging
 if (typeof module !== 'undefined' && module.exports) {

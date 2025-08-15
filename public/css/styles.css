@@ -656,9 +656,11 @@ p {
   .product-image-grid {
     height: 400px;
   }
+  
+  .container_page {
+    margin: 0;
+  }
 }
-
-
 
 /* Print styles */
 @media print {
@@ -1175,8 +1177,8 @@ body.modal-open {
   position: absolute;
   max-width: 260px;
   max-height: 260px;
-  width: auto;
-  height: auto;
+  width: 260px;
+  height: 260px;
   cursor: pointer;
   pointer-events: auto;
   transition: transform 0.3s ease;
