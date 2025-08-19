@@ -62,8 +62,8 @@ async function uploadToCloudinary(imageFile: File): Promise<string> {
 
 // Route definitions for clean URLs
 const routes: Record<string, string> = {
-  '/': 'index.html',
-  '/index': 'index.html',
+  '/': 'desktop.html',
+  '/index': 'desktop.html',
   '/join': 'join.html',
   '/products': 'products.html',
   '/collage': 'collage.html',
