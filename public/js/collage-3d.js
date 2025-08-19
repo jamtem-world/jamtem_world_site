@@ -291,41 +291,23 @@ class SphereCollageManager {
     calculateSpherePositions(count, radius) {
         const positions = [];
         
-        if (count <= 12) {
-            // For small numbers, cluster them in the front hemisphere
-            const angleStep = (Math.PI * 0.8) / Math.max(count - 1, 1); // Reduced spread
-            const startAngle = -Math.PI * 0.4; // Start from left side
+        // Generate random positions on the sphere surface
+        for (let i = 0; i < count; i++) {
+            // Generate random spherical coordinates
+            // Use uniform distribution on sphere surface
+            const u = Math.random(); // Random value between 0 and 1
+            const v = Math.random(); // Random value between 0 and 1
             
-            for (let i = 0; i < count; i++) {
-                // Arrange in a curved line across the front of the sphere
-                const theta = startAngle + (i * angleStep);
-                const phi = Math.PI * 0.5; // Keep them in the middle latitude
-                
-                // Add some vertical variation for visual interest
-                const verticalOffset = (Math.sin(i * 0.8) * 0.3);
-                const adjustedPhi = phi + verticalOffset;
-                
-                const x = radius * Math.sin(adjustedPhi) * Math.cos(theta);
-                const y = radius * Math.sin(adjustedPhi) * Math.sin(theta);
-                const z = radius * Math.cos(adjustedPhi);
-                
-                positions.push(new THREE.Vector3(x, y, z));
-            }
-        } else {
-            // For larger numbers, use Fibonacci spiral but constrained to front hemisphere
-            const goldenRatio = (1 + Math.sqrt(5)) / 2;
+            // Convert to spherical coordinates with uniform distribution
+            const theta = 2 * Math.PI * u; // Azimuthal angle (0 to 2π)
+            const phi = Math.acos(2 * v - 1); // Polar angle (0 to π) with uniform distribution
             
-            for (let i = 0; i < count; i++) {
-                const theta = 2 * Math.PI * i / goldenRatio;
-                // Constrain phi to front hemisphere (0 to PI/2 instead of 0 to PI)
-                const phi = Math.acos(1 - (i + 0.5) / count) * 0.7; // Reduced spread
-                
-                const x = radius * Math.sin(phi) * Math.cos(theta);
-                const y = radius * Math.sin(phi) * Math.sin(theta);
-                const z = radius * Math.cos(phi);
-                
-                positions.push(new THREE.Vector3(x, y, z));
-            }
+            // Convert spherical to Cartesian coordinates
+            const x = radius * Math.sin(phi) * Math.cos(theta);
+            const y = radius * Math.sin(phi) * Math.sin(theta);
+            const z = radius * Math.cos(phi);
+            
+            positions.push(new THREE.Vector3(x, y, z));
         }
         
         return positions;
