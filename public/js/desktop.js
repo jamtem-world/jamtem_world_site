@@ -14,20 +14,22 @@ class DesktopInterface {
         this.setupDesktopIcons();
         this.setupVideoWindow();
         this.setupTaskbarButtons();
+        this.setupWindowControls();
     }
     
     // Clock functionality
     setupClock() {
-        const clockElement = document.getElementById('time');
-        
         const updateClock = () => {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-            });
-            clockElement.textContent = timeString;
+            const clockElement = document.getElementById('time');
+            if (clockElement) {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                clockElement.textContent = timeString;
+            }
         };
         
         // Update immediately and then every second
@@ -88,6 +90,8 @@ class DesktopInterface {
     
     // Handle icon activation (both touch and click)
     handleIconActivation(icon, allIcons) {
+        console.log('Icon clicked:', icon);
+        
         // Remove selection from other icons
         allIcons.forEach(otherIcon => {
             otherIcon.classList.remove('selected');
@@ -96,10 +100,406 @@ class DesktopInterface {
         // Add selection to clicked icon
         icon.classList.add('selected');
         
-        // Open video after short delay (simulating double-click)
-        setTimeout(() => {
-            this.openVideoWindow(icon);
-        }, 200);
+        // Get app name and open appropriate window
+        const appName = icon.getAttribute('data-app');
+        console.log('App name:', appName);
+        
+        if (appName) {
+            const windowId = appName + '-window';
+            console.log('Opening window:', windowId);
+            
+            setTimeout(() => {
+                this.openApp(windowId);
+                icon.classList.remove('selected');
+            }, 200);
+        } else {
+            console.error('No data-app attribute found on icon');
+        }
+    }
+    
+    // Open application window
+    openApp(windowId) {
+        const window = document.getElementById(windowId);
+        if (window) {
+            window.style.display = 'block';
+            window.classList.add('opening');
+            
+            // Remove opening animation class after animation completes
+            setTimeout(() => {
+                window.classList.remove('opening');
+            }, 200);
+            
+            // Initialize specific app functionality
+            this.initializeApp(windowId);
+        }
+    }
+    
+    // Initialize specific app functionality
+    initializeApp(windowId) {
+        switch (windowId) {
+            case 'vignettes-window':
+                this.initializeVignettes();
+                break;
+            case 'products-window':
+                this.initializeProducts();
+                break;
+            case 'collage-window':
+                this.initializeCollage();
+                break;
+            case 'join-window':
+                this.initializeJoin();
+                break;
+        }
+    }
+    
+    // Initialize vignettes window
+    initializeVignettes() {
+        const vignetteIcons = document.querySelectorAll('.vignette-icon');
+        
+        vignetteIcons.forEach(icon => {
+            icon.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.openVideoWindow(icon);
+            });
+        });
+    }
+    
+    // Initialize products window
+    initializeProducts() {
+        // Load products if products manager is available
+        if (typeof window.loadProducts === 'function') {
+            window.loadProducts();
+        } else {
+            // Show loading state
+            const loading = document.getElementById('products-loading');
+            if (loading) {
+                loading.style.display = 'flex';
+            }
+        }
+    }
+    
+    // Initialize collage window
+    initializeCollage() {
+        // Wait for CollageManager to be available
+        if (typeof window.collageManager !== 'undefined') {
+            // CollageManager is already initialized, just trigger loading
+            console.log('CollageManager found, loading members...');
+            window.collageManager.loadMembers();
+        } else {
+            // Wait a bit for CollageManager to initialize
+            setTimeout(() => {
+                if (typeof window.collageManager !== 'undefined') {
+                    console.log('CollageManager found after delay, loading members...');
+                    window.collageManager.loadMembers();
+                } else {
+                    console.warn('CollageManager not found, showing loading state');
+                    const loading = document.getElementById('collage-loading');
+                    if (loading) {
+                        loading.style.display = 'flex';
+                    }
+                }
+            }, 100);
+        }
+        
+        // Setup toolbar button event listeners
+        this.setupCollageToolbar();
+    }
+    
+    // Setup collage toolbar buttons
+    setupCollageToolbar() {
+        const gridViewBtn = document.getElementById('grid-view-btn');
+        const threeDViewBtn = document.getElementById('3d-view-btn');
+        const searchBtn = document.getElementById('search-btn');
+        const searchInput = document.getElementById('member-search-input');
+        
+        if (gridViewBtn) {
+            gridViewBtn.addEventListener('click', () => {
+                if (window.collageManager) {
+                    window.collageManager.switchTo2D();
+                    gridViewBtn.classList.add('active');
+                    if (threeDViewBtn) threeDViewBtn.classList.remove('active');
+                }
+            });
+        }
+        
+        if (threeDViewBtn) {
+            threeDViewBtn.addEventListener('click', () => {
+                if (window.collageManager) {
+                    window.collageManager.switchTo3D();
+                    threeDViewBtn.classList.add('active');
+                    if (gridViewBtn) gridViewBtn.classList.remove('active');
+                }
+            });
+        }
+        
+        if (searchBtn && searchInput) {
+            searchBtn.addEventListener('click', () => {
+                this.searchMembers(searchInput.value);
+            });
+            
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.searchMembers(searchInput.value);
+                }
+            });
+        }
+    }
+    
+    // Initialize join window
+    initializeJoin() {
+        this.setupJoinForm();
+    }
+    
+    // Show collage grid
+    showCollageGrid() {
+        const grid = document.getElementById('collage-grid');
+        const sphere = document.getElementById('sphere-container');
+        const loading = document.getElementById('collage-loading');
+        
+        if (grid) grid.style.display = 'grid';
+        if (sphere) sphere.style.display = 'none';
+        if (loading) loading.style.display = 'none';
+    }
+    
+    // Show 3D sphere
+    show3DSphere() {
+        const grid = document.getElementById('collage-grid');
+        const sphere = document.getElementById('sphere-container');
+        const loading = document.getElementById('collage-loading');
+        
+        if (grid) grid.style.display = 'none';
+        if (sphere) sphere.style.display = 'flex';
+        if (loading) loading.style.display = 'none';
+        
+        // Initialize 3D sphere if available
+        if (typeof window.init3DSphere === 'function') {
+            window.init3DSphere();
+        }
+    }
+    
+    // Search members
+    searchMembers(query) {
+        if (!query.trim()) return;
+        console.log('Searching members for:', query);
+        // Implement search functionality here
+    }
+    
+    // Setup join form
+    setupJoinForm() {
+        // Bio character counter
+        const bioTextarea = document.getElementById('bio');
+        const bioCounter = document.getElementById('bio-counter');
+        
+        if (bioTextarea && bioCounter) {
+            bioTextarea.addEventListener('input', () => {
+                const length = bioTextarea.value.length;
+                bioCounter.textContent = `${length}/500`;
+                
+                if (length > 500) {
+                    bioCounter.style.color = '#ff0000';
+                } else {
+                    bioCounter.style.color = '#666666';
+                }
+            });
+        }
+        
+        // File upload functionality
+        this.setupFileUpload();
+        
+        // Form submission
+        const joinForm = document.getElementById('join-form');
+        if (joinForm) {
+            joinForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.submitJoinForm();
+            });
+        }
+    }
+    
+    // Setup file upload
+    setupFileUpload() {
+        const fileInput = document.getElementById('image');
+        const uploadArea = document.getElementById('file-upload-area');
+        const preview = document.getElementById('image-preview');
+        const removeBtn = document.getElementById('remove-image');
+        
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    this.handleFileUpload(file);
+                }
+            });
+        }
+        
+        if (uploadArea) {
+            uploadArea.addEventListener('click', () => {
+                if (fileInput) fileInput.click();
+            });
+        }
+        
+        if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+                this.removeImage();
+            });
+        }
+    }
+    
+    // Handle file upload
+    handleFileUpload(file) {
+        const uploadArea = document.getElementById('file-upload-area');
+        const preview = document.getElementById('image-preview');
+        const previewImage = document.getElementById('preview-image');
+        const imageName = document.getElementById('image-name');
+        const imageSize = document.getElementById('image-size');
+        
+        // Validate file
+        if (!file.type.startsWith('image/')) {
+            alert('Please select a valid image file.');
+            return;
+        }
+        
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit
+            alert('File size must be less than 10MB.');
+            return;
+        }
+        
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            if (previewImage) previewImage.src = e.target.result;
+            if (imageName) imageName.textContent = file.name;
+            if (imageSize) imageSize.textContent = this.formatFileSize(file.size);
+            
+            if (uploadArea) uploadArea.style.display = 'none';
+            if (preview) preview.style.display = 'grid';
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    // Remove uploaded image
+    removeImage() {
+        const fileInput = document.getElementById('image');
+        const uploadArea = document.getElementById('file-upload-area');
+        const preview = document.getElementById('image-preview');
+        const previewImage = document.getElementById('preview-image');
+        
+        if (fileInput) fileInput.value = '';
+        if (previewImage) previewImage.src = '';
+        if (uploadArea) uploadArea.style.display = 'block';
+        if (preview) preview.style.display = 'none';
+    }
+    
+    // Format file size
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Submit join form
+    submitJoinForm() {
+        // Basic validation
+        const name = document.getElementById('name')?.value;
+        const email = document.getElementById('email')?.value;
+        const craft = document.getElementById('craft')?.value;
+        const bio = document.getElementById('bio')?.value;
+        const image = document.getElementById('image')?.files[0];
+        
+        if (!name || !email || !craft || !bio || !image) {
+            alert('Please fill in all required fields and upload an image.');
+            return;
+        }
+        
+        // Simulate successful submission
+        alert('Welcome to JAMTEM!\n\nThank you for joining our community of passionate creators. We\'re excited to have you on board!');
+        
+        // Close join window
+        this.closeWindow('join-window');
+    }
+    
+    // Close any window
+    closeWindow(windowId) {
+        const window = document.getElementById(windowId);
+        if (window) {
+            window.style.display = 'none';
+        }
+    }
+    
+    // Setup window controls for all app windows
+    setupWindowControls() {
+        // Close buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('close') && e.target.hasAttribute('data-window')) {
+                const windowId = e.target.getAttribute('data-window');
+                this.closeWindow(windowId);
+            }
+        });
+        
+        // Minimize buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('minimize')) {
+                const window = e.target.closest('.app-window');
+                if (window) {
+                    this.minimizeWindow(window.id);
+                }
+            }
+        });
+        
+        // Maximize buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('maximize')) {
+                const window = e.target.closest('.app-window');
+                if (window) {
+                    this.toggleMaximizeWindow(window.id);
+                }
+            }
+        });
+        
+        // Close on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                // Close the topmost visible window
+                const visibleWindows = document.querySelectorAll('.app-window[style*="display: block"], .app-window:not([style*="display: none"])');
+                if (visibleWindows.length > 0) {
+                    const topWindow = visibleWindows[visibleWindows.length - 1];
+                    this.closeWindow(topWindow.id);
+                }
+            }
+        });
+    }
+    
+    // Minimize window
+    minimizeWindow(windowId) {
+        const window = document.getElementById(windowId);
+        if (window) {
+            window.style.display = 'none';
+            // In a real implementation, you'd add it to taskbar
+        }
+    }
+    
+    // Toggle maximize window
+    toggleMaximizeWindow(windowId) {
+        const window = document.getElementById(windowId);
+        if (window) {
+            if (window.classList.contains('maximized')) {
+                window.classList.remove('maximized');
+                window.style.top = '';
+                window.style.left = '';
+                window.style.width = '';
+                window.style.height = '';
+                window.style.transform = '';
+            } else {
+                window.classList.add('maximized');
+                window.style.top = '0';
+                window.style.left = '0';
+                window.style.width = '100vw';
+                window.style.height = 'calc(100vh - 40px)';
+                window.style.transform = 'none';
+            }
+        }
     }
     
     // Video window functionality
@@ -136,15 +536,11 @@ class DesktopInterface {
             // Toggle maximize state
             if (this.videoWindow.classList.contains('maximized')) {
                 this.videoWindow.classList.remove('maximized');
-                this.videoWindow.style.width = '900px';
-                this.videoWindow.style.height = 'auto';
                 this.videoWindow.style.top = '50%';
                 this.videoWindow.style.left = '50%';
                 this.videoWindow.style.transform = 'translate(-50%, -50%)';
             } else {
                 this.videoWindow.classList.add('maximized');
-                this.videoWindow.style.width = '98vw';
-                this.videoWindow.style.height = '95vh';
                 this.videoWindow.style.top = '2.5vh';
                 this.videoWindow.style.left = '1vw';
                 this.videoWindow.style.transform = 'none';
@@ -155,7 +551,7 @@ class DesktopInterface {
     // Open video window
     openVideoWindow(iconElement) {
         const videoUrl = iconElement.getAttribute('data-video');
-        const iconLabel = iconElement.querySelector('.icon-label').textContent;
+        const iconLabel = iconElement.querySelector('.icon-label, .vignette-label').textContent;
         
         if (videoUrl) {
             // Set video source
@@ -200,8 +596,6 @@ class DesktopInterface {
             
             // Remove maximized state
             this.videoWindow.classList.remove('maximized');
-            this.videoWindow.style.width = '900px';
-            this.videoWindow.style.height = 'auto';
             this.videoWindow.style.top = '50%';
             this.videoWindow.style.left = '50%';
             this.videoWindow.style.transform = 'translate(-50%, -50%)';
@@ -217,11 +611,14 @@ class DesktopInterface {
     setupTaskbarButtons() {
         const startButton = document.querySelector('.start-button');
         
-        // Start button click (could open a start menu in the future)
-        startButton.addEventListener('click', () => {
-            // For now, just show a simple alert
-            this.showStartMenu();
-        });
+        // Only set up if start button exists (taskbar loaded successfully)
+        if (startButton) {
+            // Start button click (could open a start menu in the future)
+            startButton.addEventListener('click', () => {
+                // For now, just show a simple alert
+                this.showStartMenu();
+            });
+        }
         
         // Add click sound effect (optional)
         const taskbarButtons = document.querySelectorAll('.taskbar-button, .start-button');
@@ -430,10 +827,24 @@ class DesktopInterface {
 }
 
 // Initialize desktop interface when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    const desktop = new DesktopInterface();
-    desktop.setupDesktopContextMenu();
+document.addEventListener('DOMContentLoaded', async () => {
+    // Load taskbar component first
+    const loader = new ComponentLoader();
+    await loader.loadComponent('taskbar', '#taskbar-placeholder');
+    
+    // Then initialize desktop interface
+    window.desktop = new DesktopInterface();
+    window.desktop.setupDesktopContextMenu();
 });
+
+// Global function to open apps (for debugging and external access)
+window.openApp = function(windowId) {
+    if (window.desktop) {
+        window.desktop.openApp(windowId);
+    } else {
+        console.error('Desktop interface not initialized');
+    }
+};
 
 // Add some classic Windows sound effects (optional)
 class WindowsSounds {
@@ -464,6 +875,9 @@ document.addEventListener('keydown', (e) => {
     // Windows key simulation
     if (e.key === 'Meta' || e.key === 'OS') {
         e.preventDefault();
-        document.querySelector('.start-button').click();
+        const startButton = document.querySelector('.start-button');
+        if (startButton) {
+            startButton.click();
+        }
     }
 });

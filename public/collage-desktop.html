@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jamtem World - Community Collage Desktop</title>
+    <meta name="description" content="Discover the vibrant community of creators, artisans, and makers who are part of the JAMTEM family. Explore their crafts, stories, and creative journeys.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://jamtemworld.com/collage-desktop">
+    <meta property="og:title" content="Jamtem World - Community Collage Desktop">
+    <meta property="og:description" content="Discover the vibrant community of creators, artisans, and makers who are part of the JAMTEM family. Explore their crafts, stories, and creative journeys.">
+    <meta property="og:image" content="https://jamtemworld.com/media/images/jamtem_logo_w_bg.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Jamtem World Logo">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://jamtemworld.com/collage-desktop">
+    <meta property="twitter:title" content="Jamtem World - Community Collage Desktop">
+    <meta property="twitter:description" content="Discover the vibrant community of creators, artisans, and makers who are part of the JAMTEM family. Explore their crafts, stories, and creative journeys.">
+    <meta property="twitter:image" content="https://jamtemworld.com/media/images/jamtem_logo_w_bg.png">
+    <meta property="twitter:image:alt" content="Jamtem World Logo">
+    
+    <link rel="icon" type="image/png" href="media/images/logo.png">
+    <link rel="stylesheet" href="css/desktop.css">
+    <link rel="stylesheet" href="css/collage-desktop.css">
+    
+    <!-- Three.js and dependencies -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://esm.sh/three@0.158.0",
+            "three/addons/": "https://esm.sh/three@0.158.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <!-- Desktop Background -->
+    <div class="desktop">
+        <!-- Desktop Icons Grid -->
+        <div class="desktop-icons">
+            <div class="desktop-icon" data-app="community-browser">
+                <img src="media/images/logo.png" alt="Community Browser" class="icon-image">
+                <span class="icon-label">Community Browser</span>
+            </div>
+            
+            <div class="desktop-icon" data-app="3d-viewer">
+                <img src="media/images/logo.png" alt="3D Viewer" class="icon-image">
+                <span class="icon-label">3D Viewer</span>
+            </div>
+            
+            <div class="desktop-icon" data-app="member-search">
+                <img src="media/images/logo.png" alt="Member Search" class="icon-image">
+                <span class="icon-label">Member Search</span>
+            </div>
+            
+            <div class="desktop-icon" data-app="community-stats">
+                <img src="media/images/logo.png" alt="Community Stats" class="icon-image">
+                <span class="icon-label">Community Stats</span>
+            </div>
+        </div>
+        
+        <!-- Desktop Logo -->
+        <div class="desktop-logo">
+            <img src="media/images/logo.png" alt="Jamtem World" class="desktop-logo-img">
+        </div>
+    </div>
+
+    <!-- Taskbar Component Placeholder -->
+    <div id="taskbar-placeholder"></div>
+
+    <!-- Community Browser Window -->
+    <div id="community-browser-window" class="app-window" style="display: none;">
+        <div class="window-titlebar">
+            <div class="window-title">
+                <img src="media/images/logo.png" alt="" class="window-icon">
+                <span>Community Browser</span>
+            </div>
+            <div class="window-controls">
+                <button class="window-control minimize">_</button>
+                <button class="window-control maximize">□</button>
+                <button class="window-control close" data-window="community-browser-window">×</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="window-toolbar">
+                <button class="toolbar-btn" id="grid-view-btn">Grid View</button>
+                <button class="toolbar-btn" id="list-view-btn">List View</button>
+                <div class="toolbar-separator"></div>
+                <input type="text" class="search-input" placeholder="Search members..." id="member-search-input">
+                <button class="toolbar-btn" id="search-btn">Search</button>
+            </div>
+            
+            <!-- Loading State -->
+            <div id="loading" class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading community members...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="error" class="error-state" style="display: none;">
+                <h3>Unable to Load Community</h3>
+                <p>We're having trouble loading the community collage. Please try again.</p>
+                <button class="retry-btn" onclick="collageManager.loadMembers()">Retry</button>
+            </div>
+
+            <!-- Community Grid -->
+            <div id="collage-grid" class="community-grid" style="display: none;">
+                <!-- Dynamic grid items will be inserted here -->
+            </div>
+
+            <!-- No Members State -->
+            <div id="no-members" class="no-members-state" style="display: none;">
+                <h3>No Community Members Yet</h3>
+                <p>Be the first to join our creative community!</p>
+                <button class="btn btn-primary" onclick="openApp('join-form-window')">Join the Community</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D Viewer Window -->
+    <div id="3d-viewer-window" class="app-window" style="display: none;">
+        <div class="window-titlebar">
+            <div class="window-title">
+                <img src="media/images/logo.png" alt="" class="window-icon">
+                <span>3D Community Sphere</span>
+            </div>
+            <div class="window-controls">
+                <button class="window-control minimize">_</button>
+                <button class="window-control maximize">□</button>
+                <button class="window-control close" data-window="3d-viewer-window">×</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="sphere-container">
+                <canvas id="sphere-canvas" class="sphere-canvas"></canvas>
+                <div class="sphere-controls">
+                    <div class="control-hint">
+                        <span>🖱️ Drag to rotate • 🔍 Scroll to zoom • 👆 Click to explore</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Search Window -->
+    <div id="member-search-window" class="app-window" style="display: none;">
+        <div class="window-titlebar">
+            <div class="window-title">
+                <img src="media/images/logo.png" alt="" class="window-icon">
+                <span>Member Search</span>
+            </div>
+            <div class="window-controls">
+                <button class="window-control minimize">_</button>
+                <button class="window-control maximize">□</button>
+                <button class="window-control close" data-window="member-search-window">×</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="search-form">
+                <div class="form-group">
+                    <label>Search by Name:</label>
+                    <input type="text" class="form-input" id="search-name" placeholder="Enter member name">
+                </div>
+                <div class="form-group">
+                    <label>Filter by Craft:</label>
+                    <select class="form-select" id="search-craft">
+                        <option value="">All Crafts</option>
+                        <option value="photography">Photography</option>
+                        <option value="painting">Painting</option>
+                        <option value="music">Music</option>
+                        <option value="writing">Writing</option>
+                        <option value="crafts">Crafts</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Filter by Location:</label>
+                    <input type="text" class="form-input" id="search-location" placeholder="Enter location">
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="performSearch()">Search</button>
+                    <button class="btn btn-secondary" onclick="clearSearch()">Clear</button>
+                </div>
+            </div>
+            <div class="search-results" id="search-results">
+                <!-- Search results will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Community Stats Window -->
+    <div id="community-stats-window" class="app-window" style="display: none;">
+        <div class="window-titlebar">
+            <div class="window-title">
+                <img src="media/images/logo.png" alt="" class="window-icon">
+                <span>Community Statistics</span>
+            </div>
+            <div class="window-controls">
+                <button class="window-control minimize">_</button>
+                <button class="window-control maximize">□</button>
+                <button class="window-control close" data-window="community-stats-window">×</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-members">0</div>
+                    <div class="stat-label">Total Members</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-crafts">0</div>
+                    <div class="stat-label">Different Crafts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-countries">0</div>
+                    <div class="stat-label">Countries</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="newest-member">-</div>
+                    <div class="stat-label">Newest Member</div>
+                </div>
+            </div>
+            <div class="craft-breakdown">
+                <h3>Craft Distribution</h3>
+                <div class="craft-chart" id="craft-chart">
+                    <!-- Chart will be generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Profile Modal -->
+    <div id="member-modal" class="app-window member-modal" style="display: none;">
+        <div class="window-titlebar">
+            <div class="window-title">
+                <img src="media/images/logo.png" alt="" class="window-icon">
+                <span id="modal-window-title">Member Profile</span>
+            </div>
+            <div class="window-controls">
+                <button class="window-control close" data-window="member-modal">×</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="member-profile">
+                <div class="member-image-section">
+                    <div class="member-image-container">
+                        <img id="modal-member-image" class="member-image" src="" alt="">
+                        <div class="member-image-placeholder" id="modal-image-placeholder">
+                            No image available
+                        </div>
+                    </div>
+                </div>
+                <div class="member-info-section">
+                    <div class="member-header">
+                        <h2 id="modal-member-name" class="member-name"></h2>
+                        <p id="modal-member-craft" class="member-craft"></p>
+                    </div>
+                    <div class="member-details">
+                        <div class="member-instagram" id="modal-instagram-section" style="display: none;">
+                            <strong>Instagram:</strong>
+                            <span id="modal-member-instagram"></span>
+                        </div>
+                        <div class="member-bio">
+                            <strong>About:</strong>
+                            <p id="modal-member-bio"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/components.js"></script>
+    <script src="js/desktop.js"></script>
+    <script src="js/collage.js"></script>
+    <script type="module" src="js/collage-3d.js"></script>
+    <script src="js/collage-desktop.js"></script>
+</body>
+</html>

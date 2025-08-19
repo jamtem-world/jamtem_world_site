@@ -160,8 +160,8 @@ class CollageManager {
         const { cols, rows } = this.calculateGridDimensions(memberCount);
         const totalSlots = cols * rows;
 
-        // Clear existing grid classes
-        this.gridContainer.className = 'collage-grid';
+        // Clear existing grid classes but preserve base classes
+        this.gridContainer.className = this.gridContainer.className.includes('community-grid') ? 'community-grid' : 'collage-grid';
         
         // Add appropriate grid class
         this.gridContainer.classList.add(`grid-${cols}x${rows}`);
@@ -292,34 +292,72 @@ class CollageManager {
 
     showLoading() {
         this.hideAllStates();
-        const loading = document.getElementById('loading');
-        if (loading) loading.style.display = 'block';
+        // Try both possible loading element IDs
+        const loading = document.getElementById('loading') || document.getElementById('collage-loading');
+        if (loading) loading.style.display = 'flex';
     }
 
     showError() {
         this.hideAllStates();
-        const error = document.getElementById('error');
-        if (error) error.style.display = 'block';
+        // Try both possible error element IDs
+        const error = document.getElementById('error') || document.getElementById('collage-error');
+        if (error) {
+            error.style.display = 'block';
+        } else {
+            // If no error element, show error in grid
+            const grid = this.gridContainer;
+            if (grid) {
+                grid.style.display = 'flex';
+                grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #000;"><h3>Unable to Load Community</h3><p>Please try again later.</p><button onclick="window.collageManager.retry()" style="margin-top: 10px; padding: 8px 16px; background: #0078d4; color: white; border: none; cursor: pointer;">Retry</button></div>';
+            }
+        }
     }
 
     showGrid() {
         this.hideAllStates();
+        // Try both possible container IDs, fallback to direct grid
         const container = document.getElementById('collage-container');
-        if (container) container.style.display = 'block';
+        if (container) {
+            container.style.display = 'block';
+        } else if (this.gridContainer) {
+            this.gridContainer.style.display = 'grid';
+        }
     }
 
     showNoMembers() {
         this.hideAllStates();
+        // Try both possible no-members element IDs
         const noMembers = document.getElementById('no-members');
-        if (noMembers) noMembers.style.display = 'block';
+        if (noMembers) {
+            noMembers.style.display = 'block';
+        } else {
+            // If no no-members element, show message in grid
+            const grid = this.gridContainer;
+            if (grid) {
+                grid.style.display = 'flex';
+                grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #000;"><h3>No Community Members Yet</h3><p>Be the first to join our creative community!</p></div>';
+            }
+        }
     }
 
     hideAllStates() {
-        const states = ['loading', 'error', 'collage-container', 'no-members', 'sphere-container'];
+        // Hide all possible state elements (both collage.html and desktop.html versions)
+        const states = [
+            'loading', 'collage-loading',
+            'error', 'collage-error', 
+            'collage-container', 
+            'no-members', 
+            'sphere-container'
+        ];
         states.forEach(id => {
             const element = document.getElementById(id);
             if (element) element.style.display = 'none';
         });
+        
+        // Also ensure grid is hidden when switching states
+        if (this.gridContainer) {
+            this.gridContainer.style.display = 'none';
+        }
     }
 
     async switchTo3D() {
@@ -348,6 +386,12 @@ class CollageManager {
         }
 
         try {
+            // First show the 3D container to ensure canvas gets proper dimensions
+            this.show3D();
+            
+            // Wait a moment for the container to be fully visible and laid out
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
             console.log('Attempting to import 3D module...');
             // Dynamically import the 3D module
             const { default: SphereCollageManager } = await import('./collage-3d.js');
@@ -364,7 +408,6 @@ class CollageManager {
             
             if (success) {
                 this.is3DMode = true;
-                this.show3D();
                 console.log('Successfully switched to 3D sphere view');
             } else {
                 throw new Error('Failed to initialize 3D sphere');
@@ -389,7 +432,96 @@ class CollageManager {
     show3D() {
         this.hideAllStates();
         if (this.sphereContainer) {
-            this.sphereContainer.style.display = 'block';
+            this.sphereContainer.style.display = 'flex';
+        }
+    }
+
+    // Search functionality
+    searchMembers(query) {
+        if (!query || !query.trim()) {
+            // If empty search, show all members
+            this.renderGrid();
+            return;
+        }
+        
+        const searchTerm = query.toLowerCase().trim();
+        console.log('Searching for:', searchTerm);
+        
+        // Filter members based on search term
+        const filteredMembers = this.members.filter(member => {
+            const name = (member.name || '').toLowerCase();
+            const craft = (member.craft || '').toLowerCase();
+            const bio = (member.bio || '').toLowerCase();
+            const instagram = (member.instagram || '').toLowerCase();
+            
+            return name.includes(searchTerm) || 
+                   craft.includes(searchTerm) || 
+                   bio.includes(searchTerm) ||
+                   instagram.includes(searchTerm);
+        });
+        
+        console.log(`Found ${filteredMembers.length} members matching "${searchTerm}"`);
+        
+        // Render filtered results
+        this.renderFilteredGrid(filteredMembers, searchTerm);
+    }
+    
+    renderFilteredGrid(filteredMembers, searchTerm) {
+        if (!this.gridContainer) return;
+
+        const memberCount = filteredMembers.length;
+        
+        if (memberCount === 0) {
+            this.showNoSearchResults(searchTerm);
+            return;
+        }
+
+        const { cols, rows } = this.calculateGridDimensions(memberCount);
+        const totalSlots = cols * rows;
+
+        // Clear existing grid classes but preserve base classes
+        this.gridContainer.className = this.gridContainer.className.includes('community-grid') ? 'community-grid' : 'collage-grid';
+        
+        // Add appropriate grid class
+        this.gridContainer.classList.add(`grid-${cols}x${rows}`);
+
+        // Clear existing content
+        this.gridContainer.innerHTML = '';
+
+        // Create grid items for filtered results
+        for (let i = 0; i < totalSlots; i++) {
+            const gridItem = document.createElement('div');
+            gridItem.className = 'collage-item';
+            
+            if (i < memberCount) {
+                const member = filteredMembers[i];
+                this.createMemberItem(gridItem, member);
+            } else {
+                // Create placeholder for empty slots
+                gridItem.classList.add('placeholder');
+            }
+            
+            this.gridContainer.appendChild(gridItem);
+        }
+
+        this.showGrid();
+    }
+    
+    showNoSearchResults(searchTerm) {
+        this.hideAllStates();
+        const grid = this.gridContainer;
+        if (grid) {
+            grid.style.display = 'flex';
+            grid.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #000;">
+                    <h3>No Results Found</h3>
+                    <p>No community members found matching "${searchTerm}"</p>
+                    <button onclick="document.getElementById('member-search-input').value = ''; window.collageManager.searchMembers('');" 
+                            style="margin-top: 10px; padding: 8px 16px; background: #0078d4; color: white; border: none; cursor: pointer;">
+                        Clear Search
+                    </button>
+                </div>
+            `;
         }
     }
 

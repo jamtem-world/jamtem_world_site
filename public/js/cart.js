@@ -171,6 +171,12 @@ class CartManager {
                 this.closeCart();
             }
         });
+
+        // Cart icon click event
+        const cartIcon = document.getElementById('cart-icon');
+        if (cartIcon) {
+            cartIcon.addEventListener('click', () => this.openCart());
+        }
     }
 
     openCart() {
@@ -243,21 +249,19 @@ class CartManager {
     }
 
     updateCartDisplay() {
-        const cartCount = document.getElementById('cart-count');
-        const mobileCartCount = document.getElementById('mobile-cart-count');
+        const cartBadge = document.getElementById('cart-badge');
         const itemCount = this.getItemCount();
         
-        if (cartCount) {
-            cartCount.textContent = itemCount;
+        if (cartBadge) {
+            cartBadge.textContent = itemCount;
             if (itemCount > 0) {
-                cartCount.style.display = 'flex';
+                cartBadge.style.display = 'flex';
+                // Add bounce animation when items are added
+                cartBadge.classList.add('animate');
+                setTimeout(() => cartBadge.classList.remove('animate'), 300);
             } else {
-                cartCount.style.display = 'none';
+                cartBadge.style.display = 'none';
             }
-        }
-        
-        if (mobileCartCount) {
-            mobileCartCount.textContent = itemCount;
         }
         
         // Update cart modal if it's open

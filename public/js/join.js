@@ -170,12 +170,12 @@ class JoinFormManager {
             isValid = false;
         }
         
-        // Bio length validation
-        const bio = document.getElementById('bio').value.trim();
-        if (bio.length < 50) {
-            this.setFieldError('bio', 'Bio must be at least 50 characters long');
-            isValid = false;
-        }
+        // Bio length validation - removed minimum character requirement
+        // const bio = document.getElementById('bio').value.trim();
+        // if (bio.length < 50) {
+        //     this.setFieldError('bio', 'Bio must be at least 50 characters long');
+        //     isValid = false;
+        // }
         
         return isValid;
     }
@@ -210,10 +210,7 @@ class JoinFormManager {
                 break;
                 
             case 'bio':
-                if (value && value.length < 50) {
-                    this.setFieldError(fieldName, 'Bio must be at least 50 characters long');
-                    return false;
-                }
+                // Removed minimum character requirement for bio field
                 break;
         }
         

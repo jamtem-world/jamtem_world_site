@@ -26,98 +26,376 @@
     
     <link rel="icon" type="image/png" href="media/images/logo.png">
     <link rel="stylesheet" href="css/desktop.css">
+    
+    <!-- Three.js and dependencies for 3D collage -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://esm.sh/three@0.158.0",
+            "three/addons/": "https://esm.sh/three@0.158.0/examples/jsm/"
+        }
+    }
+    </script>
 </head>
 <body>
     <!-- Desktop Background -->
     <div class="desktop">
                 <!-- Desktop Logo (like a desktop wallpaper logo) -->
-        <div class="desktop-logo">
+        <!-- <div class="desktop-logo">
             <img src="media/images/logo.png" alt="Jamtem World" class="desktop-logo-img">
-        </div>
-        <!-- Desktop Icons Grid -->
+        </div> -->
+        <!-- Main Desktop Icons Grid -->
         <div class="desktop-icons">
-            <div class="desktop-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Basketball%20V7.mp4">
-                <img src="https://storage.googleapis.com/jamtem_website_media/cloud_basketball.png" alt="Basketball" class="icon-image">
-                <span class="icon-label">Basketball</span>
+            <div class="desktop-icon" data-app="vignettes">
+                <img src="https://storage.googleapis.com/jamtem_website_media/film_icon.png" alt="Vignettes" class="icon-image">
+                <span class="icon-label">Vignettes</span>
             </div>
             
-            <div class="desktop-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Music%20V7.mp4">
-                <img src="https://storage.googleapis.com/jamtem_website_media/cloud_guitar.png" alt="Music" class="icon-image">
-                <span class="icon-label">Music</span>
+            <div class="desktop-icon" data-app="products">
+                <img src="https://storage.googleapis.com/jamtem_website_media/merch_icon.png" alt="Products" class="icon-image">
+                <span class="icon-label">Products</span>
             </div>
             
-            <div class="desktop-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Martial%20Arts%20V7.mp4">
-                <img src="https://storage.googleapis.com/jamtem_website_media/cloud_martial_arts.png" alt="Martial Arts" class="icon-image">
-                <span class="icon-label">Martial Arts</span>
+            <div class="desktop-icon" data-app="collage">
+                <img src="https://storage.googleapis.com/jamtem_website_media/community_icon.png" alt="Collage" class="icon-image">
+                <span class="icon-label">Collage</span>
             </div>
             
-            <div class="desktop-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Painting%20V7.mp4">
-                <img src="https://storage.googleapis.com/jamtem_website_media/cloud_painting.png" alt="Painting" class="icon-image">
-                <span class="icon-label">Painting</span>
-            </div>
-            
-            <div class="desktop-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Photography%20V7.mp4">
-                <img src="https://storage.googleapis.com/jamtem_website_media/cloud_photography.png" alt="Photography" class="icon-image">
-                <span class="icon-label">Photography</span>
-            </div>
-            
-            <div class="desktop-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Poetry%20V7.mp4">
-                <img src="https://storage.googleapis.com/jamtem_website_media/cloud_poetry.png" alt="Poetry" class="icon-image">
-                <span class="icon-label">Poetry</span>
-            </div>
-            
-            <div class="desktop-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Sax%20V7.mp4">
-                <img src="https://storage.googleapis.com/jamtem_website_media/cloud_sax.png" alt="Saxophone" class="icon-image">
-                <span class="icon-label">Saxophone</span>
-            </div>
-            
-            <div class="desktop-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Fashion%20V7.mp4">
-                <img src="https://storage.googleapis.com/jamtem_website_media/cloud_sewing.png" alt="Fashion" class="icon-image">
-                <span class="icon-label">Fashion</span>
-            </div>
-            
-            <div class="desktop-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Skateboarding%20V7.mp4">
-                <img src="https://storage.googleapis.com/jamtem_website_media/cloud_skating.png" alt="Skateboarding" class="icon-image">
-                <span class="icon-label">Skateboarding</span>
-            </div>
-            
-            <div class="desktop-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Soccer%20V7.mp4">
-                <img src="https://storage.googleapis.com/jamtem_website_media/cloud_soccer.png" alt="Soccer" class="icon-image">
-                <span class="icon-label">Soccer</span>
+            <div class="desktop-icon" data-app="join">
+                <img src="https://storage.googleapis.com/jamtem_website_media/join_icon.png" alt="Join" class="icon-image">
+                <span class="icon-label">Join</span>
             </div>
         </div>
         
     </div>
 
-    <!-- Bottom Taskbar -->
-    <div class="taskbar">
-        <div class="taskbar-left">
-            <button class="start-button">
-                <img src="media/images/logo.png" alt="Start" class="start-icon">
-                <span>Start</span>
-            </button>
+    <!-- Taskbar Component Placeholder -->
+    <div id="taskbar-placeholder"></div>
+
+    <!-- Vignettes Window -->
+    <div id="vignettes-window" class="app-window" style="display: none;">
+        <div class="window-titlebar">
+            <div class="window-title">
+                <img src="media/images/logo.png" alt="" class="window-icon">
+                <span>Jamtem Vignettes</span>
+            </div>
+            <div class="window-controls">
+                <button class="window-control minimize">_</button>
+                <button class="window-control maximize">□</button>
+                <button class="window-control close" data-window="vignettes-window">×</button>
+            </div>
         </div>
-        
-        <div class="taskbar-center">
-            <button class="taskbar-button" onclick="window.location.href='/products'">
-                <span>Products</span>
-            </button>
-            <button class="taskbar-button" onclick="window.location.href='/collage'">
-                <span>Collage</span>
-            </button>
-            <button class="taskbar-button" onclick="window.location.href='/join'">
-                <span>Join</span>
-            </button>
-        </div>
-        
-        <div class="taskbar-right">
-            <div class="system-tray">
-                <div class="tray-icons">
-                    <span class="tray-icon">🔊</span>
-                    <span class="tray-icon">📶</span>
+        <div class="window-content">
+            <div class="vignettes-grid">
+                <div class="vignette-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Basketball%20V7.mp4">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/cloud_basketball.png" alt="Basketball" class="vignette-image">
+                    <span class="vignette-label">Basketball</span>
                 </div>
-                <div class="clock" id="clock">
-                    <span id="time">12:00 PM</span>
+                
+                <div class="vignette-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Music%20V7.mp4">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/cloud_guitar.png" alt="Music" class="vignette-image">
+                    <span class="vignette-label">Music</span>
+                </div>
+                
+                <div class="vignette-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Martial%20Arts%20V7.mp4">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/cloud_martial_arts.png" alt="Martial Arts" class="vignette-image">
+                    <span class="vignette-label">Martial Arts</span>
+                </div>
+                
+                <div class="vignette-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Painting%20V7.mp4">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/cloud_painting.png" alt="Painting" class="vignette-image">
+                    <span class="vignette-label">Painting</span>
+                </div>
+                
+                <div class="vignette-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Photography%20V7.mp4">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/cloud_photography.png" alt="Photography" class="vignette-image">
+                    <span class="vignette-label">Photography</span>
+                </div>
+                
+                <div class="vignette-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Poetry%20V7.mp4">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/cloud_poetry.png" alt="Poetry" class="vignette-image">
+                    <span class="vignette-label">Poetry</span>
+                </div>
+                
+                <div class="vignette-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Sax%20V7.mp4">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/cloud_sax.png" alt="Saxophone" class="vignette-image">
+                    <span class="vignette-label">Saxophone</span>
+                </div>
+                
+                <div class="vignette-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Fashion%20V7.mp4">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/cloud_sewing.png" alt="Fashion" class="vignette-image">
+                    <span class="vignette-label">Fashion</span>
+                </div>
+                
+                <div class="vignette-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Skateboarding%20V7.mp4">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/cloud_skating.png" alt="Skateboarding" class="vignette-image">
+                    <span class="vignette-label">Skateboarding</span>
+                </div>
+                
+                <div class="vignette-icon" data-video="https://storage.googleapis.com/jamtem_website_media/Vignette%20-%20Soccer%20V7.mp4">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/cloud_soccer.png" alt="Soccer" class="vignette-image">
+                    <span class="vignette-label">Soccer</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Window -->
+    <div id="products-window" class="app-window" style="display: none;">
+        <div class="window-titlebar">
+            <div class="window-title">
+                <img src="media/images/logo.png" alt="" class="window-icon">
+                <span>Jamtem Products</span>
+            </div>
+            <div class="window-controls">
+                <button class="window-control minimize">_</button>
+                <button class="window-control maximize">□</button>
+                <button class="window-control close" data-window="products-window">×</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="products-content">
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Loading products...</p>
+                </div>
+                <div class="error-message" id="error-message" style="display: none;">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Failed to Load Products</h3>
+                    <p id="error-details">There was an error loading products. Please try again.</p>
+                    <button type="button" class="btn btn-secondary" onclick="loadProducts()">
+                        Retry
+                    </button>
+                </div>
+                <div class="no-products" id="no-products" style="display: none;">
+                    <div class="no-products-icon">📦</div>
+                    <h3>No Products Available</h3>
+                    <p>There are currently no products to display.</p>
+                </div>
+                <div class="products-grid" id="products-grid">
+                    <!-- Products will be dynamically loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Collage Window -->
+    <div id="collage-window" class="app-window" style="display: none;">
+        <div class="window-titlebar">
+            <div class="window-title">
+                <img src="media/images/logo.png" alt="" class="window-icon">
+                <span>Community Collage</span>
+            </div>
+            <div class="window-controls">
+                <button class="window-control minimize">_</button>
+                <button class="window-control maximize">□</button>
+                <button class="window-control close" data-window="collage-window">×</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="collage-content">
+                <div class="collage-toolbar">
+                    <button class="toolbar-btn active" id="grid-view-btn">Grid View</button>
+                    <button class="toolbar-btn" id="3d-view-btn">3D View</button>
+                    <div class="toolbar-separator"></div>
+                    <input type="text" class="search-input" placeholder="Search members..." id="member-search-input">
+                    <button class="toolbar-btn" id="search-btn">Search</button>
+                </div>
+                
+                <div class="loading" id="collage-loading">
+                    <div class="spinner"></div>
+                    <p>Loading community members...</p>
+                </div>
+                
+                <div id="collage-grid" class="community-grid" style="display: none;">
+                    <!-- Community members will be loaded here -->
+                </div>
+                
+                <div id="sphere-container" class="sphere-container" style="display: none;">
+                    <canvas id="sphere-canvas" class="sphere-canvas"></canvas>
+                    <div class="sphere-controls">
+                        <div class="control-hint">
+                            <span>🖱️ Drag to rotate • 🔍 Scroll to zoom • 👆 Click to explore</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Join Window -->
+    <div id="join-window" class="app-window" style="display: none;">
+        <div class="window-titlebar">
+            <div class="window-title">
+                <img src="media/images/logo.png" alt="" class="window-icon">
+                <span>Join JAMTEM Community</span>
+            </div>
+            <div class="window-controls">
+                <button class="window-control minimize">_</button>
+                <button class="window-control maximize">□</button>
+                <button class="window-control close" data-window="join-window">×</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="join-content">
+                <div class="form-header">
+                    <h2>Join the JAMTEM Community</h2>
+                    <p>Connect with passionate creators, artisans, and makers from around the world.</p>
+                </div>
+                
+                <form id="join-form" class="desktop-form" enctype="multipart/form-data">
+                    <div class="form-section">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name" class="form-label">
+                                    Full Name <span class="required">*</span>
+                                </label>
+                                <input type="text" id="name" name="name" class="form-input" required placeholder="Enter your full name">
+                                <div class="form-error" id="name-error"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email" class="form-label">
+                                    Email Address <span class="required">*</span>
+                                </label>
+                                <input type="email" id="email" name="email" class="form-input" required placeholder="your.email@example.com">
+                                <div class="form-error" id="email-error"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="craft" class="form-label">
+                                    Your Craft/Passion <span class="required">*</span>
+                                </label>
+                                <input type="text" id="craft" name="craft" class="form-input" required placeholder="e.g., Photography, Woodworking, Painting">
+                                <div class="form-error" id="craft-error"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="location" class="form-label">Location</label>
+                                <input type="text" id="location" name="location" class="form-input" placeholder="City, Country">
+                                <div class="form-error" id="location-error"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="website" class="form-label">Website</label>
+                                <input type="url" id="website" name="website" class="form-input" placeholder="https://yourwebsite.com">
+                                <div class="form-error" id="website-error"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="instagram" class="form-label">Instagram</label>
+                                <div class="input-with-prefix">
+                                    <span class="input-prefix">@</span>
+                                    <input type="text" id="instagram" name="instagram" class="form-input with-prefix" placeholder="username">
+                                </div>
+                                <div class="form-error" id="instagram-error"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="bio" class="form-label">
+                                Tell us about yourself <span class="required">*</span>
+                            </label>
+                            <textarea id="bio" name="bio" class="form-textarea" required rows="4" maxlength="500" placeholder="Tell us about yourself, your craft, and what inspires you..."></textarea>
+                            <div class="character-counter" id="bio-counter">0/500</div>
+                            <div class="form-error" id="bio-error"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="image" class="form-label">
+                                Showcase Image <span class="required">*</span>
+                            </label>
+                            <div class="file-upload-section">
+                                <input type="file" id="image" name="image" class="file-input" accept="image/*" required style="display: none;">
+                                <div class="file-upload-area" id="file-upload-area">
+                                    <div class="file-upload-icon">📁</div>
+                                    <div class="file-upload-text">
+                                        <strong>Click to browse files</strong>
+                                    </div>
+                                    <div class="file-upload-hint">PNG, JPG, GIF up to 10MB</div>
+                                    <button type="button" class="browse-btn" onclick="document.getElementById('image').click()">Browse...</button>
+                                </div>
+                                <div class="image-preview" id="image-preview" style="display: none;">
+                                    <img id="preview-image" src="" alt="Preview">
+                                    <div class="image-info">
+                                        <div class="image-name" id="image-name"></div>
+                                        <div class="image-size" id="image-size"></div>
+                                        <button type="button" class="remove-image-btn" id="remove-image">Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-help">Upload an image that showcases you performing your craft or passion</div>
+                            <div class="form-error" id="image-error"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-submit" id="submit-btn">
+                            <span class="btn-text">Join Community</span>
+                            <span class="btn-loading" style="display: none;">
+                                <span class="spinner-small"></span>
+                                Submitting...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Success Message -->
+                <div class="success-message" id="success-message" style="display: none;">
+                    <div class="success-icon">🎉</div>
+                    <h3>Welcome to JAMTEM!</h3>
+                    <p>Thank you for joining our community of passionate creators. We're excited to have you on board!</p>
+                    <p>You'll hear from us soon with more information about connecting with other community members.</p>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                        Submit Another Application
+                    </button>
+                </div>
+
+                <!-- Error Message -->
+                <div class="error-message" id="error-message" style="display: none;">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Submission Failed</h3>
+                    <p id="error-details">There was an error submitting your application. Please try again.</p>
+                    <button type="button" class="btn btn-secondary" onclick="hideError()">
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Modal -->
+    <div id="member-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <button class="modal-close" id="modal-close">&times;</button>
+            <div class="modal-content">
+                <div class="modal-image-section">
+                    <div class="modal-image-container">
+                        <img id="modal-member-image" class="modal-member-image" src="" alt="">
+                        <div class="modal-image-placeholder" id="modal-image-placeholder">
+                            No image available
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-info-section">
+                    <div class="modal-header">
+                        <h2 id="modal-member-name" class="modal-member-name"></h2>
+                        <p id="modal-member-craft" class="modal-member-craft"></p>
+                    </div>
+                    <div class="modal-member-details">
+                        <div class="modal-instagram" id="modal-instagram-section" style="display: none;">
+                            <strong>Instagram:</strong>
+                            <span id="modal-member-instagram"></span>
+                        </div>
+                        <div class="modal-bio">
+                            <strong>About:</strong>
+                            <p id="modal-member-bio"></p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -144,6 +422,64 @@
         </div>
     </div>
 
+    <!-- Product Hover Popup -->
+    <div id="hover-popup" class="hover-popup">
+        <div id="popup-title" class="popup-title"></div>
+        <div id="popup-price" class="popup-price"></div>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-container product-modal-container">
+            <button class="modal-close" id="product-modal-close">&times;</button>
+            <div class="modal-content product-modal-content">
+                <div class="modal-image-section">
+                    <div class="modal-image-container">
+                        <img id="modal-product-image" class="modal-product-image" src="" alt="">
+                        <div class="modal-image-placeholder" id="modal-product-image-placeholder">
+                            No image available
+                        </div>
+                    </div>
+                    <div class="modal-thumbnails" id="modal-thumbnails"></div>
+                </div>
+                <div class="modal-info-section">
+                    <div class="modal-header">
+                        <h2 id="modal-product-title" class="modal-product-title"></h2>
+                        <p id="modal-product-vendor" class="modal-product-vendor"></p>
+                        <div id="modal-product-price" class="modal-product-price"></div>
+                        <div id="modal-product-availability" class="modal-product-availability"></div>
+                    </div>
+                    <div class="modal-product-details">
+                        <div class="modal-description">
+                            <strong>Description:</strong>
+                            <p id="modal-product-description"></p>
+                        </div>
+                        <div id="modal-variants" class="modal-variants"></div>
+                        <div class="modal-quantity">
+                            <label for="modal-quantity-input">Quantity:</label>
+                            <div class="quantity-controls">
+                                <button type="button" id="quantity-decrease" class="quantity-btn">-</button>
+                                <input type="number" id="modal-quantity-input" class="quantity-input" value="1" min="1" max="10">
+                                <button type="button" id="quantity-increase" class="quantity-btn">+</button>
+                            </div>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" id="modal-buy-now" class="btn btn-primary">Buy Now</button>
+                            <button type="button" id="modal-add-cart" class="btn btn-secondary">Add to Cart</button>
+                        </div>
+                        <div id="modal-tags" class="modal-tags"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/components.js"></script>
     <script src="js/desktop.js"></script>
+    <script src="js/collage.js"></script>
+    <script src="js/join.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+    <script type="module" src="js/collage-3d.js"></script>
 </body>
 </html>

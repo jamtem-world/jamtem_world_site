@@ -295,7 +295,7 @@ class ProductsManager {
         document.body.classList.add('modal-open');
         
         // Focus management for accessibility
-        const closeButton = document.getElementById('modal-close');
+        const closeButton = document.getElementById('product-modal-close');
         closeButton.focus();
         
         // Set up event listeners
@@ -333,7 +333,7 @@ class ProductsManager {
 
     setupModalImages(product) {
         const mainImage = document.getElementById('modal-product-image');
-        const placeholder = document.getElementById('modal-image-placeholder');
+        const placeholder = document.getElementById('modal-product-image-placeholder');
         const thumbnailsContainer = document.getElementById('modal-thumbnails');
         
         const images = product.images.edges.map(edge => edge.node);
@@ -561,7 +561,7 @@ class ProductsManager {
         this.modalEventListeners = [];
         
         // Close modal events
-        const closeButton = document.getElementById('modal-close');
+        const closeButton = document.getElementById('product-modal-close');
         const closeHandler = () => this.closeModal();
         closeButton.addEventListener('click', closeHandler);
         this.modalEventListeners.push({ element: closeButton, event: 'click', handler: closeHandler });

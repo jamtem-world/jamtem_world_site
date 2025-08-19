@@ -66,7 +66,10 @@ const routes: Record<string, string> = {
   '/index': 'index.html',
   '/join': 'join.html',
   '/products': 'products.html',
-  '/collage': 'collage.html'
+  '/collage': 'collage.html',
+  '/desktop': 'desktop.html',
+  '/collage-desktop': 'collage-desktop.html',
+  '/join-desktop': 'join-desktop.html'
 };
 
 // Helper function to serve HTML files with proper headers

@@ -56,6 +56,9 @@ class SphereCollageManager {
         this.container = canvas.parentElement;
 
         try {
+            // Wait for the canvas to be visible and have proper dimensions
+            await this.waitForCanvasReady();
+            
             this.setupScene();
             this.setupCamera();
             this.setupRenderer();
@@ -65,6 +68,11 @@ class SphereCollageManager {
             this.setupEventListeners();
             this.animate();
             
+            // Force a resize after initialization to ensure proper rendering
+            setTimeout(() => {
+                this.onWindowResize();
+            }, 100);
+            
             this.isInitialized = true;
             console.log('3D Sphere initialized successfully');
             return true;
@@ -73,6 +81,28 @@ class SphereCollageManager {
             this.dispose();
             return false;
         }
+    }
+    
+    async waitForCanvasReady() {
+        return new Promise((resolve) => {
+            const checkDimensions = () => {
+                const computedStyle = window.getComputedStyle(this.canvas);
+                const width = parseInt(computedStyle.width) || this.canvas.clientWidth;
+                const height = parseInt(computedStyle.height) || this.canvas.clientHeight;
+                
+                console.log(`Canvas dimensions check: ${width}x${height}`);
+                
+                if (width > 0 && height > 0) {
+                    console.log('Canvas ready with proper dimensions');
+                    resolve();
+                } else {
+                    console.log('Canvas not ready, waiting...');
+                    setTimeout(checkDimensions, 50);
+                }
+            };
+            
+            checkDimensions();
+        });
     }
 
     setupScene() {
@@ -123,8 +153,8 @@ class SphereCollageManager {
         this.renderer = new THREE.WebGLRenderer({
             canvas: this.canvas,
             alpha: true,
-            antialias: !this.isLowPerformance,
-            powerPreference: this.isLowPerformance ? 'low-power' : 'high-performance'
+            antialias: true, // Always enable antialiasing for better quality
+            powerPreference: 'high-performance' // Always use high performance for better quality
         });
         
         // Get canvas dimensions from CSS computed styles
@@ -145,17 +175,24 @@ class SphereCollageManager {
             height = 600;
         }
         
-        console.log(`Setting canvas size to: ${width}x${height}`);
+        console.log(`Setting canvas size to: ${width}x${height}, devicePixelRatio: ${window.devicePixelRatio}`);
         
-        // Set the renderer size but don't let it override CSS styles
+        // Set high pixel ratio for crisp rendering on high-DPI displays
+        const pixelRatio = Math.min(window.devicePixelRatio, 3); // Cap at 3x for performance
+        this.renderer.setPixelRatio(pixelRatio);
+        
+        // Set the renderer size - this will automatically handle pixel ratio
         this.renderer.setSize(width, height, false); // false prevents setting inline styles
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.isLowPerformance ? 1 : 2));
-        this.renderer.shadowMap.enabled = !this.isLowPerformance;
+        
+        // Enable shadows for better visual quality
+        this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         
-        // Manually set canvas attributes without inline styles
-        this.canvas.width = width * this.renderer.getPixelRatio();
-        this.canvas.height = height * this.renderer.getPixelRatio();
+        // Set tone mapping for better color reproduction
+        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        this.renderer.toneMappingExposure = 1.0;
+        
+        console.log(`Canvas resolution: ${this.canvas.width}x${this.canvas.height} (${pixelRatio}x pixel ratio)`);
     }
 
     setupControls() {
