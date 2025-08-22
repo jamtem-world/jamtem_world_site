@@ -185,12 +185,24 @@ class DesktopInterface {
             // CollageManager is already initialized, just trigger loading
             console.log('CollageManager found, loading members...');
             window.collageManager.loadMembers();
+            // Switch to 3D view after a short delay to allow members to load
+            setTimeout(() => {
+                if (window.collageManager.members && window.collageManager.members.length > 0) {
+                    window.collageManager.switchTo3D();
+                }
+            }, 500);
         } else {
             // Wait a bit for CollageManager to initialize
             setTimeout(() => {
                 if (typeof window.collageManager !== 'undefined') {
                     console.log('CollageManager found after delay, loading members...');
                     window.collageManager.loadMembers();
+                    // Switch to 3D view after members are loaded
+                    setTimeout(() => {
+                        if (window.collageManager.members && window.collageManager.members.length > 0) {
+                            window.collageManager.switchTo3D();
+                        }
+                    }, 500);
                 } else {
                     console.warn('CollageManager not found, showing loading state');
                     const loading = document.getElementById('collage-loading');
