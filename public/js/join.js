@@ -1,4 +1,208 @@
 // Join Form JavaScript - JAMTEM Community
+
+// Comprehensive list of arts and creative disciplines
+const CRAFT_OPTIONS = [
+    '2D Animation', '3D Animation', 'Abstract Art', 'Acrobatics', 'Acting', 'Animation', 
+    'App Design', 'Architecture', 'Art Therapy', 'Baking', 'Ballet', 'Balloon Art', 
+    'Ballroom Dance', 'Banjo', 'Basketball', 'Bass Guitar', 'Beat Making', 'Beadwork', 
+    'Blogging', 'Body Painting', 'Bookbinding', 'Brand Design', 'Broadcasting', 'Brewing', 
+    'Cake Decorating', 'Calligraphy', 'Candle Making', 'Carpentry', 'Cello', 'Ceramics', 
+    'Chocolate Making', 'Choreography', 'Cinematography', 'Circus Arts', 'Clarinet', 
+    'Classical Music', 'Coffee Art', 'Collage', 'Color Grading', 'Conceptual Art', 
+    'Contemporary Dance', 'Content Creation', 'Copywriting', 'Costume Design', 
+    'Creative Coaching', 'Creative Writing', 'Crocheting', 'Cross Stitch', 'Cultural Crafts', 
+    'Cultural Dance', 'Cultural Storytelling', 'Culinary Arts', 'Cycling', 'DJ', 'Dance', 
+    'Digital Art', 'Digital Illustration', 'Digital Painting', 'Directing', 'Documentary', 
+    'Drawing', 'Drums', 'Electronic Music', 'Embroidery', 'Ethnic Textiles', 'Event Planning', 
+    'Exhibition Design', 'Face Painting', 'Fashion Design', 'Fashion Illustration', 
+    'Fashion Photography', 'Fashion Styling', 'Film Editing', 'Filmmaking', 'Fine Art', 
+    'Floral Arrangement', 'Flute', 'Folk Art', 'Folk Dance', 'Food Photography', 
+    'Food Styling', 'Furniture Design', 'Furniture Making', 'Game Design', 'Garden Design', 
+    'Glassblowing', 'Goldsmithing', 'Graphic Design', 'Graffiti', 'Guitar', 'Hair Styling', 
+    'Hand Lettering', 'Handbag Design', 'Harmonica', 'Harp', 'Henna Art', 'Hip Hop', 
+    'Hip Hop Dance', 'Illustration', 'Improv', 'Indigenous Arts', 'Industrial Design', 
+    'Interior Design', 'Jazz', 'Jazz Dance', 'Jewelry Making', 'Journalism', 'Juggling', 
+    'Knitting', 'Landscape Architecture', 'Landscape Art', 'Leatherworking', 'Lighting Design', 
+    'Logo Design', 'Magic', 'Makeup Artistry', 'Martial Arts', 'Metalworking', 'Mime', 
+    'Mixed Media', 'Mixology', 'Mosaic', 'Motion Graphics', 'Murals', 'Music Composition', 
+    'Music Production', 'Music Therapy', 'Nail Art', 'Novel Writing', 'Origami', 'Painting', 
+    'Paper Crafts', 'Parkour', 'Party Planning', 'Pastry Arts', 'Performance Art', 
+    'Photo Editing', 'Photo Retouching', 'Photography', 'Piano', 'Pilates', 'Playwriting', 
+    'Podcasting', 'Poetry', 'Pop', 'Portrait Art', 'Pottery', 'Pottery Wheel', 'Print Design', 
+    'Printmaking', 'Product Design', 'Puppetry', 'Quilting', 'Radio', 'Rap', 'Rock', 
+    'Rock Climbing', 'Runway Modeling', 'Running', 'Saxophone', 'Screenwriting', 'Sculpture', 
+    'Set Design', 'Sewing', 'Shoe Design', 'Short Films', 'Short Stories', 'Silversmithing', 
+    'Singing', 'Skateboarding', 'Soap Making', 'Soccer', 'Social Media Content', 'Songwriting', 
+    'Sound Design', 'Sound Engineering', 'Special Effects Makeup', 'Spoken Word', 'Stained Glass', 
+    'Stand-up Comedy', 'Still Life', 'Storytelling', 'Street Art', 'Streetwear Design', 'Surfing', 
+    'Sustainable Design', 'Sustainable Fashion', 'Swimming', 'Tailoring', 'Tap Dance', 'Tattoo Art', 
+    'Teaching', 'Tennis', 'Textiles', 'Theater', 'Traditional Music', 'Traditional Painting', 
+    'Trumpet', 'Typography', 'UI/UX Design', 'Ukulele', 'Urban Planning', 'Video Editing', 
+    'Video Production', 'Vintage Fashion', 'Violin', 'Vocals', 'Voice Acting', 'Weaving', 
+    'Web Design', 'Wire Wrapping', 'Woodworking', 'Writing', 'Yoga', 'YouTube Creation'
+]; // Already sorted alphabetically
+
+class CraftSelector {
+    constructor() {
+        this.filterInput = document.getElementById('craft-filter');
+        this.listBox = document.getElementById('craft-list-box');
+        this.selectedContainer = document.getElementById('selected-crafts');
+        this.hiddenInput = document.getElementById('craft');
+        
+        this.selectedCrafts = new Set();
+        this.maxSelections = 10; // Optional limit
+        
+        this.init();
+    }
+    
+    init() {
+        this.populateList();
+        this.setupEventListeners();
+    }
+    
+    populateList() {
+        this.listBox.innerHTML = '';
+        CRAFT_OPTIONS.forEach(craft => {
+            const item = document.createElement('div');
+            item.className = 'craft-item';
+            item.dataset.craft = craft;
+            item.innerHTML = `
+                <span class="craft-name">${craft}</span>
+                <button type="button" class="craft-add-btn" data-craft="${craft}">+</button>
+            `;
+            
+            const addBtn = item.querySelector('.craft-add-btn');
+            addBtn.addEventListener('click', () => this.addCraft(craft));
+            
+            this.listBox.appendChild(item);
+        });
+    }
+    
+    setupEventListeners() {
+        // Filter input
+        this.filterInput.addEventListener('input', (e) => this.filterCrafts(e.target.value));
+    }
+    
+    filterCrafts(query) {
+        const searchTerm = query.toLowerCase().trim();
+        const items = this.listBox.querySelectorAll('.craft-item');
+        
+        items.forEach(item => {
+            const craftName = item.dataset.craft.toLowerCase();
+            const isMatch = craftName.includes(searchTerm);
+            
+            if (isMatch) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+    }
+    
+    addCraft(craft) {
+        if (this.selectedCrafts.has(craft)) {
+            return; // Already selected
+        }
+        
+        if (this.selectedCrafts.size >= this.maxSelections) {
+            // Optional: Show warning about max selections
+            return;
+        }
+        
+        // Add to selected set
+        this.selectedCrafts.add(craft);
+        
+        // Hide from list
+        const item = this.listBox.querySelector(`[data-craft="${craft}"]`);
+        if (item) {
+            item.style.display = 'none';
+        }
+        
+        // Update displays
+        this.updateSelectedDisplay();
+        this.updateHiddenInput();
+    }
+    
+    removeCraft(craft) {
+        // Remove from selected set
+        this.selectedCrafts.delete(craft);
+        
+        // Show back in list
+        const item = this.listBox.querySelector(`[data-craft="${craft}"]`);
+        if (item) {
+            item.style.display = 'flex';
+            // Re-apply filter if there's text in filter input
+            const filterValue = this.filterInput.value;
+            if (filterValue) {
+                const craftName = craft.toLowerCase();
+                const searchTerm = filterValue.toLowerCase().trim();
+                if (!craftName.includes(searchTerm)) {
+                    item.classList.add('hidden');
+                }
+            }
+        }
+        
+        // Update displays
+        this.updateSelectedDisplay();
+        this.updateHiddenInput();
+    }
+    
+    updateSelectedDisplay() {
+        this.selectedContainer.innerHTML = '';
+        
+        this.selectedCrafts.forEach(craft => {
+            const tag = document.createElement('div');
+            tag.className = 'selected-craft-tag';
+            tag.innerHTML = `
+                <span>${craft}</span>
+                <button type="button" class="craft-tag-remove" aria-label="Remove ${craft}">×</button>
+            `;
+            
+            const removeBtn = tag.querySelector('.craft-tag-remove');
+            removeBtn.addEventListener('click', () => this.removeCraft(craft));
+            
+            this.selectedContainer.appendChild(tag);
+        });
+    }
+    
+    updateHiddenInput() {
+        this.hiddenInput.value = Array.from(this.selectedCrafts).join(',');
+        
+        // Trigger validation update
+        const event = new Event('input', { bubbles: true });
+        this.hiddenInput.dispatchEvent(event);
+    }
+    
+    // Public method to get selected crafts
+    getSelectedCrafts() {
+        return Array.from(this.selectedCrafts);
+    }
+    
+    // Public method to set selected crafts (for form reset)
+    setSelectedCrafts(crafts = []) {
+        // Clear current selections
+        this.selectedCrafts.clear();
+        
+        // Show all items in list
+        const items = this.listBox.querySelectorAll('.craft-item');
+        items.forEach(item => {
+            item.style.display = 'flex';
+        });
+        
+        // Add new selections
+        crafts.forEach(craft => {
+            if (CRAFT_OPTIONS.includes(craft)) {
+                this.addCraft(craft);
+            }
+        });
+    }
+    
+    // Public method to validate selection
+    isValid() {
+        return this.selectedCrafts.size > 0;
+    }
+}
+
 class JoinFormManager {
     constructor() {
         this.form = document.getElementById('join-form');
@@ -12,6 +216,9 @@ class JoinFormManager {
         this.fileUploadArea = document.getElementById('file-upload-area');
         this.bioTextarea = document.getElementById('bio');
         this.bioCounter = document.getElementById('bio-counter');
+        
+        // Initialize craft selector
+        this.craftSelector = new CraftSelector();
         
         this.isSubmitting = false;
         this.selectedFile = null;
@@ -142,13 +349,21 @@ class JoinFormManager {
         let isValid = true;
         
         // Required fields
-        const requiredFields = ['name', 'email', 'craft', 'bio'];
+        const requiredFields = ['name', 'email', 'bio'];
         requiredFields.forEach(fieldName => {
             const field = document.getElementById(fieldName);
             if (!this.validateField(field)) {
                 isValid = false;
             }
         });
+        
+        // Craft validation (using craft selector)
+        if (!this.craftSelector.isValid()) {
+            this.setFieldError('craft', 'Please select at least one craft/passion');
+            isValid = false;
+        } else {
+            this.clearFieldError(document.getElementById('craft'));
+        }
         
         // Image validation
         if (!this.selectedFile) {
@@ -170,19 +385,17 @@ class JoinFormManager {
             isValid = false;
         }
         
-        // Bio length validation - removed minimum character requirement
-        // const bio = document.getElementById('bio').value.trim();
-        // if (bio.length < 50) {
-        //     this.setFieldError('bio', 'Bio must be at least 50 characters long');
-        //     isValid = false;
-        // }
-        
         return isValid;
     }
 
     validateField(field) {
         const value = field.value.trim();
         const fieldName = field.name;
+        
+        // Skip validation for hidden craft field (handled by craft selector)
+        if (fieldName === 'craft') {
+            return true;
+        }
         
         // Clear previous error
         this.clearFieldError(field);
@@ -210,7 +423,7 @@ class JoinFormManager {
                 break;
                 
             case 'bio':
-                // Removed minimum character requirement for bio field
+                // No minimum character requirement for bio field
                 break;
         }
         
@@ -369,12 +582,19 @@ class JoinFormManager {
     }
 
     showSuccess() {
+        // Hide the form immediately
         this.form.style.display = 'none';
-        this.successMessage.style.display = 'block';
+        
+        // Hide any error messages
         this.errorMessage.style.display = 'none';
         
-        // Scroll to success message
-        this.successMessage.scrollIntoView({ behavior: 'smooth' });
+        // Show the success message with the "View Community Collage" button
+        this.successMessage.style.display = 'flex';
+        
+        // Ensure the success message is visible and scrolled into view
+        setTimeout(() => {
+            this.successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
     }
 
     showError(message) {
@@ -412,6 +632,9 @@ class JoinFormManager {
         this.successMessage.style.display = 'none';
         this.errorMessage.style.display = 'none';
         
+        // Reset craft selector
+        this.craftSelector.setSelectedCrafts([]);
+        
         // Clear all field states
         const fieldGroups = this.form.querySelectorAll('.form-group');
         fieldGroups.forEach(group => {
@@ -440,6 +663,40 @@ function resetForm() {
 function hideError() {
     if (window.joinFormManager) {
         window.joinFormManager.hideError();
+    }
+}
+
+function viewCommunityCollage() {
+    // Close the join window
+    const joinWindow = document.getElementById('join-window');
+    if (joinWindow) {
+        joinWindow.style.display = 'none';
+    }
+    
+    // Open the collage window
+    const collageWindow = document.getElementById('collage-window');
+    if (collageWindow) {
+        collageWindow.style.display = 'block';
+        collageWindow.classList.add('opening');
+        
+        // Remove opening animation class after animation completes
+        setTimeout(() => {
+            collageWindow.classList.remove('opening');
+        }, 200);
+    }
+    
+    // Load collage data if the loadCollageData function exists
+    if (typeof loadCollageData === 'function') {
+        loadCollageData();
+    }
+    
+    // Update taskbar to show collage as active
+    const taskbarButtons = document.querySelectorAll('.taskbar-button');
+    taskbarButtons.forEach(btn => btn.classList.remove('active'));
+    
+    const collageTaskbarBtn = document.querySelector('.taskbar-button[data-window="collage-window"]');
+    if (collageTaskbarBtn) {
+        collageTaskbarBtn.classList.add('active');
     }
 }
 

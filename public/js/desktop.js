@@ -5,6 +5,8 @@ class DesktopInterface {
         this.desktopVideo = document.getElementById('desktop-video');
         this.windowTitleText = document.getElementById('window-title-text');
         this.closeButton = document.getElementById('close-video-window');
+        this.notification = document.getElementById('desktop-notification');
+        this.notificationTimeout = null;
         
         this.init();
     }
@@ -15,6 +17,7 @@ class DesktopInterface {
         this.setupVideoWindow();
         this.setupTaskbarButtons();
         this.setupWindowControls();
+        this.setupNotification();
     }
     
     // Clock functionality
@@ -39,7 +42,7 @@ class DesktopInterface {
     
     // Desktop icon interactions
     setupDesktopIcons() {
-        const desktopIcons = document.querySelectorAll('.desktop-icon');
+        const desktopIcons = document.querySelectorAll('.desktop-icon-live');
         
         desktopIcons.forEach(icon => {
             let touchStartTime = 0;
@@ -291,9 +294,64 @@ class DesktopInterface {
     
     // Search members
     searchMembers(query) {
-        if (!query.trim()) return;
         console.log('Searching members for:', query);
-        // Implement search functionality here
+        if (window.collageManager && typeof window.collageManager.searchMembers === 'function') {
+            window.collageManager.searchMembers(query);
+            
+            // If in 3D mode, also update the 3D view with filtered results
+            if (window.collageManager.is3DMode && window.collageManager.sphereManager) {
+                // Get filtered members
+                const searchTerm = query.toLowerCase().trim();
+                let filteredMembers = window.collageManager.members;
+                
+                if (searchTerm) {
+                    filteredMembers = window.collageManager.members.filter(member => {
+                        const name = (member.name || '').toString().toLowerCase();
+                        const bio = (member.bio || '').toString().toLowerCase();
+                        const instagram = (member.instagram || '').toString().toLowerCase();
+                        
+                        // Handle craft field - it might be a string or array
+                        let craftText = '';
+                        if (Array.isArray(member.craft)) {
+                            craftText = member.craft.join(' ').toLowerCase();
+                        } else {
+                            craftText = (member.craft || '').toString().toLowerCase();
+                        }
+                        
+                        return name.includes(searchTerm) || 
+                               craftText.includes(searchTerm) || 
+                               bio.includes(searchTerm) ||
+                               instagram.includes(searchTerm);
+                    });
+                }
+                
+                // Update 3D sphere with filtered members
+                this.update3DViewWithFilteredMembers(filteredMembers);
+            }
+        } else {
+            console.warn('CollageManager not available for search');
+        }
+    }
+    
+    // Update 3D view with filtered members
+    async update3DViewWithFilteredMembers(filteredMembers) {
+        if (window.collageManager && window.collageManager.sphereManager) {
+            try {
+                // Dispose current 3D scene
+                window.collageManager.sphereManager.dispose();
+                
+                // Reinitialize with filtered members
+                const canvas = document.getElementById('sphere-canvas');
+                if (canvas && filteredMembers) {
+                    const success = await window.collageManager.sphereManager.init(canvas, filteredMembers);
+                    if (!success) {
+                        console.warn('Failed to update 3D view with filtered results');
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating 3D view with filtered results:', error);
+            }
+        }
     }
     
     // Setup join form
@@ -425,11 +483,11 @@ class DesktopInterface {
             return;
         }
         
-        // Simulate successful submission
-        alert('Welcome to JAMTEM!\n\nThank you for joining our community of passionate creators. We\'re excited to have you on board!');
+        // Simulate successful submission - removed alert, now handled by join.js
+        // alert('Welcome to JAMTEM!\n\nThank you for joining our community of passionate creators. We\'re excited to have you on board!');
         
-        // Close join window
-        this.closeWindow('join-window');
+        // Don't close join window - let join.js handle the success message display
+        // this.closeWindow('join-window');
     }
     
     // Close any window
@@ -765,6 +823,77 @@ class DesktopInterface {
         }, 100);
     }
     
+    // Setup desktop notification
+    setupNotification() {
+        if (!this.notification) return;
+        
+        // Setup close button
+        const closeBtn = document.getElementById('notification-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                this.hideNotification();
+            });
+        }
+        
+        // Close notification when clicking on it (optional)
+        this.notification.addEventListener('click', (e) => {
+            // Don't close if clicking the close button (handled above)
+            if (!e.target.classList.contains('notification-close')) {
+                this.hideNotification();
+                // Optionally open the join window when notification is clicked
+                this.openApp('join-window');
+            }
+        });
+        
+        // Show notification 5 seconds after desktop loads
+        setTimeout(() => {
+            this.showNotification();
+        }, 5000);
+    }
+    
+    // Show notification
+    showNotification() {
+        if (!this.notification) return;
+        
+        console.log('Showing desktop notification');
+        
+        // Make notification visible
+        this.notification.style.display = 'block';
+        
+        // Trigger slide-in animation
+        setTimeout(() => {
+            this.notification.classList.add('show');
+        }, 10);
+        
+        // Auto-hide after 10 seconds
+        this.notificationTimeout = setTimeout(() => {
+            this.hideNotification();
+        }, 10000);
+    }
+    
+    // Hide notification
+    hideNotification() {
+        if (!this.notification) return;
+        
+        console.log('Hiding desktop notification');
+        
+        // Clear auto-hide timeout
+        if (this.notificationTimeout) {
+            clearTimeout(this.notificationTimeout);
+            this.notificationTimeout = null;
+        }
+        
+        // Trigger slide-out animation
+        this.notification.classList.remove('show');
+        this.notification.classList.add('hide');
+        
+        // Hide completely after animation
+        setTimeout(() => {
+            this.notification.style.display = 'none';
+            this.notification.classList.remove('hide');
+        }, 300);
+    }
+    
     // Add desktop right-click context menu with Ctrl+Right-Click bypass
     setupDesktopContextMenu() {
         const desktop = document.querySelector('.desktop');
@@ -840,13 +969,39 @@ class DesktopInterface {
 
 // Initialize desktop interface when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
-    // Load taskbar component first
-    const loader = new ComponentLoader();
-    await loader.loadComponent('taskbar', '#taskbar-placeholder');
+    // Show loading overlay and initialize after 2 seconds
+    const loadingOverlay = document.getElementById('loading-overlay');
     
-    // Then initialize desktop interface
-    window.desktop = new DesktopInterface();
-    window.desktop.setupDesktopContextMenu();
+    // Ensure loading overlay is visible
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'flex';
+        
+        // After 2 seconds, fade out loading and initialize desktop
+        setTimeout(async () => {
+            // Start fade out animation
+            loadingOverlay.classList.add('fade-out');
+            
+            // Wait for fade animation to complete, then hide completely
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+            }, 500);
+            
+            // Load taskbar component
+            const loader = new ComponentLoader();
+            await loader.loadComponent('taskbar', '#taskbar-placeholder');
+            
+            // Initialize desktop interface
+            window.desktop = new DesktopInterface();
+            window.desktop.setupDesktopContextMenu();
+        }, 3000);
+    } else {
+        // Fallback if loading overlay not found
+        const loader = new ComponentLoader();
+        await loader.loadComponent('taskbar', '#taskbar-placeholder');
+        
+        window.desktop = new DesktopInterface();
+        window.desktop.setupDesktopContextMenu();
+    }
 });
 
 // Global function to open apps (for debugging and external access)

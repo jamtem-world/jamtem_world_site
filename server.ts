@@ -287,18 +287,21 @@ Deno.serve({ port: PORT }, async (req: Request) => {
         // Extract form fields
         const name = formData.get("name")?.toString().trim();
         const email = formData.get("email")?.toString().trim();
-        const craft = formData.get("craft")?.toString().trim();
+        const craftData = formData.get("craft")?.toString().trim();
         const location = formData.get("location")?.toString().trim();
         const bio = formData.get("bio")?.toString().trim();
         const website = formData.get("website")?.toString().trim();
         const instagram = formData.get("instagram")?.toString().trim();
         const imageFile = formData.get("image") as File;
 
+        // Process craft field - convert comma-separated string to array for Airtable multi-select
+        const craftArray = craftData ? craftData.split(',').map(item => item.trim()).filter(item => item) : [];
+
         // Validate required fields
-        if (!name || !email || !craft || !bio) {
+        if (!name || !email || !craftData || craftArray.length === 0 || !bio) {
           return new Response(
             JSON.stringify({ 
-              error: "Missing required fields: name, email, craft, and bio are required." 
+              error: "Missing required fields: name, email, craft (at least one), and bio are required." 
             }),
             { 
               status: 400, 
@@ -369,7 +372,7 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           fields: {
             "Name": name,
             "Email": email,
-            "Craft": craft,
+            "Craft": craftArray, // Send as array for Airtable multi-select field
             "Location": location || "",
             "Bio": bio,
             "Website": website || "",

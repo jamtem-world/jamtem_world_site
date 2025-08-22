@@ -47,6 +47,7 @@ class CollageManager {
 
         this.setupModalEvents();
         this.setupViewToggleEvents();
+        this.setupSearchEvents();
         this.loadMembers();
     }
 
@@ -65,6 +66,133 @@ class CollageManager {
         // Hide 3D toggle if WebGL is not supported
         if (!this.webGLSupported && toggle3DBtn) {
             toggle3DBtn.style.display = 'none';
+        }
+    }
+
+    setupSearchEvents() {
+        const searchInput = document.getElementById('member-search-input');
+        const searchBtn = document.getElementById('search-btn');
+        
+        if (!searchInput) return;
+
+        // Debounce timer for real-time search
+        let searchTimeout;
+        
+        // Real-time search with debouncing
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.performSearch(e.target.value);
+            }, 300); // 300ms delay for debouncing
+        });
+
+        // Search button click
+        if (searchBtn) {
+            searchBtn.addEventListener('click', () => {
+                this.performSearch(searchInput.value);
+            });
+        }
+
+        // Enter key press
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                clearTimeout(searchTimeout);
+                this.performSearch(searchInput.value);
+            }
+        });
+
+        // Clear search when input is cleared
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                searchInput.value = '';
+                this.performSearch('');
+            }
+        });
+    }
+
+    // Unified search method that handles both 2D and 3D views
+    async performSearch(query) {
+        const searchTerm = query.toLowerCase().trim();
+        console.log('Performing search for:', searchTerm);
+
+        // Get filtered members
+        let filteredMembers = this.members;
+        
+        if (searchTerm) {
+            filteredMembers = this.members.filter(member => {
+                const name = (member.name || '').toString().toLowerCase();
+                const bio = (member.bio || '').toString().toLowerCase();
+                const instagram = (member.instagram || '').toString().toLowerCase();
+                
+                // Handle craft field - it might be a string or array
+                let craftText = '';
+                if (Array.isArray(member.craft)) {
+                    craftText = member.craft.join(' ').toLowerCase();
+                } else {
+                    craftText = (member.craft || '').toString().toLowerCase();
+                }
+                
+                return name.includes(searchTerm) || 
+                       craftText.includes(searchTerm) || 
+                       bio.includes(searchTerm) ||
+                       instagram.includes(searchTerm);
+            });
+        }
+
+        console.log(`Found ${filteredMembers.length} members matching "${searchTerm}"`);
+
+        // Update the appropriate view
+        if (this.is3DMode) {
+            await this.update3DViewWithFilteredMembers(filteredMembers);
+        } else {
+            this.renderFilteredGrid(filteredMembers, searchTerm);
+        }
+    }
+
+    // Update 3D view with filtered members
+    async update3DViewWithFilteredMembers(filteredMembers) {
+        if (!this.sphereManager || !this.sphereCanvas) return;
+
+        try {
+            // Dispose current 3D scene
+            this.sphereManager.dispose();
+            
+            // Reinitialize with filtered members
+            if (filteredMembers.length > 0) {
+                const success = await this.sphereManager.init(this.sphereCanvas, filteredMembers);
+                if (!success) {
+                    console.warn('Failed to update 3D view with filtered results');
+                    // Fallback to showing no results message
+                    this.show3DNoResults();
+                }
+            } else {
+                // Show no results in 3D view
+                this.show3DNoResults();
+            }
+        } catch (error) {
+            console.error('Error updating 3D view with filtered results:', error);
+            this.show3DNoResults();
+        }
+    }
+
+    // Show no results message in 3D view
+    show3DNoResults() {
+        this.hideAllStates();
+        if (this.sphereContainer) {
+            this.sphereContainer.style.display = 'flex';
+            this.sphereContainer.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #000; text-align: center; padding: 40px;">
+                    <h3>No Results Found</h3>
+                    <p>No community members found matching your search</p>
+                    <button onclick="document.getElementById('member-search-input').value = ''; window.collageManager.performSearch('');" 
+                            style="margin-top: 10px; padding: 8px 16px; background: #0078d4; color: white; border: none; cursor: pointer; border-radius: 4px;">
+                        Clear Search
+                    </button>
+                </div>
+                <canvas id="sphere-canvas" class="sphere-canvas" style="display: none;"></canvas>
+            `;
+            // Update canvas reference since we recreated the container
+            this.sphereCanvas = document.getElementById('sphere-canvas');
         }
     }
 
@@ -402,8 +530,36 @@ class CollageManager {
                 this.sphereManager = new SphereCollageManager();
             }
 
+            // Check if there's an active search and use filtered members
+            const searchInput = document.getElementById('member-search-input');
+            const currentSearch = searchInput ? searchInput.value.trim() : '';
+            let membersToShow = this.members;
+            
+            if (currentSearch) {
+                const searchTerm = currentSearch.toLowerCase();
+                membersToShow = this.members.filter(member => {
+                    const name = (member.name || '').toString().toLowerCase();
+                    const bio = (member.bio || '').toString().toLowerCase();
+                    const instagram = (member.instagram || '').toString().toLowerCase();
+                    
+                    // Handle craft field - it might be a string or array
+                    let craftText = '';
+                    if (Array.isArray(member.craft)) {
+                        craftText = member.craft.join(' ').toLowerCase();
+                    } else {
+                        craftText = (member.craft || '').toString().toLowerCase();
+                    }
+                    
+                    return name.includes(searchTerm) || 
+                           craftText.includes(searchTerm) || 
+                           bio.includes(searchTerm) ||
+                           instagram.includes(searchTerm);
+                });
+                console.log(`Switching to 3D with ${membersToShow.length} filtered members (search: "${currentSearch}")`);
+            }
+
             console.log('Initializing 3D sphere...');
-            const success = await this.sphereManager.init(this.sphereCanvas, this.members);
+            const success = await this.sphereManager.init(this.sphereCanvas, membersToShow);
             console.log('3D sphere initialization result:', success);
             
             if (success) {
@@ -425,7 +581,19 @@ class CollageManager {
             this.sphereManager.dispose();
         }
         this.is3DMode = false;
-        this.showGrid();
+        
+        // Check if there's an active search and apply it to grid view
+        const searchInput = document.getElementById('member-search-input');
+        const currentSearch = searchInput ? searchInput.value.trim() : '';
+        
+        if (currentSearch) {
+            // Apply current search to grid view
+            this.performSearch(currentSearch);
+        } else {
+            // Show all members in grid view
+            this.renderGrid();
+        }
+        
         console.log('Switched to 2D grid view');
     }
 
@@ -436,34 +604,9 @@ class CollageManager {
         }
     }
 
-    // Search functionality
+    // Search functionality (legacy method for backward compatibility)
     searchMembers(query) {
-        if (!query || !query.trim()) {
-            // If empty search, show all members
-            this.renderGrid();
-            return;
-        }
-        
-        const searchTerm = query.toLowerCase().trim();
-        console.log('Searching for:', searchTerm);
-        
-        // Filter members based on search term
-        const filteredMembers = this.members.filter(member => {
-            const name = (member.name || '').toLowerCase();
-            const craft = (member.craft || '').toLowerCase();
-            const bio = (member.bio || '').toLowerCase();
-            const instagram = (member.instagram || '').toLowerCase();
-            
-            return name.includes(searchTerm) || 
-                   craft.includes(searchTerm) || 
-                   bio.includes(searchTerm) ||
-                   instagram.includes(searchTerm);
-        });
-        
-        console.log(`Found ${filteredMembers.length} members matching "${searchTerm}"`);
-        
-        // Render filtered results
-        this.renderFilteredGrid(filteredMembers, searchTerm);
+        this.performSearch(query);
     }
     
     renderFilteredGrid(filteredMembers, searchTerm) {
@@ -516,7 +659,7 @@ class CollageManager {
                 <div style="text-align: center; padding: 40px; color: #000;">
                     <h3>No Results Found</h3>
                     <p>No community members found matching "${searchTerm}"</p>
-                    <button onclick="document.getElementById('member-search-input').value = ''; window.collageManager.searchMembers('');" 
+                    <button onclick="document.getElementById('member-search-input').value = ''; window.collageManager.performSearch('');" 
                             style="margin-top: 10px; padding: 8px 16px; background: #0078d4; color: white; border: none; cursor: pointer;">
                         Clear Search
                     </button>

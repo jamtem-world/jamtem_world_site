@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jamtem World - Desktop</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>Jamtem World</title>
     <meta name="description" content="Discover and connect with passionate creators, artisans, and makers from around the world. Join the JAMTEM community and celebrate creativity.">
     
     <!-- Open Graph / Facebook -->
@@ -26,6 +26,11 @@
     
     <link rel="icon" type="image/png" href="media/images/logo.png">
     <link rel="stylesheet" href="css/desktop.css">
+    <link rel="stylesheet" href="css/join.css">
+    <link rel="stylesheet" href="css/join-desktop.css">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <!-- Three.js and dependencies for 3D collage -->
     <script type="importmap">
@@ -38,6 +43,27 @@
     </script>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-window">
+            <div class="loading-titlebar">
+                <div class="loading-title">
+                    <img src="media/images/logo.png" alt="" class="loading-icon">
+                    <span>Jamtem World</span>
+                </div>
+            </div>
+            <div class="loading-content">
+                <div class="loading-text">Initializing Jamtem World...</div>
+                <div class="loading-progress-container">
+                    <div class="loading-progress-bar">
+                        <div class="loading-progress-fill"></div>
+                    </div>
+                </div>
+                <div class="loading-status">Please wait...</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Desktop Background -->
     <div class="desktop">
                 <!-- Desktop Logo (like a desktop wallpaper logo) -->
@@ -46,24 +72,25 @@
         </div>
         <!-- Main Desktop Icons Grid -->
         <div class="desktop-icons">
+            
+            <div class="desktop-icon desktop-icon-live" data-app="collage">
+                <img src="https://storage.googleapis.com/jamtem_website_media/new_community_icon.png" alt="Collage" class="icon-image">
+                <span class="icon-label">Community</span>
+            </div>
+            
+            <div class="desktop-icon desktop-icon-live" data-app="join">
+                <img src="https://storage.googleapis.com/jamtem_website_media/new_join_icon.png" alt="Join" class="icon-image">
+                <span class="icon-label">Join</span>
+            </div>
+
             <div class="desktop-icon" data-app="vignettes">
-                <img src="https://storage.googleapis.com/jamtem_website_media/film_icon.png" alt="Vignettes" class="icon-image">
-                <span class="icon-label">Media</span>
+                <img src="https://storage.googleapis.com/jamtem_website_media/new_media_icon.png" alt="Vignettes" class="icon-image coming_soon">
+                <span class="icon-label">Media<br>(Coming Soon)</span>
             </div>
             
             <div class="desktop-icon" data-app="products">
-                <img src="https://storage.googleapis.com/jamtem_website_media/merch_icon.png" alt="Products" class="icon-image">
-                <span class="icon-label">Products</span>
-            </div>
-            
-            <div class="desktop-icon" data-app="collage">
-                <img src="https://storage.googleapis.com/jamtem_website_media/community_icon.png" alt="Collage" class="icon-image">
-                <span class="icon-label">Collage</span>
-            </div>
-            
-            <div class="desktop-icon" data-app="join">
-                <img src="https://storage.googleapis.com/jamtem_website_media/join_icon.png" alt="Join" class="icon-image">
-                <span class="icon-label">Join</span>
+                <img src="https://storage.googleapis.com/jamtem_website_media/neww_products_icon.png" alt="Products" class="icon-image coming_soon">
+                <span class="icon-label">Products<br>(Coming Soon)</span>
             </div>
         </div>
         
@@ -71,6 +98,20 @@
 
     <!-- Taskbar Component Placeholder -->
     <div id="taskbar-placeholder"></div>
+
+    <!-- Desktop Notification -->
+    <div id="desktop-notification" class="desktop-notification" style="display: none;">
+        <div class="notification-content">
+            <div class="notification-icon">
+                <img src="media/images/logo.png" alt="JAMTEM" class="notification-logo">
+            </div>
+            <div class="notification-text">
+                <div class="notification-title">JAMTEM Community</div>
+                <div class="notification-message">What's your thing? Tell us and join the JAMTEM community!</div>
+            </div>
+            <button class="notification-close" id="notification-close">×</button>
+        </div>
+    </div>
 
     <!-- Vignettes Window -->
     <div id="vignettes-window" class="app-window" style="display: none;">
@@ -265,10 +306,20 @@
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="craft" class="form-label">
+                                <label for="craft-filter" class="form-label">
                                     Your Craft/Passion <span class="required">*</span>
                                 </label>
-                                <input type="text" id="craft" name="craft" class="form-input" required placeholder="e.g., Photography, Woodworking, Painting">
+                                <div class="craft-selector-container">
+                                    <input type="text" id="craft-filter" placeholder="Filter crafts..." class="craft-filter-input" autocomplete="off">
+                                    <div class="craft-list-box" id="craft-list-box">
+                                        <!-- Craft items will be populated by JavaScript -->
+                                    </div>
+                                    <div class="selected-crafts" id="selected-crafts">
+                                        <!-- Selected craft tags will appear here -->
+                                    </div>
+                                    <input type="hidden" id="craft" name="craft" required>
+                                </div>
+                                <div class="form-help">Select multiple crafts/passions that represent your creative interests</div>
                                 <div class="form-error" id="craft-error"></div>
                             </div>
                             
@@ -347,11 +398,11 @@
                 <!-- Success Message -->
                 <div class="success-message" id="success-message" style="display: none;">
                     <div class="success-icon">🎉</div>
-                    <h3>Welcome to JAMTEM!</h3>
+                    <h2>Welcome to JAMTEM!</h2>
                     <p>Thank you for joining our community of passionate creators. We're excited to have you on board!</p>
-                    <p>You'll hear from us soon with more information about connecting with other community members.</p>
-                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                        Submit Another Application
+                    <p>Explore the community collage to see all the amazing creators you've just joined!</p>
+                    <button type="button" class="btn btn-secondary" onclick="viewCommunityCollage()">
+                        View Community Collage
                     </button>
                 </div>
 

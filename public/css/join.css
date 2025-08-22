@@ -1,590 +1,188 @@
-/* Join Page Specific Styles */
 
-/* Hero Section */
-.join-hero {
-  text-align: center;
-  padding: var(--spacing-xl) 0;
-  color: var(--white);
-  border-radius: var(--border-radius);
-}
 
-.join-hero-title {
-  font-size: 3rem;
-  font-weight: bold;
-  margin-bottom: var(--spacing-md);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.join-hero-description {
-  font-size: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
-  line-height: 1.6;
-  opacity: 0.95;
-}
-
-/* Form Section */
-.join-form-section {
-  margin-bottom: var(--spacing-xl);
-}
-
-.join-form-container {
-  max-width: 800px;
-  margin: 0 auto;
-  background: transparent;
-  backdrop-filter: blur(5px);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  padding: var(--spacing-xl);
-}
-
-.join-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-}
-
-/* Form Grid */
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--spacing-lg);
-}
-
-/* Form Groups */
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.form-group-full {
-  grid-column: 1 / -1;
-}
-
-/* Form Labels */
-.form-label {
-  font-weight: 600;
-  color: var(--text-color);
-  font-size: 2rem;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.required {
-  color: var(--accent-color);
-  font-weight: bold;
-}
 
 /* Form Inputs */
-.form-input,
-.form-textarea {
+.craft-list-box {
+  height: 50px;
+  overflow-y: scroll;;
+}
+
+
+/* Craft Selector Styles - Simple and Clean */
+.craft-selector-container {
+  position: relative;
+  width: 100%;
+}
+
+.craft-filter-input {
+  width: 100%;
   padding: var(--spacing-sm);
   border-radius: var(--border-radius);
-  font-size: 1.5rem;
   font-family: inherit;
   transition: var(--transition);
   background: rgba(255, 255, 255, 0.384);
   color: black;
+  border: 2px solid transparent;
+  margin-bottom: var(--spacing-xs);
 }
 
-.form-input:focus,
-.form-textarea:focus {
+.craft-filter-input:focus {
   outline: none;
   border-color: var(--secondary-color);
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
-.form-input:invalid:not(:focus):not(:placeholder-shown) {
-  border-color: var(--accent-color);
+.craft-list-box {
+  height: 150px;
+  overflow-y: auto;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background: rgba(255, 255, 255, 0.95);
+  margin-bottom: 10px;
 }
 
-.form-input:valid:not(:focus):not(:placeholder-shown) {
-  border-color: #27ae60;
-}
-
-/* Input with Prefix */
-.input-with-prefix {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.input-prefix {
-  position: absolute;
-  left: var(--spacing-sm);
-  color: var(--text-light);
-  font-weight: 500;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.form-input.with-prefix {
-  padding-left: calc(var(--spacing-sm) + 20px);
-}
-
-/* Textarea */
-.form-textarea {
-  resize: vertical;
-  min-height: 100px;
-  line-height: 1.5;
-}
-
-/* Form Meta */
-.form-meta {
-  font-size: 2rem;
+.craft-item {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--spacing-sm);
-}
-
-.character-counter {
-  font-size: 1.5rem;
-  color: var(--text-light);
-  white-space: nowrap;
-}
-
-.character-counter.warning {
-  color: #f39c12;
-}
-
-.character-counter.danger {
-  color: var(--accent-color);
-}
-
-/* Form Help Text */
-.form-help {
-  font-size: 1.5rem;
-  color: var(--text-light);
-  margin-top: var(--spacing-xs);
-}
-
-/* Form Errors */
-.form-error {
-  color: var(--accent-color);
-  font-size: 1.5rem;
-  min-height: 1.2em;
-  display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  transition: var(--transition);
 }
 
-.form-error:empty {
+.craft-item:last-child {
+  border-bottom: none;
+}
+
+.craft-item:hover {
+  background: rgba(52, 152, 219, 0.1);
+}
+
+.craft-item.hidden {
   display: none;
 }
 
-.form-error::before {
-  content: "⚠️";
-  font-size: 0.8em;
-}
 
-/* File Upload */
-.file-upload-container {
-  position: relative;
-}
 
-.file-input {
-  position: absolute;
-  opacity: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-  z-index: 2;
-}
-
-.file-upload-area {
-  border: 2px dashed var(--border-color);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-xl);
-  text-align: center;
-  transition: var(--transition);
-  cursor: pointer;
-  position: relative;
-}
-
-.file-upload-area:hover,
-.file-upload-area.dragover {
-  border-color: var(--secondary-color);
-  background: rgba(52, 152, 219, 0.05);
-}
-
-.file-upload-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.file-upload-icon {
-  font-size: 3rem;
-  opacity: 0.7;
-}
-
-.file-upload-text {
-  font-size: 2rem;
-  color: var(--text-color);
-}
-
-.file-upload-hint {
-  font-size: 2rem;
-  color: var(--text-light);
-}
-
-/* Image Preview */
-.image-preview {
-  position: relative;
-  margin-top: var(--spacing-md);
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  max-width: 300px;
-}
-
-.image-preview img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.remove-image {
-  position: absolute;
-  top: var(--spacing-xs);
-  right: var(--spacing-xs);
-  background: rgba(0, 0, 0, 0.7);
+.craft-add-btn {
+  background: var(--secondary-color);
   color: var(--white);
   border: none;
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
+  width: 24px;
+  height: 24px;
   font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: var(--transition);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition);
 }
 
-.remove-image:hover {
-  background: rgba(0, 0, 0, 0.9);
+.craft-add-btn:hover {
+  background: #9ba8b1;
   transform: scale(1.1);
 }
 
-/* Form Actions */
-.form-actions {
+.selected-crafts {
   display: flex;
-  justify-content: center;
-  margin-top: var(--spacing-lg);
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  min-height: 32px;
 }
 
-.btn-submit {
-  font-family: inherit;
-  min-width: 200px;
-  position: relative;
-  overflow: hidden;
-  font-size: 2rem;
-  transition: all 0.3s ease;
-  background: linear-gradient(45deg, var(--secondary-color), #f39c12);
-  border: none;
-  color: var(--white);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: bold;
-}
-
-/* Cool hover effects for the submit button */
-.btn-submit:hover {
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 15px 35px rgba(233, 167, 83, 0.4), 0 5px 15px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(45deg, #f39c12, var(--secondary-color));
-}
-
-.btn-submit:active {
-  transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 8px 20px rgba(233, 167, 83, 0.6), 0 3px 10px rgba(0, 0, 0, 0.2);
-}
-
-/* Animated shine effect */
-.btn-submit::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transition: left 0.6s ease;
-  z-index: 1;
-}
-
-.btn-submit:hover::before {
-  left: 100%;
-}
-
-/* Pulse animation */
-@keyframes submitButtonPulse {
-  0% { 
-    box-shadow: 0 15px 35px rgba(233, 167, 83, 0.4), 0 5px 15px rgba(0, 0, 0, 0.1);
-  }
-  50% { 
-    box-shadow: 0 15px 40px rgba(233, 167, 83, 0.6), 0 5px 20px rgba(0, 0, 0, 0.15);
-  }
-  100% { 
-    box-shadow: 0 15px 35px rgba(233, 167, 83, 0.4), 0 5px 15px rgba(0, 0, 0, 0.1);
-  }
-}
-
-.btn-submit:hover {
-  animation: submitButtonPulse 2s ease-in-out infinite;
-}
-
-/* Ripple effect on click */
-.btn-submit::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
-  z-index: 1;
-}
-
-.btn-submit:active::after {
-  width: 300px;
-  height: 300px;
-}
-
-/* Ensure text stays above effects */
-.btn-text {
-  position: relative;
-  z-index: 2;
-}
-
-/* Loading state adjustments */
-.btn-submit:disabled,
-.btn-submit.loading {
-  transform: none;
-  animation: none;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.btn-submit:disabled:hover,
-.btn-submit.loading:hover {
-  transform: none;
-  box-shadow: none;
-  animation: none;
-}
-
-.btn-loading {
-  display: flex;
+.selected-craft-tag {
+  display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs);
+  background: linear-gradient(45deg, var(--secondary-color), #f39c12);
+  color: var(--white);
+  padding: 6px 12px;
+  font-weight: 500;
+  transition: var(--transition);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.spinner-small {
-  width: 16px;
-  height: 16px;
-  border: 2px solid transparent;
-  border-top: 2px solid currentColor;
+.selected-craft-tag:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.craft-tag-remove {
+  background: none;
+  border: none;
+  color: var(--white);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 0;
+  margin: 0;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-/* Success/Error Messages */
-.success-message,
-.error-message {
-  text-align: center;
-  padding: var(--spacing-xl);
-  border-radius: var(--border-radius);
-  margin-top: var(--spacing-lg);
-}
-
-.success-message {
-  background: #d4edda;
-  border: 1px solid #c3e6cb;
-  color: #155724;
-}
-
-.error-message {
-  background: #f8d7da;
-  border: 1px solid #f5c6cb;
-  color: #721c24;
-}
-
-.success-icon,
-.error-icon {
-  font-size: 3rem;
-  margin-bottom: var(--spacing-md);
-}
-
-.success-message h3,
-.error-message h3 {
-  margin-bottom: var(--spacing-sm);
-  font-size: 3rem;
-}
-
-.success-message p,
-.error-message p {
-  margin-bottom: var(--spacing-sm);
-  line-height: 1.6;
-}
-
-/* Community Preview */
-.community-preview {
-  background: var(--white);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  padding: var(--spacing-xl);
-  text-align: center;
-}
-
-.community-preview h3 {
-  font-size: 2rem;
-  color: var(--primary-color);
-  margin-bottom: var(--spacing-xl);
-}
-
-.benefits-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--spacing-lg);
-}
-
-.benefit-card {
-  padding: var(--spacing-lg);
-  border-radius: var(--border-radius);
-  background: var(--background-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: var(--transition);
 }
 
-.benefit-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-hover);
+.craft-tag-remove:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
 }
 
-.benefit-icon {
-  font-size: 2.5rem;
-  margin-bottom: var(--spacing-md);
+/* Scrollbar styling for craft list box */
+.craft-list-box::-webkit-scrollbar {
+  width: 6px;
 }
 
-.benefit-card h4 {
-  font-size: 1.2rem;
-  color: var(--primary-color);
-  margin-bottom: var(--spacing-sm);
+.craft-list-box::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
 }
 
-.benefit-card p {
-  color: var(--text-light);
-  line-height: 1.5;
+.craft-list-box::-webkit-scrollbar-thumb {
+  background: var(--secondary-color);
+  border-radius: 3px;
 }
 
-/* Navigation Active State */
-.nav-link.active {
-  color: var(--secondary-color);
-  font-weight: 600;
+.craft-list-box::-webkit-scrollbar-thumb:hover {
+  background: #2980b9;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .join-hero-title {
-    font-size: 2rem;
+/* Animation for selected tags */
+@keyframes tagAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
   }
-  
-  .join-hero-description {
-    font-size: 1rem;
-  }
-  
-  .join-form-container {
-    padding: var(--spacing-lg);
-    margin: 0 var(--spacing-sm);
-  }
-  
-  .form-grid {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-md);
-  }
-  
-  .benefits-grid {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-md);
-  }
-  
-  .form-actions {
-    margin-top: var(--spacing-md);
-  }
-  
-  .btn-submit {
-    width: 100%;
-    min-width: auto;
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-@media (max-width: 480px) {
-  .join-hero {
-    padding: var(--spacing-lg) var(--spacing-sm);
-    margin-bottom: var(--spacing-lg);
-  }
-  
-  .join-hero-title {
-    font-size: 1.8rem;
-  }
-  
-  .join-form-container {
-    padding: var(--spacing-md);
-    margin: 0;
-    border-radius: 0;
-  }
-  
-  .file-upload-area {
-    padding: var(--spacing-lg);
-  }
-  
-  .file-upload-icon {
-    font-size: 2rem;
-  }
-  
-  .community-preview {
-    margin: 0;
-    border-radius: 0;
-    padding: var(--spacing-lg) var(--spacing-sm);
-  }
-  
-  .community-preview h3 {
-    font-size: 1.5rem;
-  }
+.selected-craft-tag {
+  animation: tagAppear 0.3s ease-out;
 }
 
-/* Accessibility Improvements */
-@media (prefers-reduced-motion: reduce) {
-  .file-upload-area,
-  .benefit-card,
-  .form-input,
-  .form-textarea,
-  .btn {
-    transition: none;
-  }
-  
-  .spinner-small {
-    animation: none;
-  }
+/* Error state for craft selector */
+.form-group.error .craft-filter-input {
+  border-color: var(--accent-color);
 }
 
-/* High Contrast Mode */
-@media (prefers-contrast: high) {
-  .file-upload-area {
-    border-width: 3px;
-  }
-  
-  .form-input:focus,
-  .form-textarea:focus {
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
-  }
+.form-group.error .craft-filter-input:focus {
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+/* Success state for craft selector */
+.form-group.success .craft-filter-input {
+  border-color: #27ae60;
+}
+
+.form-group.success .craft-filter-input:focus {
+  box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
 }
 
 /* Print Styles */
@@ -606,6 +204,15 @@
   .form-textarea {
     border: 1px solid #000;
     background: transparent;
+  }
+  
+  .craft-dropdown {
+    display: none !important;
+  }
+  
+  .selected-crafts {
+    border: 1px solid #000;
+    padding: var(--spacing-xs);
   }
 }
 
@@ -652,4 +259,13 @@
 .form-group.error .form-input:focus,
 .form-group.error .form-textarea:focus {
   box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+.success-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem
 }
