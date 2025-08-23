@@ -185,6 +185,168 @@
   box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
 }
 
+/* Location Selector Styles - Adapted from Craft Selector */
+.location-selector-container {
+  position: relative;
+}
+
+.location-filter-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.location-filter-input:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.location-list-box {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+}
+
+.location-filter-input:focus + .location-list-box,
+.location-list-box:hover {
+  display: block;
+}
+
+.location-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.location-item:last-child {
+  border-bottom: none;
+}
+
+.location-item:hover {
+  background-color: #f8f9fa;
+}
+
+.location-item.hidden {
+  display: none;
+}
+
+.location-name {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+
+.modal-location {
+  margin-bottom: 12px;
+}
+
+.location-select-btn {
+  background: var(--secondary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.location-select-btn:hover {
+  background: #2980b9;
+}
+
+.selected-location {
+  margin-top: 8px;
+  min-height: 20px;
+}
+
+.location-tag {
+  display: inline-flex;
+  align-items: center;
+  background: var(--secondary-color);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  margin: 2px;
+  gap: 8px;
+}
+
+.location-tag-remove {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.location-tag-remove:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Scrollbar styling for location list box */
+.location-list-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+.location-list-box::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.location-list-box::-webkit-scrollbar-thumb {
+  background: var(--secondary-color);
+  border-radius: 3px;
+}
+
+.location-list-box::-webkit-scrollbar-thumb:hover {
+  background: #2980b9;
+}
+
+/* Error state for location selector */
+.form-group.error .location-filter-input {
+  border-color: var(--accent-color);
+}
+
+.form-group.error .location-filter-input:focus {
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+/* Success state for location selector */
+.form-group.success .location-filter-input {
+  border-color: #27ae60;
+}
+
+.form-group.success .location-filter-input:focus {
+  box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+}
+
 /* Print Styles */
 @media print {
   .join-hero,
@@ -268,4 +430,243 @@
   flex-direction: column;
   gap: 1rem;
   margin-top: 1rem
+}
+
+/* Mobile-specific styles */
+.mobile-optimized {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-file-button {
+  background: var(--secondary-color);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: var(--border-radius);
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 10px auto;
+  display: block;
+  min-height: 44px; /* iOS minimum touch target */
+  min-width: 44px;
+  transition: var(--transition);
+}
+
+.mobile-file-button:hover,
+.mobile-file-button:active {
+  background: #2980b9;
+  transform: scale(0.98);
+}
+
+.touch-active {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+  transform: scale(0.95);
+}
+
+/* Mobile loading overlay */
+.mobile-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.mobile-loading-content {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 300px;
+  margin: 20px;
+}
+
+.mobile-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--secondary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+.mobile-loading-hint {
+  font-size: 12px;
+  color: #666;
+  margin-top: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .file-upload-area {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  .form-input,
+  .form-textarea {
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+  
+  .form-input:focus,
+  .form-textarea:focus {
+    -webkit-appearance: none;
+    outline: none;
+    border: 2px solid var(--secondary-color);
+  }
+}
+
+/* Mobile viewport fixes */
+@media screen and (max-width: 768px) {
+  .craft-list-box {
+    height: 120px;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .craft-add-btn,
+  .craft-tag-remove {
+    min-height: 44px;
+    min-width: 44px;
+    font-size: 18px;
+  }
+  
+  .form-input,
+  .form-textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px;
+    min-height: 44px;
+  }
+  
+  .file-upload-area {
+    min-height: 120px;
+    padding: 20px;
+    touch-action: manipulation;
+  }
+  
+  .mobile-file-button {
+    font-size: 18px;
+    padding: 15px 25px;
+  }
+  
+  .selected-craft-tag {
+    padding: 8px 12px;
+    margin: 4px;
+    font-size: 14px;
+  }
+  
+  .craft-tag-remove {
+    width: 24px;
+    height: 24px;
+    font-size: 16px;
+  }
+}
+
+/* iPhone specific fixes */
+@media screen and (max-width: 480px) {
+  .form-input,
+  .form-textarea {
+    font-size: 16px !important; /* Prevent zoom */
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  .craft-filter-input {
+    font-size: 16px !important;
+  }
+  
+  .location-filter-input {
+    font-size: 16px !important;
+  }
+  
+  .location-list-box {
+    height: 120px;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .location-item {
+    padding: 12px;
+    min-height: 44px;
+  }
+  
+  .location-select-btn {
+    min-height: 32px;
+    min-width: 32px;
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+  
+  .file-upload-area {
+    padding: 15px;
+    min-height: 100px;
+  }
+  
+  .mobile-file-button {
+    width: 100%;
+    max-width: 250px;
+  }
+  
+  .error-message,
+  .success-message {
+    margin: 10px;
+    padding: 15px;
+    font-size: 14px;
+  }
+  
+  .form-error {
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 8px;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .craft-item:hover {
+    background: transparent;
+  }
+  
+  .craft-item:active {
+    background: rgba(52, 152, 219, 0.2);
+  }
+  
+  .craft-add-btn:hover {
+    background: var(--secondary-color);
+    transform: none;
+  }
+  
+  .craft-add-btn:active {
+    background: #2980b9;
+    transform: scale(0.95);
+  }
+  
+  .selected-craft-tag:hover {
+    transform: none;
+  }
+  
+  .selected-craft-tag:active {
+    transform: scale(0.95);
+  }
+}
+
+/* High DPI mobile displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .mobile-file-button,
+  .craft-add-btn,
+  .craft-tag-remove {
+    border: none;
+    outline: none;
+  }
 }

@@ -5,8 +5,8 @@ class DesktopInterface {
         this.desktopVideo = document.getElementById('desktop-video');
         this.windowTitleText = document.getElementById('window-title-text');
         this.closeButton = document.getElementById('close-video-window');
-        this.notification = document.getElementById('desktop-notification');
-        this.notificationTimeout = null;
+        this.joinPopup = document.getElementById('join-icon-popup');
+        this.joinPopupTimeout = null;
         
         this.init();
     }
@@ -823,74 +823,77 @@ class DesktopInterface {
         }, 100);
     }
     
-    // Setup desktop notification
+    // Setup join icon popup
     setupNotification() {
-        if (!this.notification) return;
+        if (!this.joinPopup) return;
         
-        // Setup close button
-        const closeBtn = document.getElementById('notification-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                this.hideNotification();
-            });
-        }
+        // Show popup 5 seconds after desktop loads
+        setTimeout(() => {
+            this.showJoinPopup();
+        }, 5000);
         
-        // Close notification when clicking on it (optional)
-        this.notification.addEventListener('click', (e) => {
-            // Don't close if clicking the close button (handled above)
-            if (!e.target.classList.contains('notification-close')) {
-                this.hideNotification();
-                // Optionally open the join window when notification is clicked
-                this.openApp('join-window');
-            }
+        // Hide popup when clicking anywhere
+        document.addEventListener('click', () => {
+            this.hideJoinPopup();
         });
         
-        // Show notification 5 seconds after desktop loads
-        setTimeout(() => {
-            this.showNotification();
-        }, 5000);
+        // Hide popup when touching anywhere (mobile)
+        document.addEventListener('touchstart', () => {
+            this.hideJoinPopup();
+        });
     }
     
-    // Show notification
-    showNotification() {
-        if (!this.notification) return;
+    // Show join icon popup
+    showJoinPopup() {
+        if (!this.joinPopup) return;
         
-        console.log('Showing desktop notification');
+        // Find the join icon
+        const joinIcon = document.querySelector('[data-app="join"]');
+        if (!joinIcon) return;
         
-        // Make notification visible
-        this.notification.style.display = 'block';
+        console.log('Showing join icon popup');
         
-        // Trigger slide-in animation
+        // Position popup above the join icon
+        const iconRect = joinIcon.getBoundingClientRect();
+        const popupWidth = 140; // Approximate width of popup
+        
+        this.joinPopup.style.left = `${iconRect.left + (iconRect.width / 2) - (popupWidth / 2)}px`;
+        this.joinPopup.style.top = `${iconRect.top - 20}px`; // 50px above the icon
+        
+        // Make popup visible
+        this.joinPopup.style.display = 'block';
+        
+        // Trigger show animation
         setTimeout(() => {
-            this.notification.classList.add('show');
+            this.joinPopup.classList.add('show');
         }, 10);
         
-        // Auto-hide after 10 seconds
-        this.notificationTimeout = setTimeout(() => {
-            this.hideNotification();
-        }, 10000);
+        // Auto-hide after 8 seconds
+        this.joinPopupTimeout = setTimeout(() => {
+            this.hideJoinPopup();
+        }, 8000);
     }
     
-    // Hide notification
-    hideNotification() {
-        if (!this.notification) return;
+    // Hide join icon popup
+    hideJoinPopup() {
+        if (!this.joinPopup) return;
         
-        console.log('Hiding desktop notification');
+        console.log('Hiding join icon popup');
         
         // Clear auto-hide timeout
-        if (this.notificationTimeout) {
-            clearTimeout(this.notificationTimeout);
-            this.notificationTimeout = null;
+        if (this.joinPopupTimeout) {
+            clearTimeout(this.joinPopupTimeout);
+            this.joinPopupTimeout = null;
         }
         
-        // Trigger slide-out animation
-        this.notification.classList.remove('show');
-        this.notification.classList.add('hide');
+        // Trigger hide animation
+        this.joinPopup.classList.remove('show');
+        this.joinPopup.classList.add('hide');
         
         // Hide completely after animation
         setTimeout(() => {
-            this.notification.style.display = 'none';
-            this.notification.classList.remove('hide');
+            this.joinPopup.style.display = 'none';
+            this.joinPopup.classList.remove('hide');
         }, 300);
     }
     

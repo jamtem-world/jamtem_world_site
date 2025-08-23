@@ -52,20 +52,31 @@ class CollageManager {
     }
 
     setupViewToggleEvents() {
-        const toggle3DBtn = document.getElementById('toggle-3d');
-        const toggle2DBtn = document.getElementById('toggle-2d');
+        const gridViewBtn = document.getElementById('grid-view-btn');
+        const view3DBtn = document.getElementById('3d-view-btn');
 
-        if (toggle3DBtn) {
-            toggle3DBtn.addEventListener('click', () => this.switchTo3D());
+        if (gridViewBtn) {
+            gridViewBtn.addEventListener('click', () => {
+                this.switchTo2D();
+                // Update button states
+                gridViewBtn.classList.add('active');
+                if (view3DBtn) view3DBtn.classList.remove('active');
+            });
         }
 
-        if (toggle2DBtn) {
-            toggle2DBtn.addEventListener('click', () => this.switchTo2D());
+        if (view3DBtn) {
+            view3DBtn.addEventListener('click', () => {
+                this.switchTo3D();
+                // Update button states
+                view3DBtn.classList.add('active');
+                if (gridViewBtn) gridViewBtn.classList.remove('active');
+            });
         }
 
         // Hide 3D toggle if WebGL is not supported
-        if (!this.webGLSupported && toggle3DBtn) {
-            toggle3DBtn.style.display = 'none';
+        if (!this.webGLSupported && view3DBtn) {
+            view3DBtn.style.display = 'none';
+            if (gridViewBtn) gridViewBtn.classList.add('active');
         }
     }
 
@@ -383,6 +394,16 @@ class CollageManager {
         if (modalCraft) modalCraft.textContent = member.craft || 'Creator';
         if (modalBio) modalBio.textContent = member.bio || 'No bio available';
 
+        // Handle Location
+        const modalLocation = document.getElementById('modal-member-location');
+        const modalLocationSection = document.getElementById('modal-location-section');
+        if (member.location && member.location.trim() && modalLocation && modalLocationSection) {
+            modalLocation.textContent = member.location;
+            modalLocationSection.style.display = 'block';
+        } else if (modalLocationSection) {
+            modalLocationSection.style.display = 'none';
+        }
+
         // Handle Instagram
         if (member.instagram && member.instagram.trim() && modalInstagram && modalInstagramSection) {
             modalInstagram.textContent = member.instagram;
@@ -514,6 +535,13 @@ class CollageManager {
         }
 
         try {
+            // CRITICAL FIX: Always dispose existing sphere manager first to prevent duplicates
+            if (this.sphereManager) {
+                console.log('Disposing existing sphere manager to prevent duplicates...');
+                this.sphereManager.dispose();
+                this.sphereManager = null;
+            }
+
             // First show the 3D container to ensure canvas gets proper dimensions
             this.show3D();
             
@@ -525,10 +553,9 @@ class CollageManager {
             const { default: SphereCollageManager } = await import('./collage-3d.js');
             console.log('3D module imported successfully');
             
-            if (!this.sphereManager) {
-                console.log('Creating new SphereCollageManager...');
-                this.sphereManager = new SphereCollageManager();
-            }
+            // Always create a fresh sphere manager to prevent duplicates
+            console.log('Creating new SphereCollageManager...');
+            this.sphereManager = new SphereCollageManager();
 
             // Check if there's an active search and use filtered members
             const searchInput = document.getElementById('member-search-input');

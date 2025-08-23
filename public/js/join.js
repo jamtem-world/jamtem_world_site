@@ -1,5 +1,33 @@
 // Join Form JavaScript - JAMTEM Community
 
+// Mobile Detection and Environment Setup
+function detectMobileEnvironment() {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    
+    // Detect mobile devices
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+    
+    // Detect iOS specifically
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+    
+    // Detect touch support
+    const touchSupported = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    // Detect file input support (some mobile browsers have limitations)
+    const fileInputSupported = window.File && window.FileReader && window.FileList && window.Blob;
+    
+    return {
+        isMobile,
+        isIOS,
+        touchSupported,
+        fileInputSupported,
+        userAgent
+    };
+}
+
+// Global mobile environment configuration
+const MOBILE_CONFIG = detectMobileEnvironment();
+
 // Comprehensive list of arts and creative disciplines
 const CRAFT_OPTIONS = [
     '2D Animation', '3D Animation', 'Abstract Art', 'Acrobatics', 'Acting', 'Animation', 
@@ -41,6 +69,213 @@ const CRAFT_OPTIONS = [
     'Video Production', 'Vintage Fashion', 'Violin', 'Vocals', 'Voice Acting', 'Weaving', 
     'Web Design', 'Wire Wrapping', 'Woodworking', 'Writing', 'Yoga', 'YouTube Creation'
 ]; // Already sorted alphabetically
+
+// Greater Toronto Area location options
+const LOCATION_OPTIONS = [
+    'Ajax, ON',
+    'Annex, ON',
+    'Aurora, ON',
+    'Brampton, ON',
+    'Burlington, ON',
+    'Cabbagetown, ON',
+    'Caledon, ON',
+    'Chinatown, ON',
+    'Corktown, ON',
+    'Distillery District, ON',
+    'Downtown Toronto, ON',
+    'East York, ON',
+    'Entertainment District, ON',
+    'Etobicoke, ON',
+    'Financial District, ON',
+    'Forest Hill, ON',
+    'Georgina, ON',
+    'Halton Hills, ON',
+    'High Park, ON',
+    'Junction Triangle, ON',
+    'Kensington Market, ON',
+    'King City, ON',
+    'King West, ON',
+    'Leslieville, ON',
+    'Liberty Village, ON',
+    'Little Italy, ON',
+    'Markham, ON',
+    'Milton, ON',
+    'Mississauga, ON',
+    'Newmarket, ON',
+    'North York, ON',
+    'Oakville, ON',
+    'Oshawa, ON',
+    'Parkdale, ON',
+    'Pickering, ON',
+    'Queen West, ON',
+    'Richmond Hill, ON',
+    'Riverdale, ON',
+    'Roncesvalles, ON',
+    'Rosedale, ON',
+    'Scarborough, ON',
+    'Stouffville, ON',
+    'The Beaches, ON',
+    'Toronto, ON',
+    'Vaughan, ON',
+    'Whitby, ON',
+    'Yorkville, ON'
+]; // Already sorted alphabetically
+
+class LocationSelector {
+    constructor() {
+        this.filterInput = document.getElementById('location-filter');
+        this.listBox = document.getElementById('location-list-box');
+        this.selectedContainer = document.getElementById('selected-location');
+        this.hiddenInput = document.getElementById('location');
+        
+        this.selectedLocation = null;
+        this.isOpen = false;
+        
+        this.init();
+    }
+    
+    init() {
+        this.populateList();
+        this.setupEventListeners();
+    }
+    
+    populateList() {
+        this.listBox.innerHTML = '';
+        LOCATION_OPTIONS.forEach(location => {
+            const item = document.createElement('div');
+            item.className = 'location-item';
+            item.dataset.location = location;
+            item.innerHTML = `
+                <span class="location-name">${location}</span>
+                <button type="button" class="location-select-btn" data-location="${location}">Select</button>
+            `;
+            
+            const selectBtn = item.querySelector('.location-select-btn');
+            selectBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.selectLocation(location);
+            });
+            
+            // Also allow clicking the entire item to select
+            item.addEventListener('click', () => this.selectLocation(location));
+            
+            this.listBox.appendChild(item);
+        });
+    }
+    
+    setupEventListeners() {
+        // Filter input events
+        this.filterInput.addEventListener('input', (e) => this.filterLocations(e.target.value));
+        this.filterInput.addEventListener('focus', () => this.showList());
+        this.filterInput.addEventListener('blur', () => {
+            // Delay hiding to allow for clicks on list items
+            setTimeout(() => this.hideList(), 150);
+        });
+        
+        // Close list when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!this.filterInput.contains(e.target) && !this.listBox.contains(e.target)) {
+                this.hideList();
+            }
+        });
+    }
+    
+    filterLocations(query) {
+        const searchTerm = query.toLowerCase().trim();
+        const items = this.listBox.querySelectorAll('.location-item');
+        
+        items.forEach(item => {
+            const locationName = item.dataset.location.toLowerCase();
+            const isMatch = locationName.includes(searchTerm);
+            
+            if (isMatch) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+        
+        // Show list when typing
+        if (searchTerm) {
+            this.showList();
+        }
+    }
+    
+    selectLocation(location) {
+        this.selectedLocation = location;
+        this.filterInput.value = location;
+        this.updateSelectedDisplay();
+        this.updateHiddenInput();
+        this.hideList();
+        
+        // Trigger validation update
+        const event = new Event('input', { bubbles: true });
+        this.hiddenInput.dispatchEvent(event);
+    }
+    
+    removeLocation() {
+        this.selectedLocation = null;
+        this.filterInput.value = '';
+        this.updateSelectedDisplay();
+        this.updateHiddenInput();
+        
+        // Trigger validation update
+        const event = new Event('input', { bubbles: true });
+        this.hiddenInput.dispatchEvent(event);
+    }
+    
+    updateSelectedDisplay() {
+        this.selectedContainer.innerHTML = '';
+        
+        if (this.selectedLocation) {
+            const tag = document.createElement('div');
+            tag.className = 'location-tag';
+            tag.innerHTML = `
+                <span>${this.selectedLocation}</span>
+                <button type="button" class="location-tag-remove" aria-label="Remove ${this.selectedLocation}">×</button>
+            `;
+            
+            const removeBtn = tag.querySelector('.location-tag-remove');
+            removeBtn.addEventListener('click', () => this.removeLocation());
+            
+            this.selectedContainer.appendChild(tag);
+        }
+    }
+    
+    updateHiddenInput() {
+        this.hiddenInput.value = this.selectedLocation || '';
+    }
+    
+    showList() {
+        this.listBox.style.display = 'block';
+        this.isOpen = true;
+    }
+    
+    hideList() {
+        this.listBox.style.display = 'none';
+        this.isOpen = false;
+    }
+    
+    // Public method to get selected location
+    getSelectedLocation() {
+        return this.selectedLocation;
+    }
+    
+    // Public method to set selected location (for form reset)
+    setSelectedLocation(location = null) {
+        if (location && LOCATION_OPTIONS.includes(location)) {
+            this.selectLocation(location);
+        } else {
+            this.removeLocation();
+        }
+    }
+    
+    // Public method to validate selection
+    isValid() {
+        // Location is optional, so always return true
+        return true;
+    }
+}
 
 class CraftSelector {
     constructor() {
@@ -220,6 +455,9 @@ class JoinFormManager {
         // Initialize craft selector
         this.craftSelector = new CraftSelector();
         
+        // Initialize location selector
+        this.locationSelector = new LocationSelector();
+        
         this.isSubmitting = false;
         this.selectedFile = null;
         
@@ -231,6 +469,105 @@ class JoinFormManager {
         this.setupFormValidation();
         this.setupFileUpload();
         this.setupCharacterCounter();
+        this.initMobileSupport();
+    }
+
+    initMobileSupport() {
+        // Universal mobile optimizations that work on all devices
+        if (this.form) {
+            this.form.classList.add('mobile-optimized');
+        }
+        
+        // Add touch feedback to interactive elements
+        this.addUniversalTouchSupport();
+        
+        // Optimize file upload for all devices
+        this.setupUniversalFileUpload();
+    }
+
+    addUniversalTouchSupport() {
+        // Add touch feedback to buttons and interactive elements
+        const interactiveElements = [
+            this.submitBtn,
+            this.fileUploadArea,
+            ...document.querySelectorAll('.craft-add-btn'),
+            ...document.querySelectorAll('.craft-tag-remove'),
+            ...document.querySelectorAll('.toolbar-btn')
+        ];
+
+        interactiveElements.forEach(element => {
+            if (element) {
+                // Add touch feedback that works on all devices
+                element.addEventListener('touchstart', () => {
+                    element.classList.add('touch-active');
+                }, { passive: true });
+                
+                element.addEventListener('touchend', () => {
+                    element.classList.remove('touch-active');
+                }, { passive: true });
+                
+                element.addEventListener('touchcancel', () => {
+                    element.classList.remove('touch-active');
+                }, { passive: true });
+            }
+        });
+    }
+
+    setupUniversalFileUpload() {
+        // Simple, universal file upload that works on all devices
+        if (!this.fileUploadArea || !this.imageInput) return;
+        
+        // Remove any existing universal file buttons to prevent duplicates
+        const existingButtons = this.fileUploadArea.querySelectorAll('.universal-file-button');
+        existingButtons.forEach(btn => btn.remove());
+        
+        // Find and replace the existing browse button with our universal one
+        const existingBrowseBtn = this.fileUploadArea.querySelector('.browse-btn');
+        if (existingBrowseBtn) {
+            // Replace the existing browse button with retro styling
+            const fileButton = document.createElement('button');
+            fileButton.type = 'button';
+            fileButton.className = 'browse-btn universal-file-button';
+            fileButton.innerHTML = '📁 Choose Image';
+            fileButton.style.cssText = `
+                padding: 4px 16px;
+                background: linear-gradient(to bottom, #ece9d8 0%, #d6d3ce 100%);
+                border: 1px outset #d4d0c8;
+                border-radius: 0;
+                font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+                font-size: 11px;
+                color: #000000;
+                cursor: pointer;
+                min-height: 24px;
+                min-width: 120px;
+            `;
+            
+            // Add retro hover/active states
+            fileButton.addEventListener('mouseenter', () => {
+                fileButton.style.background = 'linear-gradient(to bottom, #f2efea 0%, #ddd9d4 100%)';
+            });
+            fileButton.addEventListener('mouseleave', () => {
+                fileButton.style.background = 'linear-gradient(to bottom, #ece9d8 0%, #d6d3ce 100%)';
+            });
+            fileButton.addEventListener('mousedown', () => {
+                fileButton.style.border = '1px inset #d4d0c8';
+                fileButton.style.background = 'linear-gradient(to bottom, #d6d3ce 0%, #ece9d8 100%)';
+            });
+            fileButton.addEventListener('mouseup', () => {
+                fileButton.style.border = '1px outset #d4d0c8';
+                fileButton.style.background = 'linear-gradient(to bottom, #f2efea 0%, #ddd9d4 100%)';
+            });
+            
+            // Simple click handler that works everywhere
+            fileButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.imageInput.click();
+            });
+            
+            // Replace the existing button
+            existingBrowseBtn.parentNode.replaceChild(fileButton, existingBrowseBtn);
+        }
     }
 
     setupEventListeners() {
@@ -294,12 +631,16 @@ class JoinFormManager {
         
         if (this.isSubmitting) return;
         
-        // Validate form
+        // Universal form validation
         if (!this.validateForm()) {
             return;
         }
         
-        this.submitForm();
+        // Add small delay for UI feedback on all devices
+        this.setLoadingState(true);
+        setTimeout(() => {
+            this.submitForm();
+        }, 50);
     }
 
     async submitForm() {
@@ -323,6 +664,7 @@ class JoinFormManager {
                 formData.append('image', this.selectedFile);
             }
             
+            // Simple fetch configuration that works everywhere
             const response = await fetch('/api/join', {
                 method: 'POST',
                 body: formData
@@ -339,6 +681,11 @@ class JoinFormManager {
         } catch (error) {
             console.error('Submission error:', error);
             this.showError(error.message);
+            
+            // Add haptic feedback on mobile if available
+            if (navigator.vibrate) {
+                navigator.vibrate([200, 100, 200]);
+            }
         } finally {
             this.isSubmitting = false;
             this.setLoadingState(false);
@@ -634,6 +981,9 @@ class JoinFormManager {
         
         // Reset craft selector
         this.craftSelector.setSelectedCrafts([]);
+        
+        // Reset location selector
+        this.locationSelector.setSelectedLocation(null);
         
         // Clear all field states
         const fieldGroups = this.form.querySelectorAll('.form-group');

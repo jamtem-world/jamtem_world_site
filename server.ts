@@ -209,6 +209,7 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           id: record.id,
           name: record.fields.Name || "",
           craft: record.fields.Craft || "",
+          location: record.fields.Location || "",
           instagram: record.fields.Instagram || "",
           bio: record.fields.Bio || "",
           imageUrl: record.fields.Image && record.fields.Image[0] ? record.fields.Image[0].url : null
