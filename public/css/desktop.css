@@ -1032,6 +1032,38 @@ body {
   box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
   z-index: 1500;
   font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  /* Enhanced mobile positioning */
+  -webkit-overflow-scrolling: touch;
+  overflow: auto;
+}
+
+/* Mobile-specific app window positioning */
+@media (max-width: 768px) {
+  .app-window {
+    /* Ensure windows are properly positioned on mobile */
+    top: calc(var(--safe-area-top) + 20px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: var(--mobile-window-max-width) !important;
+    height: var(--mobile-window-max-height) !important;
+    max-width: var(--mobile-window-max-width) !important;
+    max-height: var(--mobile-window-max-height) !important;
+    /* Prevent content from being cut off */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* iPhone specific window positioning */
+@media (max-width: 480px) {
+  .app-window {
+    top: calc(var(--safe-area-top) + 15px) !important;
+    width: var(--mobile-window-max-width) !important;
+    height: var(--mobile-window-max-height) !important;
+    /* Ensure proper touch scrolling */
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+  }
 }
 
 /* Default window sizing */
@@ -1147,9 +1179,18 @@ body {
   cursor: pointer;
   height: 22px;
   /* Mobile touch improvements */
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  -webkit-tap-highlight-color: rgba(0, 120, 212, 0.2);
   touch-action: manipulation;
   user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  /* Prevent iOS zoom on focus */
+  -webkit-touch-callout: none;
+  -webkit-appearance: none;
+  /* Ensure proper layering */
+  position: relative;
+  z-index: 10;
 }
 
 .toolbar-btn:hover {
@@ -1160,35 +1201,65 @@ body {
 .toolbar-btn.active {
   border: 1px inset #d4d0c8;
   background: linear-gradient(to bottom, #d6d3ce 0%, #ece9d8 100%);
+  /* Enhanced active state for touch */
+  -webkit-tap-highlight-color: rgba(0, 120, 212, 0.3);
+}
+
+.toolbar-btn:focus {
+  outline: 2px solid #0078d4;
+  outline-offset: 1px;
 }
 
 /* Mobile-specific toolbar button enhancements */
 @media (max-width: 768px) {
   .toolbar-btn {
-    height: 32px;
-    padding: 4px 12px;
-    font-size: 12px;
-    min-width: 44px; /* iOS minimum touch target */
-  }
-  
-  .collage-toolbar {
-    padding: 6px;
-    gap: 6px;
-  }
-}
-
-@media (max-width: 480px) {
-  .toolbar-btn {
-    height: 36px;
-    padding: 6px 14px;
-    font-size: 13px;
-    min-width: 48px; /* Larger touch target for small screens */
+    height: 44px; /* iOS minimum touch target */
+    padding: 8px 16px;
+    font-size: 14px;
+    min-width: 44px;
+    /* Enhanced touch feedback */
+    -webkit-tap-highlight-color: rgba(0, 120, 212, 0.25);
   }
   
   .collage-toolbar {
     padding: 8px;
     gap: 8px;
+  }
+}
+
+/* iPhone specific optimizations */
+@media (max-width: 480px) {
+  .toolbar-btn {
+    height: 48px; /* Larger touch target for iPhone */
+    padding: 10px 18px;
+    font-size: 15px;
+    min-width: 48px;
+    /* Stronger visual feedback for small screens */
+    -webkit-tap-highlight-color: rgba(0, 120, 212, 0.3);
+  }
+  
+  .collage-toolbar {
+    padding: 10px;
+    gap: 10px;
     flex-wrap: wrap;
+    /* Ensure toolbar doesn't get cut off */
+    min-height: 68px;
+  }
+}
+
+/* iPhone Pro Max and larger screens */
+@media (max-width: 430px) {
+  .toolbar-btn {
+    height: 50px;
+    padding: 12px 20px;
+    font-size: 16px;
+    min-width: 50px;
+  }
+  
+  .collage-toolbar {
+    padding: 12px;
+    gap: 12px;
+    min-height: 74px;
   }
 }
 
@@ -1209,29 +1280,69 @@ body {
   height: 20px;
   flex: 1;
   max-width: 200px;
-  /* Mobile touch improvements */
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  /* Enhanced mobile touch improvements */
+  -webkit-tap-highlight-color: rgba(0, 120, 212, 0.2);
   touch-action: manipulation;
+  -webkit-appearance: none;
+  -webkit-touch-callout: none;
+  user-select: text;
+  -webkit-user-select: text;
+  /* Prevent iOS zoom on focus */
+  font-size: 16px; /* Prevents zoom on iOS */
+  /* Ensure proper layering */
+  position: relative;
+  z-index: 10;
+}
+
+.search-input:focus {
+  outline: 2px solid #0078d4;
+  outline-offset: 1px;
+  border: 1px solid #0078d4;
+  background: #ffffff;
+}
+
+.search-input::placeholder {
+  color: #999999;
+  opacity: 1;
 }
 
 /* Mobile-specific search input enhancements */
 @media (max-width: 768px) {
   .search-input {
-    height: 32px;
-    padding: 4px 8px;
-    font-size: 12px;
-    min-width: 120px;
+    height: 44px; /* iOS minimum touch target */
+    padding: 8px 12px;
+    font-size: 16px; /* Prevents iOS zoom */
+    min-width: 140px;
+    border-radius: 0;
   }
 }
 
+/* iPhone specific optimizations */
 @media (max-width: 480px) {
   .search-input {
-    height: 36px;
-    padding: 6px 10px;
-    font-size: 13px;
-    min-width: 100px;
+    height: 48px; /* Larger touch target for iPhone */
+    padding: 10px 14px;
+    font-size: 16px; /* Prevents iOS zoom */
+    min-width: 120px;
     flex: 1;
     max-width: none;
+    /* Enhanced focus state for small screens */
+    border-width: 2px;
+  }
+  
+  .search-input:focus {
+    border: 2px solid #0078d4;
+    outline-offset: 2px;
+  }
+}
+
+/* iPhone Pro Max and larger screens */
+@media (max-width: 430px) {
+  .search-input {
+    height: 50px;
+    padding: 12px 16px;
+    font-size: 16px;
+    min-width: 100px;
   }
 }
 
@@ -1536,7 +1647,6 @@ body {
   grid-template-columns: 200px 1fr;
   gap: 16px;
   padding: 16px;
-  min-width: 500px;
 }
 
 .modal-image-section {
@@ -1545,19 +1655,18 @@ body {
 }
 
 .modal-image-container {
-  border: 1px solid #808080;
-  background: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
 }
 
 .modal-member-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  border-radius: var(--border-radius);
 }
+
 
 .modal-image-placeholder {
   color: #666666;
@@ -1621,10 +1730,14 @@ body {
   background: white;
   border: 1px inset #d4d0c8;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .collage-content {
   height: 100%;
+  /* Enhanced mobile scrolling */
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
 }
 
 .collage-item {
@@ -1637,6 +1750,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Enhanced touch interaction */
+  -webkit-tap-highlight-color: rgba(0, 120, 212, 0.2);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .collage-item img {
@@ -1644,10 +1762,22 @@ body {
   height: 100%;
   object-fit: cover;
   transition: transform 0.2s ease;
+  /* Prevent image selection on mobile */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  pointer-events: none;
 }
 
 .collage-item:hover img {
   transform: scale(1.05);
+}
+
+.collage-item:active {
+  /* Enhanced active state for touch */
+  -webkit-tap-highlight-color: rgba(0, 120, 212, 0.3);
+  transform: scale(0.98);
 }
 
 .collage-item.placeholder {
@@ -1655,6 +1785,37 @@ body {
   color: #999999;
   font-size: 10px;
   text-align: center;
+}
+
+/* Mobile-specific collage item enhancements */
+@media (max-width: 768px) {
+  .collage-item {
+    /* Larger touch targets for mobile */
+    min-height: 44px;
+    min-width: 44px;
+    /* Enhanced touch feedback */
+    -webkit-tap-highlight-color: rgba(0, 120, 212, 0.25);
+  }
+  
+  .collage-item:active {
+    transform: scale(0.95);
+    -webkit-tap-highlight-color: rgba(0, 120, 212, 0.4);
+  }
+}
+
+/* iPhone specific collage optimizations */
+@media (max-width: 480px) {
+  .collage-item {
+    min-height: 48px;
+    min-width: 48px;
+    /* Stronger visual feedback for small screens */
+    -webkit-tap-highlight-color: rgba(0, 120, 212, 0.3);
+  }
+  
+  .collage-item:active {
+    transform: scale(0.92);
+    -webkit-tap-highlight-color: rgba(0, 120, 212, 0.5);
+  }
 }
 
 /* Dynamic grid classes */
@@ -1755,12 +1916,10 @@ body {
   .modal-content {
     grid-template-columns: 1fr;
     min-width: auto;
-    width: 95vw;
   }
   
   .modal-image-container {
     height: 200px;
-    margin: 0 auto;
   }
 }
 

@@ -391,7 +391,21 @@ class CollageManager {
 
         // Set text content
         if (modalName) modalName.textContent = member.name || 'Unknown';
-        if (modalCraft) modalCraft.textContent = member.craft || 'Creator';
+        
+        // Handle craft field - format properly if it's an array
+        if (modalCraft) {
+            let craftText = 'Creator';
+            if (member.craft) {
+                if (Array.isArray(member.craft)) {
+                    // Join array elements with commas and spaces
+                    craftText = member.craft.join(', ');
+                } else {
+                    craftText = member.craft.toString();
+                }
+            }
+            modalCraft.textContent = craftText;
+        }
+        
         if (modalBio) modalBio.textContent = member.bio || 'No bio available';
 
         // Handle Location
