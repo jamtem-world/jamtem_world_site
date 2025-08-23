@@ -1213,9 +1213,7 @@ body {
 /* Mobile-specific toolbar button enhancements */
 @media (max-width: 768px) {
   .toolbar-btn {
-    height: 44px; /* iOS minimum touch target */
-    padding: 8px 16px;
-    font-size: 14px;
+    height: 36px; /* iOS minimum touch target */
     min-width: 44px;
     /* Enhanced touch feedback */
     -webkit-tap-highlight-color: rgba(0, 120, 212, 0.25);
@@ -1229,14 +1227,12 @@ body {
 
 /* iPhone specific optimizations */
 @media (max-width: 480px) {
-  .toolbar-btn {
-    height: 48px; /* Larger touch target for iPhone */
+  /* .toolbar-btn {
     padding: 10px 18px;
     font-size: 15px;
     min-width: 48px;
-    /* Stronger visual feedback for small screens */
     -webkit-tap-highlight-color: rgba(0, 120, 212, 0.3);
-  }
+  } */
   
   .collage-toolbar {
     padding: 10px;
@@ -1249,12 +1245,12 @@ body {
 
 /* iPhone Pro Max and larger screens */
 @media (max-width: 430px) {
-  .toolbar-btn {
+  /* .toolbar-btn {
     height: 50px;
     padding: 12px 20px;
     font-size: 16px;
     min-width: 50px;
-  }
+  } */
   
   .collage-toolbar {
     padding: 12px;
@@ -1309,26 +1305,23 @@ body {
 /* Mobile-specific search input enhancements */
 @media (max-width: 768px) {
   .search-input {
-    height: 44px; /* iOS minimum touch target */
-    padding: 8px 12px;
+    height: 36px; /* iOS minimum touch target */
     font-size: 16px; /* Prevents iOS zoom */
-    min-width: 140px;
     border-radius: 0;
   }
 }
 
 /* iPhone specific optimizations */
 @media (max-width: 480px) {
-  .search-input {
-    height: 48px; /* Larger touch target for iPhone */
+  /* .search-input {
+    height: 48px; 
     padding: 10px 14px;
-    font-size: 16px; /* Prevents iOS zoom */
+    font-size: 16px; 
     min-width: 120px;
     flex: 1;
     max-width: none;
-    /* Enhanced focus state for small screens */
     border-width: 2px;
-  }
+  } */
   
   .search-input:focus {
     border: 2px solid #0078d4;
@@ -1338,12 +1331,12 @@ body {
 
 /* iPhone Pro Max and larger screens */
 @media (max-width: 430px) {
-  .search-input {
+  /* .search-input {
     height: 50px;
     padding: 12px 16px;
     font-size: 16px;
     min-width: 100px;
-  }
+  } */
 }
 
 /* Form Styling */
@@ -1363,6 +1356,56 @@ body {
 .form-header p {
   font-size: 11px;
   color: #666666;
+}
+
+/* Desktop Form */
+.desktop-form {
+  height: calc(100% - 80px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Form Tabs */
+.form-tabs {
+  display: flex;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #9c9c9c;
+}
+
+.tab-button {
+  padding: 6px 16px;
+  background: linear-gradient(to bottom, #ece9d8 0%, #d6d3ce 100%);
+  border: 1px outset #d4d0c8;
+  border-bottom: none;
+  border-radius: 0;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  font-size: 11px;
+  color: #000000;
+  cursor: pointer;
+  margin-right: 2px;
+}
+
+.tab-button:hover {
+  background: linear-gradient(to bottom, #f2efea 0%, #ddd9d4 100%);
+}
+
+.tab-button.active {
+  background: #c0c0c0;
+  border: 1px solid #9c9c9c;
+  border-bottom: 1px solid #c0c0c0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Tab Content */
+.tab-content {
+  display: none;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.tab-content.active {
+  display: block;
 }
 
 .form-section {
@@ -1403,13 +1446,19 @@ body {
   background: white;
   font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
   font-size: 11px;
-  height: 20px;
+  height: 35px;
 }
 
 .form-textarea {
   height: auto;
   resize: vertical;
   min-height: 60px;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: 1px dotted #000000;
+  outline-offset: -2px;
 }
 
 .character-counter {
@@ -1430,6 +1479,67 @@ body {
   font-size: 10px;
   color: #666666;
   margin-top: 4px;
+}
+
+/* Input with prefix */
+.input-with-prefix {
+  display: flex;
+  align-items: center;
+}
+
+.input-prefix {
+    background: #e0e0e0;
+    border: 1px inset #d4d0c8;
+    border-right: none;
+    padding: 5px;
+    font-size: 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.form-input.with-prefix {
+  border-left: none;
+}
+
+/* Form Navigation */
+.form-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid #9c9c9c;
+  margin-top: auto;
+}
+
+.nav-btn {
+  padding: 6px 16px;
+  background: linear-gradient(to bottom, #ece9d8 0%, #d6d3ce 100%);
+  border: 1px outset #d4d0c8;
+  border-radius: 0;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  font-size: 11px;
+  color: #000000;
+  cursor: pointer;
+  min-width: 80px;
+}
+
+.nav-btn:hover {
+  background: linear-gradient(to bottom, #f2efea 0%, #ddd9d4 100%);
+}
+
+.nav-btn:active {
+  border: 1px inset #d4d0c8;
+  background: linear-gradient(to bottom, #d6d3ce 0%, #ece9d8 100%);
+}
+
+.submit-btn {
+  background: linear-gradient(to bottom, #0078d4 0%, #106ebe 100%);
+  color: white;
+}
+
+.submit-btn:hover {
+  background: linear-gradient(to bottom, #106ebe 0%, #1e3a8a 100%);
 }
 
 /* File Upload */
@@ -1647,6 +1757,10 @@ body {
   grid-template-columns: 200px 1fr;
   gap: 16px;
   padding: 16px;
+}
+
+.modal-location {
+  margin-bottom: 12px;
 }
 
 .modal-image-section {
@@ -2559,6 +2673,308 @@ body {
   .product-modal-content {
     padding: 12px;
   }
-  
+}
 
+/* Benefits Content Styles */
+.benefits-content {
+  padding: 16px;
+}
+
+.benefits-content h2 {
+  font-size: 16px;
+  color: #000000;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.benefits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #f0f0f0;
+  border: 1px inset #d4d0c8;
+}
+
+.benefit-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.benefit-text h3 {
+  font-size: 12px;
+  color: #000000;
+  margin-bottom: 4px;
+}
+
+.benefit-text p {
+  font-size: 11px;
+  color: #333333;
+  line-height: 1.4;
+}
+
+.benefits-footer {
+  text-align: center;
+}
+
+/* Help Content Styles */
+.help-content {
+  padding: 16px;
+}
+
+.help-content h2 {
+  font-size: 16px;
+  color: #000000;
+  margin-bottom: 16px;
+}
+
+.help-section {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f0f0f0;
+  border: 1px inset #d4d0c8;
+}
+
+.help-section h3 {
+  font-size: 12px;
+  color: #000000;
+  margin-bottom: 8px;
+}
+
+.help-section p {
+  font-size: 11px;
+  color: #333333;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.help-section ul {
+  margin-left: 16px;
+}
+
+.help-section li {
+  font-size: 11px;
+  color: #333333;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+/* File Manager Content Styles */
+.file-manager-content {
+  padding: 8px;
+}
+
+.file-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: linear-gradient(to bottom, #ece9d8 0%, #d6d3ce 100%);
+  border: 1px inset #d4d0c8;
+  margin-bottom: 8px;
+}
+
+.file-list {
+  background: white;
+  border: 1px inset #d4d0c8;
+  height: 300px;
+  overflow-y: auto;
+}
+
+.file-item {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  gap: 8px;
+  padding: 4px 8px;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.file-item:hover {
+  background: #e0e0e0;
+}
+
+.file-item:active {
+  background: #316ac5;
+  color: white;
+}
+
+.file-icon {
+  font-size: 16px;
+  text-align: center;
+}
+
+.file-name {
+  font-size: 11px;
+  color: #000000;
+}
+
+.file-size {
+  font-size: 10px;
+  color: #666666;
+}
+
+/* Dialog Windows */
+.dialog-window {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #c0c0c0;
+  border: 2px outset #c0c0c0;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  width: 400px;
+  min-height: 200px;
+}
+
+.dialog-titlebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 24px;
+  background: linear-gradient(to right, #0078d4 0%, #106ebe 100%);
+  color: white;
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dialog-content {
+  padding: 16px;
+  text-align: center;
+}
+
+.dialog-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.dialog-content h3 {
+  font-size: 14px;
+  color: #000000;
+  margin-bottom: 8px;
+}
+
+.dialog-content p {
+  font-size: 11px;
+  color: #333333;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.dialog-buttons {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Active taskbar button */
+.taskbar-button.active {
+  border: 1px inset #d4d0c8;
+  background: linear-gradient(to bottom, #d6d3ce 0%, #ece9d8 100%);
+}
+
+/* Additional responsive adjustments for new content */
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .form-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .tab-button {
+    flex: 1;
+    min-width: 80px;
+  }
+  
+  .image-preview {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  
+  .image-preview img {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+  }
+  
+  .benefits-list {
+    gap: 12px;
+  }
+  
+  .benefit-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  
+  .file-item {
+    grid-template-columns: 30px 1fr;
+    gap: 8px;
+  }
+  
+  .file-size {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-header h2 {
+    font-size: 14px;
+  }
+  
+  .form-header p {
+    font-size: 10px;
+  }
+  
+  .tab-button {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  
+  .form-section {
+    padding: 12px;
+  }
+  
+  .form-navigation {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .nav-btn {
+    width: 100%;
+  }
+  
+  .dialog-window {
+    width: 95vw;
+    max-width: 350px;
+    max-height: var(--mobile-window-max-height);
+  }
+}
+
+/* Focus styles for new elements */
+.tab-button:focus,
+.nav-btn:focus,
+.dialog-window:focus {
+  outline: 1px dotted #000000;
+  outline-offset: -2px;
 }
