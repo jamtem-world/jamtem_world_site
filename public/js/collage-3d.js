@@ -229,10 +229,10 @@ class SphereCollageManager {
     }
 
     async createSphere() {
-        // Make sphere size responsive to screen size
-        const radius = this.getResponsiveSphereRadius();
+        // Calculate dynamic sphere size based on member count and screen size
+        const radius = this.getDynamicSphereRadius();
         
-        console.log(`Creating sphere with radius ${radius} for screen width ${window.innerWidth}px`);
+        console.log(`Creating sphere with radius ${radius} for ${this.members.length} members on screen width ${window.innerWidth}px`);
         
         const geometry = new THREE.SphereGeometry(radius, this.sphereSegments, this.sphereSegments);
         
@@ -254,16 +254,34 @@ class SphereCollageManager {
         await this.addMembersToSphere(radius);
     }
 
-    getResponsiveSphereRadius() {
+    getDynamicSphereRadius() {
+        const memberCount = this.members ? this.members.length : 0;
         const screenWidth = window.innerWidth;
         
+        // Base radius based on screen size
+        let baseRadius;
         if (screenWidth < 480) {
-            return 1.2; // Much smaller sphere for mobile phones
+            baseRadius = 1.2; // Mobile phones
         } else if (screenWidth < 768) {
-            return 1.8; // Smaller sphere for tablets
+            baseRadius = 1.8; // Tablets
         } else {
-            return 2.5; // Medium size for desktop (reduced from 3)
+            baseRadius = 2.5; // Desktop
         }
+        
+        // Dynamic scaling based on member count
+        // Use square root scaling to prevent sphere from getting too large too quickly
+        const scalingFactor = Math.sqrt(Math.max(memberCount, 1) / 10);
+        const dynamicRadius = baseRadius * Math.max(1, scalingFactor);
+        
+        // Cap maximum radius to prevent performance issues
+        const maxRadius = screenWidth < 480 ? 3 : screenWidth < 768 ? 4 : 6;
+        
+        return Math.min(dynamicRadius, maxRadius);
+    }
+
+    getResponsiveSphereRadius() {
+        // Legacy method - now redirects to dynamic calculation
+        return this.getDynamicSphereRadius();
     }
 
     async addMembersToSphere(radius) {
@@ -291,23 +309,70 @@ class SphereCollageManager {
     calculateSpherePositions(count, radius) {
         const positions = [];
         
-        // Generate random positions on the sphere surface
+        if (count === 0) return positions;
+        
+        // Use Fibonacci spiral for optimal distribution with no overlap
+        // This ensures even spacing and no clustering
+        const goldenRatio = (1 + Math.sqrt(5)) / 2;
+        const angleIncrement = 2 * Math.PI / goldenRatio;
+        
         for (let i = 0; i < count; i++) {
-            // Generate random spherical coordinates
-            // Use uniform distribution on sphere surface
-            const u = Math.random(); // Random value between 0 and 1
-            const v = Math.random(); // Random value between 0 and 1
-            
-            // Convert to spherical coordinates with uniform distribution
-            const theta = 2 * Math.PI * u; // Azimuthal angle (0 to 2π)
-            const phi = Math.acos(2 * v - 1); // Polar angle (0 to π) with uniform distribution
+            // Calculate position using Fibonacci spiral
+            const t = i / count;
+            const inclination = Math.acos(1 - 2 * t); // Polar angle (0 to π)
+            const azimuth = angleIncrement * i; // Azimuthal angle
             
             // Convert spherical to Cartesian coordinates
-            const x = radius * Math.sin(phi) * Math.cos(theta);
-            const y = radius * Math.sin(phi) * Math.sin(theta);
-            const z = radius * Math.cos(phi);
+            const x = radius * Math.sin(inclination) * Math.cos(azimuth);
+            const y = radius * Math.sin(inclination) * Math.sin(azimuth);
+            const z = radius * Math.cos(inclination);
             
             positions.push(new THREE.Vector3(x, y, z));
+        }
+        
+        // If we have very few members, use a more structured approach
+        if (count <= 4) {
+            return this.calculateStructuredPositions(count, radius);
+        }
+        
+        return positions;
+    }
+    
+    calculateStructuredPositions(count, radius) {
+        const positions = [];
+        
+        if (count === 1) {
+            // Single member at the front
+            positions.push(new THREE.Vector3(0, 0, radius));
+        } else if (count === 2) {
+            // Two members opposite each other
+            positions.push(new THREE.Vector3(0, 0, radius));
+            positions.push(new THREE.Vector3(0, 0, -radius));
+        } else if (count === 3) {
+            // Three members in a triangle around the equator
+            for (let i = 0; i < 3; i++) {
+                const angle = (i * 2 * Math.PI) / 3;
+                positions.push(new THREE.Vector3(
+                    radius * Math.cos(angle),
+                    radius * Math.sin(angle),
+                    0
+                ));
+            }
+        } else if (count === 4) {
+            // Four members in a tetrahedron pattern
+            const tetrahedronAngles = [
+                { theta: 0, phi: 0 },
+                { theta: 2 * Math.PI / 3, phi: Math.acos(-1/3) },
+                { theta: 4 * Math.PI / 3, phi: Math.acos(-1/3) },
+                { theta: 0, phi: Math.PI }
+            ];
+            
+            tetrahedronAngles.forEach(({ theta, phi }) => {
+                const x = radius * Math.sin(phi) * Math.cos(theta);
+                const y = radius * Math.sin(phi) * Math.sin(theta);
+                const z = radius * Math.cos(phi);
+                positions.push(new THREE.Vector3(x, y, z));
+            });
         }
         
         return positions;
@@ -332,19 +397,32 @@ class SphereCollageManager {
                     texture.minFilter = THREE.LinearFilter;
                     texture.magFilter = THREE.LinearFilter;
 
-                    // Make image size responsive to screen size
+                    // Calculate optimal image size based on sphere radius and member count
+                    const memberCount = this.members.length;
                     const screenWidth = window.innerWidth;
-                    let size;
                     
+                    // Base size responsive to screen size
+                    let baseSize;
                     if (screenWidth < 480) {
-                        size = 0.4; // Smaller images for mobile phones
+                        baseSize = 0.4; // Smaller images for mobile phones
                     } else if (screenWidth < 768) {
-                        size = 0.5; // Medium images for tablets
+                        baseSize = 0.5; // Medium images for tablets
                     } else {
-                        size = 0.6; // Full size for desktop
+                        baseSize = 0.6; // Full size for desktop
                     }
                     
-                    const geometry = new THREE.PlaneGeometry(size, size);
+                    // Scale size based on sphere radius and member density
+                    const radiusScale = sphereRadius / 2.5; // Normalize to base radius of 2.5
+                    const densityScale = Math.max(0.5, 1 - (memberCount - 10) * 0.02); // Reduce size as member count increases
+                    
+                    const size = baseSize * radiusScale * densityScale;
+                    
+                    // Ensure minimum and maximum sizes
+                    const minSize = screenWidth < 480 ? 0.2 : 0.3;
+                    const maxSize = screenWidth < 480 ? 0.6 : 0.8;
+                    const finalSize = Math.max(minSize, Math.min(maxSize, size));
+                    
+                    const geometry = new THREE.PlaneGeometry(finalSize, finalSize);
                     const material = new THREE.MeshLambertMaterial({
                         map: texture,
                         transparent: true,
@@ -502,8 +580,8 @@ class SphereCollageManager {
             this.camera.position.copy(direction.multiplyScalar(cameraDistance));
         }
 
-        // Check if sphere size needs to be updated
-        const newRadius = this.getResponsiveSphereRadius();
+        // Check if sphere size needs to be updated (considers both screen size and member count)
+        const newRadius = this.getDynamicSphereRadius();
         if (Math.abs(this.currentSphereRadius - newRadius) > 0.1) {
             this.resizeSphere(newRadius);
         }
