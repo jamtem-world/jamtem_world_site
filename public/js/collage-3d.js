@@ -136,7 +136,7 @@ class SphereCollageManager {
         
         if (screenWidth < 480) {
             fov = 85; // Wider field of view for mobile
-            cameraDistance = 4; // Closer to sphere for mobile
+            cameraDistance = 5; // Zoomed out more for better mobile view
         } else if (screenWidth < 768) {
             fov = 80; // Medium field of view for tablets
             cameraDistance = 4.5; // Medium distance for tablets
@@ -236,12 +236,44 @@ class SphereCollageManager {
         
         const geometry = new THREE.SphereGeometry(radius, this.sphereSegments, this.sphereSegments);
         
-        // Create base sphere material
-        const material = new THREE.MeshLambertMaterial({
-            color: 0x333333,
+        // Create base sphere material with blur effect to make members stand out
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0.0 },
+                opacity: { value: 0.08 }
+            },
+            vertexShader: `
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+                
+                void main() {
+                    vNormal = normalize(normalMatrix * normal);
+                    vPosition = position;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform float time;
+                uniform float opacity;
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+                
+                void main() {
+                    // Create a subtle animated blur effect
+                    float noise = sin(vPosition.x * 10.0 + time) * sin(vPosition.y * 10.0 + time) * sin(vPosition.z * 10.0 + time);
+                    float blur = 0.5 + 0.1 * noise;
+                    
+                    // Soft gradient from center to edges
+                    float fresnel = 1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0)));
+                    
+                    vec3 color = vec3(0.2, 0.2, 0.2) * blur;
+                    float alpha = opacity * fresnel * 0.8;
+                    
+                    gl_FragColor = vec4(color, alpha);
+                }
+            `,
             transparent: true,
-            opacity: 0.1,
-            wireframe: false
+            side: THREE.DoubleSide
         });
 
         this.sphere = new THREE.Mesh(geometry, material);
@@ -258,19 +290,19 @@ class SphereCollageManager {
         const memberCount = this.members ? this.members.length : 0;
         const screenWidth = window.innerWidth;
         
-        // Base radius based on screen size
+        // Base radius based on screen size - unified for consistent experience
         let baseRadius;
         if (screenWidth < 480) {
-            baseRadius = 1.2; // Mobile phones
+            baseRadius = 2.2; // Increased from 1.2 to match desktop density
         } else if (screenWidth < 768) {
-            baseRadius = 1.8; // Tablets
+            baseRadius = 2.3; // Slightly smaller than desktop for tablets
         } else {
             baseRadius = 2.5; // Desktop
         }
         
         // Dynamic scaling based on member count
-        // Use square root scaling to prevent sphere from getting too large too quickly
-        const scalingFactor = Math.sqrt(Math.max(memberCount, 1) / 10);
+        // Use more gradual scaling to keep members visually dense
+        const scalingFactor = Math.pow(Math.max(memberCount, 1) / 20, 0.35);
         const dynamicRadius = baseRadius * Math.max(1, scalingFactor);
         
         // Cap maximum radius to prevent performance issues
@@ -401,19 +433,19 @@ class SphereCollageManager {
                     const memberCount = this.members.length;
                     const screenWidth = window.innerWidth;
                     
-                    // Base size responsive to screen size
+                    // Unified base size across all devices for consistent experience
                     let baseSize;
                     if (screenWidth < 480) {
-                        baseSize = 0.4; // Smaller images for mobile phones
+                        baseSize = 0.75; // Unified with desktop for consistent density
                     } else if (screenWidth < 768) {
-                        baseSize = 0.5; // Medium images for tablets
+                        baseSize = 0.8; // Slightly larger for tablets
                     } else {
-                        baseSize = 0.6; // Full size for desktop
+                        baseSize = 0.8; // Desktop baseline
                     }
                     
                     // Scale size based on sphere radius and member density
                     const radiusScale = sphereRadius / 2.5; // Normalize to base radius of 2.5
-                    const densityScale = Math.max(0.5, 1 - (memberCount - 10) * 0.02); // Reduce size as member count increases
+                    const densityScale = Math.max(0.7, 1 - (memberCount - 20) * 0.01); // Less aggressive scaling - starts reducing after 20 members
                     
                     const size = baseSize * radiusScale * densityScale;
                     
@@ -558,7 +590,7 @@ class SphereCollageManager {
         
         if (screenWidth < 480) {
             fov = 85;
-            cameraDistance = 4;
+            cameraDistance = 5; // Consistent with initial mobile view
         } else if (screenWidth < 768) {
             fov = 80;
             cameraDistance = 4.5;

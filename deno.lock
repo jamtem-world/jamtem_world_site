@@ -68,13 +68,23 @@
   },
   "redirects": {
     "https://esm.sh/@types/three@~0.158.3/examples/jsm/controls/OrbitControls.d.ts": "https://esm.sh/@types/three@0.158.3/examples/jsm/controls/OrbitControls.d.ts",
+    "https://esm.sh/@types/three@~0.158.3/examples/jsm/postprocessing/EffectComposer.d.ts": "https://esm.sh/@types/three@0.158.3/examples/jsm/postprocessing/EffectComposer.d.ts",
+    "https://esm.sh/@types/three@~0.158.3/examples/jsm/postprocessing/RenderPass.d.ts": "https://esm.sh/@types/three@0.158.3/examples/jsm/postprocessing/RenderPass.d.ts",
+    "https://esm.sh/@types/three@~0.158.3/examples/jsm/postprocessing/UnrealBloomPass.d.ts": "https://esm.sh/@types/three@0.158.3/examples/jsm/postprocessing/UnrealBloomPass.d.ts",
     "https://esm.sh/@types/three@~0.158.3/index.d.ts": "https://esm.sh/@types/three@0.158.3/index.d.ts"
   },
   "remote": {
     "https://esm.sh/three@0.158.0": "abc32be2732822928e32fb202952c6007f387128997e0d8b55c434fb8054ce3c",
     "https://esm.sh/three@0.158.0/denonext/examples/jsm/controls/OrbitControls.mjs": "f7bb8be589f9a8fbeb22dd20815f38670da7d72c13815161fb9bbeba509efa25",
     "https://esm.sh/three@0.158.0/denonext/three.mjs": "317bf411bd47546809c330ed70b73fff292d8e6deee30e68c1be8374f023393a",
-    "https://esm.sh/three@0.158.0/examples/jsm/controls/OrbitControls.js": "f846de1bd869d99a5d2db9cc053c7d6969125ee5f0346ff415ced95bfd32c954"
+    "https://esm.sh/three@0.158.0/es2022/examples/jsm/postprocessing/EffectComposer.mjs": "a0c033a23b5c852b277cc92089e878c3f1919299dc3dc25bc8cce2bd43cfafdd",
+    "https://esm.sh/three@0.158.0/es2022/examples/jsm/postprocessing/RenderPass.mjs": "03b832f2d57190cf2f9920a076f7e37d5d31523f60b24eb9e85406fd284dbd05",
+    "https://esm.sh/three@0.158.0/es2022/examples/jsm/postprocessing/UnrealBloomPass.mjs": "21ce15384d74862134c1670b0e12de24c6666b7ce36fe57d93d4b6a6e19e2927",
+    "https://esm.sh/three@0.158.0/es2022/three.mjs": "913137ae817ecec8bc318132ee84ac6d78e2aabec78990960b3a27ced530ec99",
+    "https://esm.sh/three@0.158.0/examples/jsm/controls/OrbitControls.js": "f846de1bd869d99a5d2db9cc053c7d6969125ee5f0346ff415ced95bfd32c954",
+    "https://esm.sh/three@0.158.0/examples/jsm/postprocessing/EffectComposer.js": "a1614c58b1f177762bf7a68a91b3fc13de85b320d69c0d82204ef49c2aa17b30",
+    "https://esm.sh/three@0.158.0/examples/jsm/postprocessing/RenderPass.js": "1aca11940268e2cc8c83665cdc6750fe75da0329a9934d999353275bd068ccd4",
+    "https://esm.sh/three@0.158.0/examples/jsm/postprocessing/UnrealBloomPass.js": "79c1f27ce1d501fe1b31c01fd58e9a02c6f3de53116c8d287a199de96ae6aca8"
   },
   "workspace": {
     "dependencies": [
