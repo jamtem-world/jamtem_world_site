@@ -223,7 +223,8 @@ body {
   align-items: center;
   flex-direction: column;
   width: 100vw;
-  height: calc(100vh - var(--taskbar-height)); /* Account for taskbar */
+  height: 100%; /* Account for taskbar */
+  padding-bottom: 5rem;
   /* background: linear-gradient(135deg, #0078d4 0%, #106ebe 50%, #1e3a8a 100%);
   background-image: 
     radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 0%, transparent 50%),
@@ -849,9 +850,9 @@ body {
     max-height: var(--mobile-window-max-height);
   }
   
-  .desktop {
+  /* .desktop {
     height: var(--mobile-safe-height);
-  }
+  } */
   
   /* App window responsive adjustments for tablets */
   .app-window {
@@ -2093,9 +2094,9 @@ body {
     font-size: 16px;
   }
   
-  .desktop {
+  /* .desktop {
     height: var(--mobile-safe-height);
-  }
+  } */
   
   .video-window {
     width: var(--mobile-window-max-width);
