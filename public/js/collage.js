@@ -391,7 +391,7 @@ class CollageManager {
             modalContainer.style.backgroundRepeat = '';
         }
 
-        // Set image
+        // Set image with ELMNT video hover functionality
         if (member.imageUrl && modalImage) {
             modalImage.src = member.imageUrl;
             modalImage.alt = `${member.name} - ${member.craft}`;
@@ -399,6 +399,9 @@ class CollageManager {
             if (modalImagePlaceholder) {
                 modalImagePlaceholder.style.display = 'none';
             }
+
+            // Add ELMNT video hover functionality if video exists
+            this.setupElmntVideoHover(modalImage, member);
         } else {
             if (modalImage) modalImage.style.display = 'none';
             if (modalImagePlaceholder) modalImagePlaceholder.style.display = 'flex';
@@ -747,6 +750,228 @@ class CollageManager {
                 </div>
             `;
         }
+    }
+
+    // Setup ELMNT video hover functionality
+    setupElmntVideoHover(imageElement, member) {
+        if (!member.elmntVideoUrl) return;
+
+        // Create hover overlay container
+        const hoverOverlay = document.createElement('div');
+        hoverOverlay.className = 'elmnt-hover-overlay';
+        hoverOverlay.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        `;
+
+        // Create play button
+        const playButton = document.createElement('div');
+        playButton.className = 'elmnt-play-button';
+        playButton.innerHTML = '▶';
+        playButton.style.cssText = `
+            font-size: 48px;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        `;
+
+        // Create text
+        const hoverText = document.createElement('div');
+        hoverText.className = 'elmnt-hover-text';
+        hoverText.textContent = 'Watch Them In their ELEMENT';
+        hoverText.style.cssText = `
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: 1px;
+        `;
+
+        hoverOverlay.appendChild(playButton);
+        hoverOverlay.appendChild(hoverText);
+
+        // Make image container relative positioned
+        const imageContainer = imageElement.parentElement;
+        if (imageContainer) {
+            imageContainer.style.position = 'relative';
+            imageContainer.appendChild(hoverOverlay);
+
+            // Add hover event listeners
+            imageContainer.addEventListener('mouseenter', () => {
+                hoverOverlay.style.display = 'flex';
+            });
+
+            imageContainer.addEventListener('mouseleave', () => {
+                hoverOverlay.style.display = 'none';
+            });
+
+            // Add click event listener to open video modal
+            hoverOverlay.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent opening member modal
+                this.openElmntVideoModal(member);
+            });
+        }
+    }
+
+    // Open ELMNT video modal
+    openElmntVideoModal(member) {
+        if (!member.elmntVideoUrl) return;
+
+        // Create video modal if it doesn't exist
+        let videoModal = document.getElementById('elmnt-video-modal');
+        if (!videoModal) {
+            videoModal = this.createElmntVideoModal();
+        }
+
+        // Update modal content
+        const modalTitle = videoModal.querySelector('.elmnt-modal-title');
+        const modalVideo = videoModal.querySelector('.elmnt-modal-video');
+
+        if (modalTitle) {
+            modalTitle.textContent = `${member.name} - In their ELEMENT`;
+        }
+
+        if (modalVideo) {
+            modalVideo.src = member.elmntVideoUrl;
+            modalVideo.load(); // Reload the video element
+        }
+
+        // Show modal
+        videoModal.style.display = 'flex';
+        document.body.classList.add('modal-open');
+
+        // Auto-play video if possible
+        if (modalVideo) {
+            modalVideo.play().catch(error => {
+                console.log('Auto-play prevented:', error);
+                // Auto-play was prevented, user will need to click play
+            });
+        }
+    }
+
+    // Create ELMNT video modal
+    createElmntVideoModal() {
+        const modal = document.createElement('div');
+        modal.id = 'elmnt-video-modal';
+        modal.className = 'elmnt-video-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+            box-sizing: border-box;
+        `;
+
+        const modalContent = document.createElement('div');
+        modalContent.className = 'elmnt-modal-content';
+        modalContent.style.cssText = `
+            background: #000;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 90vw;
+            max-height: 90vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        `;
+
+        const closeButton = document.createElement('button');
+        closeButton.className = 'elmnt-modal-close';
+        closeButton.innerHTML = '×';
+        closeButton.style.cssText = `
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            z-index: 1001;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+
+        const title = document.createElement('h3');
+        title.className = 'elmnt-modal-title';
+        title.style.cssText = `
+            color: white;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 24px;
+        `;
+
+        const video = document.createElement('video');
+        video.className = 'elmnt-modal-video';
+        video.controls = true;
+        video.style.cssText = `
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 4px;
+        `;
+
+        modalContent.appendChild(closeButton);
+        modalContent.appendChild(title);
+        modalContent.appendChild(video);
+        modal.appendChild(modalContent);
+
+        // Add event listeners
+        closeButton.addEventListener('click', () => this.closeElmntVideoModal());
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.closeElmntVideoModal();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
+                this.closeElmntVideoModal();
+            }
+        });
+
+        // Append to body
+        document.body.appendChild(modal);
+        return modal;
+    }
+
+    // Close ELMNT video modal
+    closeElmntVideoModal() {
+        const videoModal = document.getElementById('elmnt-video-modal');
+        if (!videoModal) return;
+
+        const video = videoModal.querySelector('.elmnt-modal-video');
+        if (video) {
+            video.pause();
+            video.currentTime = 0;
+        }
+
+        videoModal.style.display = 'none';
+        document.body.classList.remove('modal-open');
     }
 
     // Public method to retry loading (called from retry button)

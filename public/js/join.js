@@ -456,6 +456,14 @@ class JoinFormManager {
         this.backgroundPreviewImage = document.getElementById('background-preview-image');
         this.removeBackgroundImageBtn = document.getElementById('remove-background-image');
         this.backgroundFileUploadArea = document.getElementById('background-file-upload-area');
+        
+        // ELMNT video elements
+        this.elmntVideoInput = document.getElementById('elmnt-video');
+        this.elmntVideoPreview = document.getElementById('elmnt-video-preview');
+        this.elmntPreviewVideo = document.getElementById('elmnt-preview-video');
+        this.removeElmntVideoBtn = document.getElementById('remove-elmnt-video');
+        this.elmntVideoUploadArea = document.getElementById('elmnt-video-upload-area');
+        
         this.bioTextarea = document.getElementById('bio');
         this.bioCounter = document.getElementById('bio-counter');
         
@@ -468,6 +476,7 @@ class JoinFormManager {
         this.isSubmitting = false;
         this.selectedFile = null;
         this.selectedBackgroundFile = null;
+        this.selectedVideoFile = null;
         
         this.init();
     }
@@ -603,6 +612,24 @@ class JoinFormManager {
             this.backgroundFileUploadArea.addEventListener('click', () => this.backgroundImageInput.click());
         }
         
+        // ELMNT video removal
+        if (this.removeElmntVideoBtn) {
+            this.removeElmntVideoBtn.addEventListener('click', () => this.removeElmntVideo());
+        }
+        
+        // ELMNT video file input change
+        if (this.elmntVideoInput) {
+            this.elmntVideoInput.addEventListener('change', (e) => this.handleVideoFileSelect(e));
+        }
+        
+        // ELMNT video drag and drop
+        if (this.elmntVideoUploadArea) {
+            this.elmntVideoUploadArea.addEventListener('dragover', (e) => this.handleVideoDragOver(e));
+            this.elmntVideoUploadArea.addEventListener('dragleave', (e) => this.handleVideoDragLeave(e));
+            this.elmntVideoUploadArea.addEventListener('drop', (e) => this.handleVideoDrop(e));
+            this.elmntVideoUploadArea.addEventListener('click', () => this.elmntVideoInput.click());
+        }
+        
         // Real-time validation
         const inputs = this.form.querySelectorAll('input, textarea');
         inputs.forEach(input => {
@@ -693,6 +720,11 @@ class JoinFormManager {
             // Add background image file
             if (this.selectedBackgroundFile) {
                 formData.append('background-image', this.selectedBackgroundFile);
+            }
+            
+            // Add ELMNT video file
+            if (this.selectedVideoFile) {
+                formData.append('elmnt-video', this.selectedVideoFile);
             }
             
             // Simple fetch configuration that works everywhere
@@ -983,6 +1015,79 @@ class JoinFormManager {
         this.backgroundImagePreview.style.display = 'none';
         this.backgroundFileUploadArea.style.display = 'block';
         this.backgroundPreviewImage.src = '';
+    }
+
+    // ELMNT video handling methods
+    handleVideoFileSelect(e) {
+        const file = e.target.files[0];
+        this.processVideoFile(file);
+    }
+
+    handleVideoDragOver(e) {
+        e.preventDefault();
+        this.elmntVideoUploadArea.classList.add('dragover');
+    }
+
+    handleVideoDragLeave(e) {
+        e.preventDefault();
+        this.elmntVideoUploadArea.classList.remove('dragover');
+    }
+
+    handleVideoDrop(e) {
+        e.preventDefault();
+        this.elmntVideoUploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            this.processVideoFile(files[0]);
+        }
+    }
+
+    processVideoFile(file) {
+        if (!file) return;
+        
+        // Validate file type
+        if (!file.type.startsWith('video/')) {
+            this.setFieldError('elmnt-video', 'Please select a video file');
+            return;
+        }
+        
+        // Validate file size (100MB limit)
+        const maxSize = 100 * 1024 * 1024; // 100MB
+        if (file.size > maxSize) {
+            this.setFieldError('elmnt-video', 'Video must be smaller than 100MB');
+            return;
+        }
+        
+        this.selectedVideoFile = file;
+        this.showVideoPreview(file);
+        this.clearFieldError(this.elmntVideoInput);
+    }
+
+    showVideoPreview(file) {
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+            this.elmntPreviewVideo.src = e.target.result;
+            this.elmntVideoPreview.style.display = 'block';
+            this.elmntVideoUploadArea.style.display = 'none';
+            
+            // Update video info
+            const videoName = document.getElementById('elmnt-video-name');
+            const videoSize = document.getElementById('elmnt-video-size');
+            if (videoName) videoName.textContent = file.name;
+            if (videoSize) videoSize.textContent = this.formatFileSize(file.size);
+        };
+        
+        reader.readAsDataURL(file);
+    }
+
+    removeElmntVideo() {
+        this.selectedVideoFile = null;
+        this.elmntVideoInput.value = '';
+        this.elmntVideoPreview.style.display = 'none';
+        this.elmntVideoUploadArea.style.display = 'block';
+        this.elmntPreviewVideo.src = '';
     }
 
     formatFileSize(bytes) {

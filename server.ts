@@ -60,6 +60,64 @@ async function uploadToCloudinary(imageFile: File): Promise<string> {
   return result.secure_url; // Return the HTTPS URL
 }
 
+// Utility function to upload video to Cloudinary
+async function uploadVideoToCloudinary(videoFile: File): Promise<string> {
+  const cloudName = Deno.env.get("CLOUDINARY_CLOUD_NAME");
+  const apiKey = Deno.env.get("CLOUDINARY_API_KEY");
+  const apiSecret = Deno.env.get("CLOUDINARY_API_SECRET");
+
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error("Missing Cloudinary credentials. Please check your .env file.");
+  }
+
+  // Create timestamp for signature
+  const timestamp = Math.round(Date.now() / 1000);
+  
+  // Parameters to include in signature (alphabetical order, excluding file and api_key)
+  const folder = "jamtem_community/elmnt_videos";
+  const resourceType = "video";
+  const paramsToSign = `folder=${folder}&resource_type=${resourceType}&timestamp=${timestamp}${apiSecret}`;
+  
+  // Create signature for secure upload
+  const encoder = new TextEncoder();
+  const data = encoder.encode(paramsToSign);
+  const hashBuffer = await crypto.subtle.digest("SHA-1", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+  // Create form data for Cloudinary upload
+  const formData = new FormData();
+  formData.append("file", videoFile);
+  formData.append("folder", folder);
+  formData.append("resource_type", resourceType);
+  formData.append("timestamp", timestamp.toString());
+  formData.append("api_key", apiKey);
+  formData.append("signature", signature);
+
+  // Upload to Cloudinary video endpoint
+  const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`;
+  
+  const response = await fetch(cloudinaryUrl, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    console.error("Cloudinary video upload error:", errorData);
+    throw new Error(`Cloudinary video upload failed: ${response.status} - ${errorData}`);
+  }
+
+  const result = await response.json();
+  
+  if (!result.secure_url) {
+    console.error("Cloudinary video response missing secure_url:", result);
+    throw new Error("Cloudinary video upload succeeded but no URL returned");
+  }
+  
+  return result.secure_url; // Return the HTTPS URL
+}
+
 // Route definitions for clean URLs
 const routes: Record<string, string> = {
   '/': 'desktop.html',
@@ -213,7 +271,8 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           instagram: record.fields.Instagram || "",
           bio: record.fields.Bio || "",
           imageUrl: record.fields.Image && record.fields.Image[0] ? record.fields.Image[0].url : null,
-          backgroundImageUrl: record.fields["Background Image"] && record.fields["Background Image"][0] ? record.fields["Background Image"][0].url : null
+          backgroundImageUrl: record.fields["Background Image"] && record.fields["Background Image"][0] ? record.fields["Background Image"][0].url : null,
+          elmntVideoUrl: record.fields.ELMNT && record.fields.ELMNT[0] ? record.fields.ELMNT[0].url : null
         })).filter((member: any) => member.imageUrl); // Only include members with images
 
         return new Response(
@@ -296,6 +355,7 @@ Deno.serve({ port: PORT }, async (req: Request) => {
         const instagram = formData.get("instagram")?.toString().trim();
         const imageFile = formData.get("image") as File;
         const backgroundImageFile = formData.get("background-image") as File;
+        const elmntVideoFile = formData.get("elmnt-video") as File;
 
         // Process craft field - convert comma-separated string to array for Airtable multi-select
         const craftArray = craftData ? craftData.split(',').map(item => item.trim()).filter(item => item) : [];
@@ -398,6 +458,41 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           }
         }
 
+        // Validate ELMNT video file if provided
+        if (elmntVideoFile && elmntVideoFile.size > 0) {
+          if (!elmntVideoFile.type.startsWith('video/')) {
+            return new Response(
+              JSON.stringify({ 
+                error: "ELMNT file must be a video file." 
+              }),
+              { 
+                status: 400, 
+                headers: { 
+                  "Content-Type": "application/json",
+                  ...corsHeaders 
+                } 
+              }
+            );
+          }
+
+          // Video files can be larger - 100MB limit
+          const videoMaxSize = 100 * 1024 * 1024; // 100MB
+          if (elmntVideoFile.size > videoMaxSize) {
+            return new Response(
+              JSON.stringify({ 
+                error: "ELMNT video must be smaller than 100MB." 
+              }),
+              { 
+                status: 400, 
+                headers: { 
+                  "Content-Type": "application/json",
+                  ...corsHeaders 
+                } 
+              }
+            );
+          }
+        }
+
         // Upload main image to Cloudinary first
         console.log("Uploading image to Cloudinary...");
         const cloudinaryUrl = await uploadToCloudinary(imageFile);
@@ -409,6 +504,14 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           console.log("Uploading background image to Cloudinary...");
           backgroundCloudinaryUrl = await uploadToCloudinary(backgroundImageFile);
           console.log("Background image uploaded successfully:", backgroundCloudinaryUrl);
+        }
+
+        // Upload ELMNT video to Cloudinary if provided
+        let elmntVideoUrl = null;
+        if (elmntVideoFile && elmntVideoFile.size > 0) {
+          console.log("Uploading ELMNT video to Cloudinary...");
+          elmntVideoUrl = await uploadVideoToCloudinary(elmntVideoFile);
+          console.log("ELMNT video uploaded successfully:", elmntVideoUrl);
         }
         
         // Prepare Airtable record data with Cloudinary URLs
@@ -436,6 +539,15 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           recordData.fields["Background Image"] = [
             {
               "url": backgroundCloudinaryUrl
+            }
+          ];
+        }
+
+        // Add ELMNT video if provided
+        if (elmntVideoUrl) {
+          recordData.fields["ELMNT"] = [
+            {
+              "url": elmntVideoUrl
             }
           ];
         }
