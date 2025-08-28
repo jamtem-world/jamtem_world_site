@@ -70,12 +70,23 @@
 
     <!-- Desktop Background -->
     <div class="desktop">
-                <!-- Desktop Logo (like a desktop wallpaper logo) -->
-        <div class="desktop-logo">
-            <img src="media/images/logo.png" alt="Jamtem World" class="desktop-logo-img">
+        <!-- 3D Sphere Background -->
+        <div id="sphere-container" class="sphere-container">
+            <canvas id="sphere-canvas" class="sphere-canvas"></canvas>
+            <div class="sphere-controls">
+                <div class="control-hint">
+                    <span>🖱️ Drag to rotate • 🔍 Scroll to zoom • 👆 Click to explore</span>
+                </div>
+            </div>
         </div>
+        
+        <!-- Desktop Logo (like a desktop wallpaper logo) -->
+        <!-- <div class="desktop-logo">
+            <img src="media/images/logo.png" alt="Jamtem World" class="desktop-logo-img">
+        </div> -->
+        
         <!-- Main Desktop Icons Grid -->
-        <div class="desktop-icons">
+        <!-- <div class="desktop-icons">
             
             <div class="desktop-icon desktop-icon-live" data-app="collage">
                 <img src="https://storage.googleapis.com/jamtem_website_media/new_community_icon.png" alt="Collage" class="icon-image">
@@ -96,7 +107,7 @@
                 <img src="https://storage.googleapis.com/jamtem_website_media/neww_products_icon.png" alt="Products" class="icon-image coming_soon">
                 <span class="icon-label">Products<br>(Coming Soon)</span>
             </div>
-        </div>
+        </div> -->
         
     </div>
 
@@ -234,9 +245,9 @@
         <div class="window-content">
             <div class="collage-content">
                 <div class="collage-toolbar">
-                    <button class="toolbar-btn" id="grid-view-btn">Grid View</button>
-                    <button class="toolbar-btn active" id="3d-view-btn">3D View</button>
-                    <div class="toolbar-separator"></div>
+                    <!-- <button class="toolbar-btn" id="grid-view-btn">Grid View</button>
+                    <button class="toolbar-btn active" id="3d-view-btn">3D View</button> -->
+                    <!-- <div class="toolbar-separator"></div> -->
                     <input type="text" class="search-input" placeholder="Search members..." id="member-search-input">
                     <button class="toolbar-btn" id="search-btn">Search</button>
                 </div>
@@ -250,14 +261,14 @@
                     <!-- Community members will be loaded here -->
                 </div>
                 
-                <div id="sphere-container" class="sphere-container" style="display: none;">
+                <!-- <div id="sphere-container" class="sphere-container" style="display: none;">
                     <canvas id="sphere-canvas" class="sphere-canvas"></canvas>
                     <div class="sphere-controls">
                         <div class="control-hint">
                             <span>🖱️ Drag to rotate • 🔍 Scroll to zoom • 👆 Click to explore</span>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>
@@ -389,6 +400,33 @@
                             <div class="form-help">Upload an image that showcases you performing your craft or passion</div>
                             <div class="form-error" id="image-error"></div>
                         </div>
+                        
+                        <div class="form-group">
+                            <label for="background-image" class="form-label">
+                                Background Image
+                            </label>
+                            <div class="file-upload-section">
+                                <input type="file" id="background-image" name="background-image" class="file-input" accept="image/*" style="display: none;">
+                                <div class="file-upload-area" id="background-file-upload-area">
+                                    <div class="file-upload-icon">🖼️</div>
+                                    <div class="file-upload-text">
+                                        <strong>Click to browse files</strong>
+                                    </div>
+                                    <div class="file-upload-hint">PNG, JPG, GIF up to 10MB (Optional)</div>
+                                    <button type="button" class="browse-btn" onclick="document.getElementById('background-image').click()">Browse...</button>
+                                </div>
+                                <div class="image-preview" id="background-image-preview" style="display: none;">
+                                    <img id="background-preview-image" src="" alt="Background Preview">
+                                    <div class="image-info">
+                                        <div class="image-name" id="background-image-name"></div>
+                                        <div class="image-size" id="background-image-size"></div>
+                                        <button type="button" class="remove-image-btn" id="remove-background-image">Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-help">Upload a background image for your profile modal (optional)</div>
+                            <div class="form-error" id="background-image-error"></div>
+                        </div>
                     </div>
                     
                     <div class="form-actions">
@@ -427,9 +465,14 @@
 
     <!-- Member Modal -->
     <div id="member-modal" class="modal-overlay" style="display: none;">
+                    <button class="modal-close" id="modal-close">&times;</button>
+
         <div class="modal-container">
-            <button class="modal-close" id="modal-close">&times;</button>
             <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modal-member-name" class="modal-member-name"></h2>
+                    <p id="modal-member-craft" class="modal-member-craft"></p>
+                </div>
                 <div class="modal-image-section">
                     <div class="modal-image-container">
                         <img id="modal-member-image" class="modal-member-image" src="" alt="">
@@ -439,10 +482,6 @@
                     </div>
                 </div>
                 <div class="modal-info-section">
-                    <div class="modal-header">
-                        <h2 id="modal-member-name" class="modal-member-name"></h2>
-                        <p id="modal-member-craft" class="modal-member-craft"></p>
-                    </div>
                     <div class="modal-member-details">
                         <div class="modal-location" id="modal-location-section" style="display: none;">
                             <strong>Location:</strong>

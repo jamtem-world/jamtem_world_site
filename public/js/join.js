@@ -449,6 +449,13 @@ class JoinFormManager {
         this.previewImage = document.getElementById('preview-image');
         this.removeImageBtn = document.getElementById('remove-image');
         this.fileUploadArea = document.getElementById('file-upload-area');
+        
+        // Background image elements
+        this.backgroundImageInput = document.getElementById('background-image');
+        this.backgroundImagePreview = document.getElementById('background-image-preview');
+        this.backgroundPreviewImage = document.getElementById('background-preview-image');
+        this.removeBackgroundImageBtn = document.getElementById('remove-background-image');
+        this.backgroundFileUploadArea = document.getElementById('background-file-upload-area');
         this.bioTextarea = document.getElementById('bio');
         this.bioCounter = document.getElementById('bio-counter');
         
@@ -460,6 +467,7 @@ class JoinFormManager {
         
         this.isSubmitting = false;
         this.selectedFile = null;
+        this.selectedBackgroundFile = null;
         
         this.init();
     }
@@ -577,6 +585,24 @@ class JoinFormManager {
         // Image removal
         this.removeImageBtn.addEventListener('click', () => this.removeImage());
         
+        // Background image removal
+        if (this.removeBackgroundImageBtn) {
+            this.removeBackgroundImageBtn.addEventListener('click', () => this.removeBackgroundImage());
+        }
+        
+        // Background image file input change
+        if (this.backgroundImageInput) {
+            this.backgroundImageInput.addEventListener('change', (e) => this.handleBackgroundFileSelect(e));
+        }
+        
+        // Background image drag and drop
+        if (this.backgroundFileUploadArea) {
+            this.backgroundFileUploadArea.addEventListener('dragover', (e) => this.handleBackgroundDragOver(e));
+            this.backgroundFileUploadArea.addEventListener('dragleave', (e) => this.handleBackgroundDragLeave(e));
+            this.backgroundFileUploadArea.addEventListener('drop', (e) => this.handleBackgroundDrop(e));
+            this.backgroundFileUploadArea.addEventListener('click', () => this.backgroundImageInput.click());
+        }
+        
         // Real-time validation
         const inputs = this.form.querySelectorAll('input, textarea');
         inputs.forEach(input => {
@@ -662,6 +688,11 @@ class JoinFormManager {
             // Add image file
             if (this.selectedFile) {
                 formData.append('image', this.selectedFile);
+            }
+            
+            // Add background image file
+            if (this.selectedBackgroundFile) {
+                formData.append('background-image', this.selectedBackgroundFile);
             }
             
             // Simple fetch configuration that works everywhere
@@ -879,6 +910,87 @@ class JoinFormManager {
         this.imagePreview.style.display = 'none';
         this.fileUploadArea.style.display = 'block';
         this.previewImage.src = '';
+    }
+
+    // Background image handling methods
+    handleBackgroundFileSelect(e) {
+        const file = e.target.files[0];
+        this.processBackgroundFile(file);
+    }
+
+    handleBackgroundDragOver(e) {
+        e.preventDefault();
+        this.backgroundFileUploadArea.classList.add('dragover');
+    }
+
+    handleBackgroundDragLeave(e) {
+        e.preventDefault();
+        this.backgroundFileUploadArea.classList.remove('dragover');
+    }
+
+    handleBackgroundDrop(e) {
+        e.preventDefault();
+        this.backgroundFileUploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            this.processBackgroundFile(files[0]);
+        }
+    }
+
+    processBackgroundFile(file) {
+        if (!file) return;
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            this.setFieldError('background-image', 'Please select an image file');
+            return;
+        }
+        
+        // Validate file size (10MB limit)
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSize) {
+            this.setFieldError('background-image', 'Image must be smaller than 10MB');
+            return;
+        }
+        
+        this.selectedBackgroundFile = file;
+        this.showBackgroundImagePreview(file);
+        this.clearFieldError(this.backgroundImageInput);
+    }
+
+    showBackgroundImagePreview(file) {
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+            this.backgroundPreviewImage.src = e.target.result;
+            this.backgroundImagePreview.style.display = 'block';
+            this.backgroundFileUploadArea.style.display = 'none';
+            
+            // Update image info
+            const imageName = document.getElementById('background-image-name');
+            const imageSize = document.getElementById('background-image-size');
+            if (imageName) imageName.textContent = file.name;
+            if (imageSize) imageSize.textContent = this.formatFileSize(file.size);
+        };
+        
+        reader.readAsDataURL(file);
+    }
+
+    removeBackgroundImage() {
+        this.selectedBackgroundFile = null;
+        this.backgroundImageInput.value = '';
+        this.backgroundImagePreview.style.display = 'none';
+        this.backgroundFileUploadArea.style.display = 'block';
+        this.backgroundPreviewImage.src = '';
+    }
+
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
     updateCharacterCounter() {

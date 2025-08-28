@@ -817,6 +817,125 @@ body {
   border: 1px inset #c0c0c0;
 }
 
+/* Mobile App Popup Styles */
+.mobile-app-popup {
+  position: fixed;
+  bottom: 55px;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to bottom, #ece9d8 0%, #d6d3ce 50%, #ada5a0 100%);
+  border-top: 1px solid #ffffff;
+  border-bottom: 1px solid #9c9c9c;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 -1px 3px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+  display: none;
+  opacity: 0;
+  transform: translateY(100%);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.mobile-app-popup.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mobile-app-buttons {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 4px;
+  gap: 4px;
+}
+
+.mobile-app-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  background: linear-gradient(to bottom, #ece9d8 0%, #d6d3ce 50%, #ada5a0 100%);
+  border: 1px outset #d4d0c8;
+  border-radius: 0;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  font-size: 10px;
+  color: #000000;
+  cursor: pointer;
+  min-width: 60px;
+  min-height: 60px;
+  flex: 1;
+  max-width: 80px;
+  -webkit-tap-highlight-color: rgba(0, 120, 212, 0.2);
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.mobile-app-button:hover {
+  background: linear-gradient(to bottom, #f2efea 0%, #ddd9d4 50%, #b5aca7 100%);
+}
+
+.mobile-app-button:active {
+  border: 1px inset #d4d0c8;
+  background: linear-gradient(to bottom, #d6d3ce 0%, #ece9d8 50%, #f2efea 100%);
+  -webkit-tap-highlight-color: rgba(0, 120, 212, 0.3);
+}
+
+.mobile-app-icon {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 4px;
+}
+
+.mobile-app-button span {
+  text-align: center;
+  line-height: 1.1;
+  word-wrap: break-word;
+}
+
+/* Desktop taskbar buttons wrapper */
+.desktop-taskbar-buttons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Mobile toggle button */
+.mobile-toggle-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  background: linear-gradient(to bottom, #ece9d8 0%, #d6d3ce 50%, #ada5a0 100%);
+  border: 1px outset #d4d0c8;
+  border-radius: 0;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  font-size: 14px;
+  color: #000000;
+  cursor: pointer;
+  height: 28px;
+  min-width: 40px;
+  -webkit-tap-highlight-color: rgba(0, 120, 212, 0.2);
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.mobile-toggle-button:hover {
+  background: linear-gradient(to bottom, #f2efea 0%, #ddd9d4 50%, #b5aca7 100%);
+}
+
+.mobile-toggle-button:active {
+  border: 1px inset #d4d0c8;
+  background: linear-gradient(to bottom, #d6d3ce 0%, #ece9d8 50%, #f2efea 100%);
+  -webkit-tap-highlight-color: rgba(0, 120, 212, 0.3);
+}
+
+.toggle-arrow {
+  transition: transform 0.3s ease;
+}
+
+.mobile-toggle-button.active .toggle-arrow {
+  transform: rotate(180deg);
+}
+
 /* Responsive Design for Tablets */
 @media (max-width: 768px) {
   /* Skip center position for logo on mobile */
@@ -829,8 +948,14 @@ body {
     display: flex;
   }
 
-  .taskbar-center {
+  /* Hide desktop taskbar buttons on mobile */
+  .desktop-taskbar-buttons {
     display: none;
+  }
+  
+  /* Show mobile toggle button */
+  .mobile-toggle-button {
+    display: flex;
   }
   
   .taskbar-button {
@@ -1160,7 +1285,8 @@ body {
 /* Toolbar styling */
 .collage-toolbar,
 .products-toolbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 40px;
   align-items: center;
   gap: 4px;
   padding: 4px;
@@ -1254,6 +1380,7 @@ body {
   } */
   
   .collage-toolbar {
+    grid-template-columns: 1fr;
     padding: 12px;
     gap: 12px;
     min-height: 74px;
@@ -1276,7 +1403,6 @@ body {
   font-size: 11px;
   height: 20px;
   flex: 1;
-  max-width: 200px;
   /* Enhanced mobile touch improvements */
   -webkit-tap-highlight-color: rgba(0, 120, 212, 0.2);
   touch-action: manipulation;
@@ -1332,12 +1458,9 @@ body {
 
 /* iPhone Pro Max and larger screens */
 @media (max-width: 430px) {
-  /* .search-input {
-    height: 50px;
-    padding: 12px 16px;
-    font-size: 16px;
-    min-width: 100px;
-  } */
+  .search-input {
+    width: 100%;
+  }
 }
 
 /* Form Styling */
@@ -1721,11 +1844,10 @@ body {
 .modal-container {
   position: relative;
   background: #c0c0c0;
-  border: 2px outset #c0c0c0;
-  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
-  max-width: 90vw;
-  max-height: 90vh;
-  overflow: auto;
+  box-shadow: 2px 2px 8px rgba(255, 255, 255, 0.767);
+  border-radius: 10px;
+  width: 400px;
+  padding: 15px;
 }
 
 .modal-close {
@@ -1755,10 +1877,11 @@ body {
 
 .modal-content {
   display: grid;
-  grid-template-columns: 200px 1fr;
+  grid-template-columns: 1fr;
+  grid-template-rows: 50px 300px 200px;
   gap: 16px;
   padding: 16px;
-  max-width: 700px;
+  background-color: #c0c0c0;
 }
 
 .modal-location {
@@ -1774,12 +1897,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #000000;
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+  height: 300px;
 }
 
 .modal-member-image {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   border-radius: var(--border-radius);
 }
 
@@ -1797,8 +1923,6 @@ body {
 }
 
 .modal-header {
-  border-bottom: 1px solid #d6d3ce;
-  padding-bottom: 8px;
 }
 
 .modal-member-name {
@@ -1815,12 +1939,14 @@ body {
 }
 
 .modal-member-details {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .modal-instagram,
 .modal-bio {
-  margin-bottom: 12px;
+
 }
 
 .modal-instagram strong,
@@ -1961,31 +2087,55 @@ body {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: calc(100% - 40px);
-  position: relative;
-  border: 1px inset #d4d0c8;
+  aspect-ratio: 1/1;
+  z-index: 1;
 }
 
 .sphere-canvas {
-  width: 600px;
-  height: 600px;
+  width: 120%;
+  aspect-ratio: 1/1;
   display: block;
 }
 
 .sphere-controls {
   position: absolute;
-  bottom: 8px;
-  left: 8px;
-  right: 8px;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.7);
   color: white;
-  padding: 4px 8px;
-  border-radius: 0;
-  font-size: 10px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 2;
 }
 
 .control-hint {
   text-align: center;
+  white-space: nowrap;
+}
+
+/* Mobile responsive controls */
+@media (max-width: 768px) {
+  .sphere-controls {
+    bottom: 80px; /* Above taskbar */
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+  
+  .control-hint span {
+    display: block;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sphere-controls {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
 }
 
 /* Error and Loading States */
@@ -2029,14 +2179,11 @@ body {
 
 /* Responsive Modal */
 @media (max-width: 768px) {
-  .modal-content {
+  /* .modal-content {
     grid-template-columns: 1fr;
     min-width: auto;
-  }
-  
-  .modal-image-container {
-    height: 200px;
-  }
+  } */
+
 }
 
 @media (max-width: 480px) {
@@ -2046,8 +2193,18 @@ body {
     max-height: var(--mobile-window-max-height);
   }
   
-  .modal-content {
+  /* .modal-content {
     padding: 12px;
+  } */
+
+  .sphere-container {
+    /* width: auto;
+    height: 120%; */
+  }
+
+  .sphere-canvas {
+    height: 100%;
+    width: 100%;
   }
 }
 
@@ -2653,9 +2810,6 @@ body {
 }
 
 @media (max-width: 480px) {
-  .sphere-container {
-    height: auto;
-  }
 
   .products-grid {
     grid-template-columns: repeat(2, 1fr);

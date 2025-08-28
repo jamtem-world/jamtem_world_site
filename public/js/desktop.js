@@ -18,6 +18,7 @@ class DesktopInterface {
         this.setupTaskbarButtons();
         this.setupWindowControls();
         this.setupNotification();
+        this.initializeDesktopSphere();
     }
     
     // Clock functionality
@@ -188,10 +189,11 @@ class DesktopInterface {
             // CollageManager is already initialized, just trigger loading
             console.log('CollageManager found, loading members...');
             window.collageManager.loadMembers();
-            // Switch to 3D view after a short delay to allow members to load
+            // Show grid view using the sphere-preserving method
             setTimeout(() => {
                 if (window.collageManager.members && window.collageManager.members.length > 0) {
-                    window.collageManager.switchTo3D();
+                    // Use the sphere-preserving method to show the grid
+                    window.collageManager.showGridPreservingSphere();
                 }
             }, 500);
         } else {
@@ -200,10 +202,11 @@ class DesktopInterface {
                 if (typeof window.collageManager !== 'undefined') {
                     console.log('CollageManager found after delay, loading members...');
                     window.collageManager.loadMembers();
-                    // Switch to 3D view after members are loaded
+                    // Show grid view using the sphere-preserving method
                     setTimeout(() => {
                         if (window.collageManager.members && window.collageManager.members.length > 0) {
-                            window.collageManager.switchTo3D();
+                            // Use the sphere-preserving method to show the grid
+                            window.collageManager.showGridPreservingSphere();
                         }
                     }, 500);
                 } else {
@@ -227,22 +230,18 @@ class DesktopInterface {
         const searchBtn = document.getElementById('search-btn');
         const searchInput = document.getElementById('member-search-input');
         
+        // Hide the 3D view button since we only want grid view
+        if (threeDViewBtn) {
+            threeDViewBtn.style.display = 'none';
+        }
+        
+        // Make grid view button active by default
         if (gridViewBtn) {
+            gridViewBtn.classList.add('active');
             gridViewBtn.addEventListener('click', () => {
                 if (window.collageManager) {
                     window.collageManager.switchTo2D();
                     gridViewBtn.classList.add('active');
-                    if (threeDViewBtn) threeDViewBtn.classList.remove('active');
-                }
-            });
-        }
-        
-        if (threeDViewBtn) {
-            threeDViewBtn.addEventListener('click', () => {
-                if (window.collageManager) {
-                    window.collageManager.switchTo3D();
-                    threeDViewBtn.classList.add('active');
-                    if (gridViewBtn) gridViewBtn.classList.remove('active');
                 }
             });
         }
@@ -275,6 +274,7 @@ class DesktopInterface {
         if (sphere) sphere.style.display = 'none';
         if (loading) loading.style.display = 'none';
     }
+    
     
     // Show 3D sphere
     show3DSphere() {
@@ -690,8 +690,44 @@ class DesktopInterface {
             });
         }
         
+        // Set up app buttons in taskbar (desktop)
+        const taskbarAppButtons = document.querySelectorAll('.taskbar-button[data-app]');
+        taskbarAppButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const appName = button.getAttribute('data-app');
+                if (appName) {
+                    const windowId = appName + '-window';
+                    console.log('Opening window from taskbar:', windowId);
+                    this.openApp(windowId);
+                }
+            });
+        });
+        
+        // Set up mobile app buttons
+        const mobileAppButtons = document.querySelectorAll('.mobile-app-button[data-app]');
+        mobileAppButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const appName = button.getAttribute('data-app');
+                if (appName) {
+                    const windowId = appName + '-window';
+                    console.log('Opening window from mobile popup:', windowId);
+                    this.openApp(windowId);
+                    // Hide the mobile popup after opening app
+                    this.hideMobilePopup();
+                }
+            });
+        });
+        
+        // Set up mobile toggle button
+        const mobileToggleButton = document.getElementById('mobile-toggle-button');
+        if (mobileToggleButton) {
+            mobileToggleButton.addEventListener('click', () => {
+                this.toggleMobilePopup();
+            });
+        }
+        
         // Add click sound effect (optional)
-        const taskbarButtons = document.querySelectorAll('.taskbar-button, .start-button');
+        const taskbarButtons = document.querySelectorAll('.taskbar-button, .start-button, .mobile-app-button, .mobile-toggle-button');
         taskbarButtons.forEach(button => {
             button.addEventListener('click', () => {
                 // Add click animation
@@ -701,6 +737,82 @@ class DesktopInterface {
                 }, 100);
             });
         });
+    }
+    
+    // Toggle mobile popup
+    toggleMobilePopup() {
+        const popup = document.getElementById('mobile-app-popup');
+        const toggleButton = document.getElementById('mobile-toggle-button');
+        
+        if (!popup || !toggleButton) return;
+        
+        const isVisible = popup.classList.contains('show');
+        
+        if (isVisible) {
+            this.hideMobilePopup();
+        } else {
+            this.showMobilePopup();
+        }
+    }
+    
+    // Show mobile popup
+    showMobilePopup() {
+        const popup = document.getElementById('mobile-app-popup');
+        const toggleButton = document.getElementById('mobile-toggle-button');
+        
+        if (!popup || !toggleButton) return;
+        
+        // Show popup
+        popup.style.display = 'block';
+        setTimeout(() => {
+            popup.classList.add('show');
+        }, 10);
+        
+        // Update toggle button state
+        toggleButton.classList.add('active');
+        
+        // Close popup when clicking outside
+        setTimeout(() => {
+            document.addEventListener('click', this.handleOutsideClick.bind(this));
+            document.addEventListener('touchstart', this.handleOutsideClick.bind(this));
+        }, 100);
+    }
+    
+    // Hide mobile popup
+    hideMobilePopup() {
+        const popup = document.getElementById('mobile-app-popup');
+        const toggleButton = document.getElementById('mobile-toggle-button');
+        
+        if (!popup || !toggleButton) return;
+        
+        // Hide popup
+        popup.classList.remove('show');
+        setTimeout(() => {
+            popup.style.display = 'none';
+        }, 300);
+        
+        // Update toggle button state
+        toggleButton.classList.remove('active');
+        
+        // Remove outside click listeners
+        document.removeEventListener('click', this.handleOutsideClick.bind(this));
+        document.removeEventListener('touchstart', this.handleOutsideClick.bind(this));
+    }
+    
+    // Handle clicks outside mobile popup
+    handleOutsideClick(e) {
+        const popup = document.getElementById('mobile-app-popup');
+        const toggleButton = document.getElementById('mobile-toggle-button');
+        
+        if (!popup || !toggleButton) return;
+        
+        // Don't close if clicking on the popup itself or the toggle button
+        if (popup.contains(e.target) || toggleButton.contains(e.target)) {
+            return;
+        }
+        
+        // Close the popup
+        this.hideMobilePopup();
     }
     
     // Start menu with navigation links
@@ -897,6 +1009,91 @@ class DesktopInterface {
         }, 300);
     }
     
+    // Initialize desktop sphere background
+    async initializeDesktopSphere() {
+        console.log('Initializing desktop sphere...');
+        
+        try {
+            // Get the desktop sphere canvas
+            const sphereCanvas = document.getElementById('sphere-canvas');
+            if (!sphereCanvas) {
+                console.warn('Desktop sphere canvas not found');
+                return;
+            }
+            
+            // Load community members data
+            const members = await this.loadCommunityMembers();
+            if (!members || members.length === 0) {
+                console.warn('No community members data available for desktop sphere');
+                return;
+            }
+            
+            console.log(`Loaded ${members.length} community members for desktop sphere`);
+            
+            // Import and initialize the SphereCollageManager
+            const { default: SphereCollageManager } = await import('./collage-3d.js');
+            
+            // Create sphere manager instance
+            this.desktopSphereManager = new SphereCollageManager();
+            
+            // Initialize the sphere with the canvas and members data
+            const success = await this.desktopSphereManager.init(sphereCanvas, members);
+            
+            if (success) {
+                console.log('Desktop sphere initialized successfully');
+                
+                // Store reference for potential cleanup
+                window.desktopSphereManager = this.desktopSphereManager;
+            } else {
+                console.error('Failed to initialize desktop sphere');
+            }
+            
+        } catch (error) {
+            console.error('Error initializing desktop sphere:', error);
+        }
+    }
+    
+    // Load community members data from API
+    async loadCommunityMembers() {
+        try {
+            console.log('Loading community members data...');
+            
+            const response = await fetch('/api/collage');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // Check if the response has the expected structure
+            if (!data.success || !data.members) {
+                throw new Error('Invalid response format from API');
+            }
+            
+            // Process the members data to ensure proper format
+            const processedMembers = data.members.map(member => ({
+                id: member.id || member._id,
+                name: member.name || 'Unknown',
+                bio: member.bio || '',
+                craft: member.craft || [],
+                instagram: member.instagram || '',
+                location: member.location || '',
+                imageUrl: member.imageUrl || member.image_url || '',
+                // Add any other fields that might be needed
+                ...member
+            }));
+            
+            console.log(`Successfully loaded ${processedMembers.length} community members`);
+            return processedMembers;
+            
+        } catch (error) {
+            console.error('Failed to load community members:', error);
+            
+            // Return empty array as fallback
+            return [];
+        }
+    }
+    
     // Add desktop right-click context menu with Ctrl+Right-Click bypass
     setupDesktopContextMenu() {
         const desktop = document.querySelector('.desktop');
@@ -1005,6 +1202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.desktop = new DesktopInterface();
         window.desktop.setupDesktopContextMenu();
     }
+
 });
 
 // Global function to open apps (for debugging and external access)

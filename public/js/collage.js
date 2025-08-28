@@ -375,6 +375,21 @@ class CollageManager {
         const modalInstagram = document.getElementById('modal-member-instagram');
         const modalInstagramSection = document.getElementById('modal-instagram-section');
         const modalBio = document.getElementById('modal-member-bio');
+        const modalContainer = document.querySelector('.modal-container');
+
+        // Set background image for modal container with dark overlay
+        if (member.backgroundImageUrl && modalContainer) {
+            modalContainer.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url(${member.backgroundImageUrl})`;
+            modalContainer.style.backgroundSize = 'cover';
+            modalContainer.style.backgroundPosition = 'center';
+            modalContainer.style.backgroundRepeat = 'no-repeat';
+        } else if (modalContainer) {
+            // Clear background image if no background image is provided
+            modalContainer.style.backgroundImage = '';
+            modalContainer.style.backgroundSize = '';
+            modalContainer.style.backgroundPosition = '';
+            modalContainer.style.backgroundRepeat = '';
+        }
 
         // Set image
         if (member.imageUrl && modalImage) {
@@ -486,6 +501,28 @@ class CollageManager {
             this.gridContainer.style.display = 'grid';
         }
     }
+    
+    // Show grid without hiding desktop sphere (for desktop context)
+    showGridPreservingSphere() {
+        // Hide only collage-specific states, not the desktop sphere
+        const states = [
+            'loading', 'collage-loading',
+            'error', 'collage-error', 
+            'collage-container', 
+            'no-members'
+        ];
+        states.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) element.style.display = 'none';
+        });
+        
+        // Show the grid without affecting sphere-container
+        if (this.gridContainer) {
+            this.gridContainer.style.display = 'grid';
+        }
+        
+        console.log('Showing grid while preserving desktop sphere');
+    }
 
     showNoMembers() {
         this.hideAllStates();
@@ -509,8 +546,8 @@ class CollageManager {
             'loading', 'collage-loading',
             'error', 'collage-error', 
             'collage-container', 
-            'no-members', 
-            'sphere-container'
+            'no-members'
+            // Note: sphere-container is NEVER included here because it's used as desktop background
         ];
         states.forEach(id => {
             const element = document.getElementById(id);
@@ -521,6 +558,9 @@ class CollageManager {
         if (this.gridContainer) {
             this.gridContainer.style.display = 'none';
         }
+        
+        // IMPORTANT: Never hide sphere-container as it's the desktop background sphere
+        // The desktop sphere should remain visible at all times regardless of collage window state
     }
 
     async switchTo3D() {

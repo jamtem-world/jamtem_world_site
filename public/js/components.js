@@ -4,7 +4,7 @@ class ComponentLoader {
         this.components = {
             header: '/components/header.html',
             footer: '/components/footer.html',
-            taskbar: '/components/taskbar.html'
+            taskbar: '/components/taskbaR.html'
         };
     }
 
@@ -141,76 +141,76 @@ class ComponentLoader {
         }
     }
 
-    showFallback(componentName, targetSelector) {
-        const targetElement = document.querySelector(targetSelector);
-        if (!targetElement) return;
+    // showFallback(componentName, targetSelector) {
+    //     const targetElement = document.querySelector(targetSelector);
+    //     if (!targetElement) return;
 
-        if (componentName === 'header') {
-            targetElement.innerHTML = `
-                <header class="header">
-                    <div class="container">
-                        <h1 class="logo">
-                            <a href="/" style="text-decoration: none; color: inherit;">Jamtem World</a>
-                        </h1>
-                        <nav class="nav">
-                            <a href="/products" class="nav-link" data-page="products">Products</a>
-                            <a href="/join" class="nav-link" data-page="join">Join Community</a>
-                        </nav>
-                    </div>
-                </header>
-            `;
-        } else if (componentName === 'footer') {
-            targetElement.innerHTML = `
-                <footer class="footer">
-                    <div class="container">
-                        <p>&copy; 2025 Jamtem World. All rights reserved.</p>
-                    </div>
-                </footer>
-            `;
-        } else if (componentName === 'taskbar') {
-            targetElement.innerHTML = `
-                <div class="taskbar">
-                    <div class="taskbar-left">
-                        <button class="start-button">
-                            <img src="/media/images/logo.png" alt="Start" class="start-icon">
-                            <span>Start</span>
-                        </button>
-                    </div>
+    //     if (componentName === 'header') {
+    //         targetElement.innerHTML = `
+    //             <header class="header">
+    //                 <div class="container">
+    //                     <h1 class="logo">
+    //                         <a href="/" style="text-decoration: none; color: inherit;">Jamtem World</a>
+    //                     </h1>
+    //                     <nav class="nav">
+    //                         <a href="/products" class="nav-link" data-page="products">Products</a>
+    //                         <a href="/join" class="nav-link" data-page="join">Join Community</a>
+    //                     </nav>
+    //                 </div>
+    //             </header>
+    //         `;
+    //     } else if (componentName === 'footer') {
+    //         targetElement.innerHTML = `
+    //             <footer class="footer">
+    //                 <div class="container">
+    //                     <p>&copy; 2025 Jamtem World. All rights reserved.</p>
+    //                 </div>
+    //             </footer>
+    //         `;
+    //     } else if (componentName === 'taskbar') {
+    //         targetElement.innerHTML = `
+    //             <div class="taskbar">
+    //                 <div class="taskbar-left">
+    //                     <button class="start-button">
+    //                         <img src="/media/images/logo.png" alt="Start" class="start-icon">
+    //                         <span>Start</span>
+    //                     </button>
+    //                 </div>
                     
-                    <div class="taskbar-center">
-                        <button class="taskbar-button" onclick="window.location.href='/desktop'">
-                            <span>Home</span>
-                        </button>
-                        <button class="taskbar-button" onclick="window.location.href='/products'">
-                            <span>Products</span>
-                        </button>
-                        <button class="taskbar-button" onclick="window.location.href='/collage-desktop'">
-                            <span>Collage</span>
-                        </button>
-                        <button class="taskbar-button" onclick="window.location.href='/join-desktop'">
-                            <span>Join</span>
-                        </button>
-                    </div>
+    //                 <div class="taskbar-center">
+    //                     <button class="taskbar-button" onclick="window.location.href='/desktop'">
+    //                         <span>Home</span>
+    //                     </button>
+    //                     <button class="taskbar-button" onclick="window.location.href='/products'">
+    //                         <span>Products</span>
+    //                     </button>
+    //                     <button class="taskbar-button" onclick="window.location.href='/collage-desktop'">
+    //                         <span>Collage</span>
+    //                     </button>
+    //                     <button class="taskbar-button" onclick="window.location.href='/join-desktop'">
+    //                         <span>Join</span>
+    //                     </button>
+    //                 </div>
                     
-                    <div class="taskbar-right">
-                        <div class="system-tray">
-                            <div class="tray-icons">
-                                <span class="tray-icon">🔊</span>
-                                <span class="tray-icon">📶</span>
-                            </div>
-                            <div class="clock" id="clock">
-                                <span id="time">12:00 PM</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+    //                 <div class="taskbar-right">
+    //                     <div class="system-tray">
+    //                         <div class="tray-icons">
+    //                             <span class="tray-icon">🔊</span>
+    //                             <span class="tray-icon">📶</span>
+    //                         </div>
+    //                         <div class="clock" id="clock">
+    //                             <span id="time">12:00 PM</span>
+    //                         </div>
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //         `;
             
-            // Set up taskbar functionality after fallback is loaded
-            this.setActiveTaskbarNavigation();
-            this.setupTaskbarFunctionality();
-        }
-    }
+    //         // Set up taskbar functionality after fallback is loaded
+    //         this.setActiveTaskbarNavigation();
+    //         this.setupTaskbarFunctionality();
+    //     }
+    // }
 
     setActiveTaskbarNavigation() {
         const currentPath = window.location.pathname;

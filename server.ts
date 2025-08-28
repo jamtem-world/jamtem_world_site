@@ -212,7 +212,8 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           location: record.fields.Location || "",
           instagram: record.fields.Instagram || "",
           bio: record.fields.Bio || "",
-          imageUrl: record.fields.Image && record.fields.Image[0] ? record.fields.Image[0].url : null
+          imageUrl: record.fields.Image && record.fields.Image[0] ? record.fields.Image[0].url : null,
+          backgroundImageUrl: record.fields["Background Image"] && record.fields["Background Image"][0] ? record.fields["Background Image"][0].url : null
         })).filter((member: any) => member.imageUrl); // Only include members with images
 
         return new Response(
@@ -294,6 +295,7 @@ Deno.serve({ port: PORT }, async (req: Request) => {
         const website = formData.get("website")?.toString().trim();
         const instagram = formData.get("instagram")?.toString().trim();
         const imageFile = formData.get("image") as File;
+        const backgroundImageFile = formData.get("background-image") as File;
 
         // Process craft field - convert comma-separated string to array for Airtable multi-select
         const craftArray = craftData ? craftData.split(',').map(item => item.trim()).filter(item => item) : [];
@@ -330,7 +332,7 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           );
         }
 
-        // Validate file type
+        // Validate file type for main image
         if (!imageFile.type.startsWith('image/')) {
           return new Response(
             JSON.stringify({ 
@@ -346,7 +348,7 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           );
         }
 
-        // Validate file size (10MB limit)
+        // Validate file size for main image (10MB limit)
         const maxSize = 10 * 1024 * 1024; // 10MB
         if (imageFile.size > maxSize) {
           return new Response(
@@ -363,13 +365,56 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           );
         }
 
-        // Upload image to Cloudinary first
+        // Validate background image file if provided
+        if (backgroundImageFile && backgroundImageFile.size > 0) {
+          if (!backgroundImageFile.type.startsWith('image/')) {
+            return new Response(
+              JSON.stringify({ 
+                error: "Background image must be an image file." 
+              }),
+              { 
+                status: 400, 
+                headers: { 
+                  "Content-Type": "application/json",
+                  ...corsHeaders 
+                } 
+              }
+            );
+          }
+
+          if (backgroundImageFile.size > maxSize) {
+            return new Response(
+              JSON.stringify({ 
+                error: "Background image must be smaller than 10MB." 
+              }),
+              { 
+                status: 400, 
+                headers: { 
+                  "Content-Type": "application/json",
+                  ...corsHeaders 
+                } 
+              }
+            );
+          }
+        }
+
+        // Upload main image to Cloudinary first
         console.log("Uploading image to Cloudinary...");
         const cloudinaryUrl = await uploadToCloudinary(imageFile);
         console.log("Image uploaded successfully:", cloudinaryUrl);
+
+        // Upload background image to Cloudinary if provided
+        let backgroundCloudinaryUrl = null;
+        if (backgroundImageFile && backgroundImageFile.size > 0) {
+          console.log("Uploading background image to Cloudinary...");
+          backgroundCloudinaryUrl = await uploadToCloudinary(backgroundImageFile);
+          console.log("Background image uploaded successfully:", backgroundCloudinaryUrl);
+        }
         
-        // Prepare Airtable record data with Cloudinary URL
-        const recordData = {
+        // Prepare Airtable record data with Cloudinary URLs
+        const recordData: {
+          fields: Record<string, any>
+        } = {
           fields: {
             "Name": name,
             "Email": email,
@@ -385,6 +430,15 @@ Deno.serve({ port: PORT }, async (req: Request) => {
             ]
           }
         };
+
+        // Add background image if provided
+        if (backgroundCloudinaryUrl) {
+          recordData.fields["Background Image"] = [
+            {
+              "url": backgroundCloudinaryUrl
+            }
+          ];
+        }
 
         // Submit to Airtable
         const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${airtableTableId}`;

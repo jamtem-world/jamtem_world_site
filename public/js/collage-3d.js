@@ -119,12 +119,12 @@ class SphereCollageManager {
         if (width === 0 || height === 0) {
             const container = this.canvas.parentElement;
             width = container ? container.clientWidth : 800;
-            height = container ? container.clientHeight : 600;
+            height = container ? container.clientHeight : 800;
         }
         
         if (width === 0 || height === 0) {
             width = 800;
-            height = 600;
+            height = 800;
         }
         
         const aspect = width / height;
@@ -139,10 +139,10 @@ class SphereCollageManager {
             cameraDistance = 5; // Zoomed out more for better mobile view
         } else if (screenWidth < 768) {
             fov = 80; // Medium field of view for tablets
-            cameraDistance = 4.5; // Medium distance for tablets
+            cameraDistance = 6; // Medium distance for tablets
         } else {
             fov = 75; // Standard field of view for desktop
-            cameraDistance = 5; // Standard distance for desktop
+            cameraDistance = 7; // Zoomed out more for desktop view
         }
         
         this.camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 1000);
@@ -236,43 +236,11 @@ class SphereCollageManager {
         
         const geometry = new THREE.SphereGeometry(radius, this.sphereSegments, this.sphereSegments);
         
-        // Create base sphere material with blur effect to make members stand out
-        const material = new THREE.ShaderMaterial({
-            uniforms: {
-                time: { value: 0.0 },
-                opacity: { value: 0.08 }
-            },
-            vertexShader: `
-                varying vec3 vNormal;
-                varying vec3 vPosition;
-                
-                void main() {
-                    vNormal = normalize(normalMatrix * normal);
-                    vPosition = position;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
-            fragmentShader: `
-                uniform float time;
-                uniform float opacity;
-                varying vec3 vNormal;
-                varying vec3 vPosition;
-                
-                void main() {
-                    // Create a subtle animated blur effect
-                    float noise = sin(vPosition.x * 10.0 + time) * sin(vPosition.y * 10.0 + time) * sin(vPosition.z * 10.0 + time);
-                    float blur = 0.5 + 0.1 * noise;
-                    
-                    // Soft gradient from center to edges
-                    float fresnel = 1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0)));
-                    
-                    vec3 color = vec3(0.2, 0.2, 0.2) * blur;
-                    float alpha = opacity * fresnel * 0.8;
-                    
-                    gl_FragColor = vec4(color, alpha);
-                }
-            `,
+        // Create simple uniform transparent grey sphere material
+        const material = new THREE.MeshLambertMaterial({
+            color: 0x808080, // Medium grey
             transparent: true,
+            opacity: 0.1,
             side: THREE.DoubleSide
         });
 
@@ -293,9 +261,9 @@ class SphereCollageManager {
         // Base radius based on screen size - unified for consistent experience
         let baseRadius;
         if (screenWidth < 480) {
-            baseRadius = 2.2; // Increased from 1.2 to match desktop density
+            baseRadius = 2.5; // Increased from 1.2 to match desktop density
         } else if (screenWidth < 768) {
-            baseRadius = 2.3; // Slightly smaller than desktop for tablets
+            baseRadius = 2.5; // Slightly smaller than desktop for tablets
         } else {
             baseRadius = 2.5; // Desktop
         }
@@ -596,7 +564,7 @@ class SphereCollageManager {
             cameraDistance = 4.5;
         } else {
             fov = 75;
-            cameraDistance = 5;
+            cameraDistance = 7; // Consistent with initial desktop view
         }
         
         // Update camera field of view and position if they've changed significantly

@@ -1,3 +1,25 @@
+<!-- Mobile App Popup -->
+<div class="mobile-app-popup" id="mobile-app-popup">
+    <div class="mobile-app-buttons">
+        <button class="mobile-app-button" data-app="collage">
+            <img src="https://storage.googleapis.com/jamtem_website_media/new_community_icon.png" alt="Collage" class="mobile-app-icon">
+            <span>Community</span>
+        </button>
+        <button class="mobile-app-button" data-app="join">
+            <img src="https://storage.googleapis.com/jamtem_website_media/new_join_icon.png" alt="Join" class="mobile-app-icon">
+            <span>Join</span>
+        </button>
+        <button class="mobile-app-button" data-app="vignettes">
+            <img src="https://storage.googleapis.com/jamtem_website_media/new_media_icon.png" alt="Vignettes" class="mobile-app-icon">
+            <span>Media</span>
+        </button>
+        <button class="mobile-app-button" data-app="products">
+            <img src="https://storage.googleapis.com/jamtem_website_media/neww_products_icon.png" alt="Products" class="mobile-app-icon">
+            <span>Products</span>
+        </button>
+    </div>
+</div>
+
 <!-- Bottom Taskbar -->
 <div class="taskbar">
     <div class="taskbar-left">
@@ -7,18 +29,30 @@
     </div>
     
     <div class="taskbar-center">
-        <!-- <button class="taskbar-button" onclick="window.location.href='/desktop'">
-            <span>Home</span>
+        <!-- Desktop buttons (hidden on mobile) -->
+        <div class="desktop-taskbar-buttons">
+            <button class="taskbar-button" data-app="collage">
+                <img src="https://storage.googleapis.com/jamtem_website_media/new_community_icon.png" alt="Collage" class="taskbar-icon" style="width: 20px; height: 20px; margin-right: 4px;">
+                Community
+            </button>
+            <button class="taskbar-button" data-app="join">
+                <img src="https://storage.googleapis.com/jamtem_website_media/new_join_icon.png" alt="Join" class="taskbar-icon" style="width: 20px; height: 20px; margin-right: 4px;">
+                Join
+            </button>
+            <button class="taskbar-button" data-app="vignettes">
+                <img src="https://storage.googleapis.com/jamtem_website_media/new_media_icon.png" alt="Vignettes" class="taskbar-icon" style="width: 20px; height: 20px; margin-right: 4px;">
+                Media
+            </button>
+            <button class="taskbar-button" data-app="products">
+                <img src="https://storage.googleapis.com/jamtem_website_media/neww_products_icon.png" alt="Products" class="taskbar-icon" style="width: 20px; height: 20px; margin-right: 4px;">
+                Products
+            </button>
+        </div>
+        
+        <!-- Mobile toggle button (visible only on mobile) -->
+        <button class="mobile-toggle-button" id="mobile-toggle-button">
+            <span class="toggle-arrow">▲</span>
         </button>
-        <button class="taskbar-button" onclick="window.location.href='/products'">
-            <span>Products</span>
-        </button>
-        <button class="taskbar-button" onclick="window.location.href='/collage-desktop'">
-            <span>Collage</span>
-        </button>
-        <button class="taskbar-button" onclick="window.location.href='/join-desktop'">
-            <span>Join</span>
-        </button> -->
     </div>
     
     <div class="taskbar-right">
