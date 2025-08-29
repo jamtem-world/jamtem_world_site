@@ -1044,6 +1044,9 @@ class DesktopInterface {
                 
                 // Store reference for potential cleanup
                 window.desktopSphereManager = this.desktopSphereManager;
+                
+                // Trigger the drop animation after sphere is initialized
+                this.triggerSphereDropAnimation();
             } else {
                 console.error('Failed to initialize desktop sphere');
             }
@@ -1091,6 +1094,22 @@ class DesktopInterface {
             
             // Return empty array as fallback
             return [];
+        }
+    }
+    
+    // Trigger sphere drop animation
+    triggerSphereDropAnimation() {
+        const sphereContainer = document.getElementById('sphere-container');
+        if (sphereContainer) {
+            console.log('Triggering sphere drop animation...');
+            
+            // Add a small delay to ensure the sphere is fully rendered
+            setTimeout(() => {
+                sphereContainer.classList.add('drop-in');
+                console.log('Sphere drop animation started');
+            }, 500);
+        } else {
+            console.warn('Sphere container not found for drop animation');
         }
     }
     

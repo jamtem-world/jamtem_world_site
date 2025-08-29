@@ -84,25 +84,8 @@ class SphereCollageManager {
     }
     
     async waitForCanvasReady() {
-        return new Promise((resolve) => {
-            const checkDimensions = () => {
-                const computedStyle = window.getComputedStyle(this.canvas);
-                const width = parseInt(computedStyle.width) || this.canvas.clientWidth;
-                const height = parseInt(computedStyle.height) || this.canvas.clientHeight;
-                
-                console.log(`Canvas dimensions check: ${width}x${height}`);
-                
-                if (width > 0 && height > 0) {
-                    console.log('Canvas ready with proper dimensions');
-                    resolve();
-                } else {
-                    console.log('Canvas not ready, waiting...');
-                    setTimeout(checkDimensions, 50);
-                }
-            };
-            
-            checkDimensions();
-        });
+        // Simply resolve immediately - let CSS handle all dimensions
+        return Promise.resolve();
     }
 
     setupScene() {
@@ -112,38 +95,14 @@ class SphereCollageManager {
     }
 
     setupCamera() {
-        // Get proper aspect ratio, fallback to 4:3 if canvas has no dimensions yet
-        let width = this.canvas.clientWidth;
-        let height = this.canvas.clientHeight;
+        // Use fixed camera settings - CSS controls all dimensions
+        const fov = 75;
+        const cameraDistance = 7;
         
-        if (width === 0 || height === 0) {
-            const container = this.canvas.parentElement;
-            width = container ? container.clientWidth : 800;
-            height = container ? container.clientHeight : 800;
-        }
-        
-        if (width === 0 || height === 0) {
-            width = 800;
-            height = 800;
-        }
-        
+        // Get aspect ratio from canvas for proper camera setup
+        const width = this.canvas.clientWidth || 800;
+        const height = this.canvas.clientHeight || 800;
         const aspect = width / height;
-        console.log(`Setting camera aspect ratio: ${aspect} (${width}x${height})`);
-        
-        // Adjust camera settings based on screen size
-        const screenWidth = window.innerWidth;
-        let fov, cameraDistance;
-        
-        if (screenWidth < 480) {
-            fov = 85; // Wider field of view for mobile
-            cameraDistance = 5; // Zoomed out more for better mobile view
-        } else if (screenWidth < 768) {
-            fov = 80; // Medium field of view for tablets
-            cameraDistance = 6; // Medium distance for tablets
-        } else {
-            fov = 75; // Standard field of view for desktop
-            cameraDistance = 7; // Zoomed out more for desktop view
-        }
         
         this.camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 1000);
         this.camera.position.set(0, 0, cameraDistance);
@@ -153,46 +112,26 @@ class SphereCollageManager {
         this.renderer = new THREE.WebGLRenderer({
             canvas: this.canvas,
             alpha: true,
-            antialias: true, // Always enable antialiasing for better quality
-            powerPreference: 'high-performance' // Always use high performance for better quality
+            antialias: true,
+            powerPreference: 'high-performance'
         });
         
-        // Get canvas dimensions from CSS computed styles
-        const computedStyle = window.getComputedStyle(this.canvas);
-        let width = parseInt(computedStyle.width) || this.canvas.clientWidth;
-        let height = parseInt(computedStyle.height) || this.canvas.clientHeight;
+        // Get canvas dimensions for proper resolution
+        const width = this.canvas.clientWidth || 800;
+        const height = this.canvas.clientHeight || 800;
         
-        if (width === 0 || height === 0) {
-            // Fallback to container dimensions
-            const container = this.canvas.parentElement;
-            width = container ? container.clientWidth : 800;
-            height = container ? container.clientHeight : 600;
-        }
-        
-        if (width === 0 || height === 0) {
-            // Final fallback to default dimensions
-            width = 800;
-            height = 600;
-        }
-        
-        console.log(`Setting canvas size to: ${width}x${height}, devicePixelRatio: ${window.devicePixelRatio}`);
-        
-        // Set high pixel ratio for crisp rendering on high-DPI displays
-        const pixelRatio = Math.min(window.devicePixelRatio, 3); // Cap at 3x for performance
+        // Set pixel ratio for crisp rendering
+        const pixelRatio = Math.min(window.devicePixelRatio, 2);
         this.renderer.setPixelRatio(pixelRatio);
         
-        // Set the renderer size - this will automatically handle pixel ratio
-        this.renderer.setSize(width, height, false); // false prevents setting inline styles
+        // Set renderer size for proper resolution - don't override CSS
+        this.renderer.setSize(width, height, false);
         
-        // Enable shadows for better visual quality
+        // Enable shadows and tone mapping
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        
-        // Set tone mapping for better color reproduction
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         this.renderer.toneMappingExposure = 1.0;
-        
-        console.log(`Canvas resolution: ${this.canvas.width}x${this.canvas.height} (${pixelRatio}x pixel ratio)`);
     }
 
     setupControls() {
@@ -537,56 +476,16 @@ class SphereCollageManager {
     onWindowResize() {
         if (!this.camera || !this.renderer) return;
 
-        // Get canvas dimensions from CSS computed styles to respect responsive design
-        const computedStyle = window.getComputedStyle(this.canvas);
-        let width = parseInt(computedStyle.width) || this.canvas.clientWidth;
-        let height = parseInt(computedStyle.height) || this.canvas.clientHeight;
+        // Get current canvas dimensions from CSS
+        const width = this.canvas.clientWidth;
+        const height = this.canvas.clientHeight;
 
+        // Update camera aspect ratio only
         this.camera.aspect = width / height;
         this.camera.updateProjectionMatrix();
         
-        // Set renderer size without overriding CSS styles
+        // Update renderer resolution without overriding CSS styling
         this.renderer.setSize(width, height, false);
-        
-        // Manually set canvas attributes without inline styles
-        this.canvas.width = width * this.renderer.getPixelRatio();
-        this.canvas.height = height * this.renderer.getPixelRatio();
-        
-        // Update camera settings for new screen size
-        const screenWidth = window.innerWidth;
-        let fov, cameraDistance;
-        
-        if (screenWidth < 480) {
-            fov = 85;
-            cameraDistance = 5; // Consistent with initial mobile view
-        } else if (screenWidth < 768) {
-            fov = 80;
-            cameraDistance = 4.5;
-        } else {
-            fov = 75;
-            cameraDistance = 7; // Consistent with initial desktop view
-        }
-        
-        // Update camera field of view and position if they've changed significantly
-        if (Math.abs(this.camera.fov - fov) > 2) {
-            this.camera.fov = fov;
-            this.camera.updateProjectionMatrix();
-        }
-        
-        // Smoothly adjust camera distance if needed
-        const currentDistance = this.camera.position.length();
-        if (Math.abs(currentDistance - cameraDistance) > 0.5) {
-            const direction = this.camera.position.clone().normalize();
-            this.camera.position.copy(direction.multiplyScalar(cameraDistance));
-        }
-
-        // Check if sphere size needs to be updated (considers both screen size and member count)
-        const newRadius = this.getDynamicSphereRadius();
-        if (Math.abs(this.currentSphereRadius - newRadius) > 0.1) {
-            this.resizeSphere(newRadius);
-        }
-        
-        console.log(`Resized to ${width}x${height}, screen width: ${screenWidth}px`);
     }
 
     async resizeSphere(newRadius) {

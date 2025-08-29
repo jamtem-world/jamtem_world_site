@@ -379,7 +379,7 @@ class CollageManager {
 
         // Set background image for modal container with dark overlay
         if (member.backgroundImageUrl && modalContainer) {
-            modalContainer.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url(${member.backgroundImageUrl})`;
+            modalContainer.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${member.backgroundImageUrl})`;
             modalContainer.style.backgroundSize = 'cover';
             modalContainer.style.backgroundPosition = 'center';
             modalContainer.style.backgroundRepeat = 'no-repeat';
@@ -458,13 +458,25 @@ class CollageManager {
     closeModal() {
         if (!this.modal) return;
 
+        // Clean up any existing ELMNT hover overlays
+        const existingOverlays = this.modal.querySelectorAll('.elmnt-hover-overlay');
+        existingOverlays.forEach(overlay => {
+            overlay.remove();
+        });
+
         this.modal.style.display = 'none';
         document.body.classList.remove('modal-open');
+        
+        // Store current member for focus return before clearing
+        const memberToFocus = this.currentMember;
         this.currentMember = null;
+        
+        // Clear hover time to prevent accidental video modal triggers
+        this.lastHoverTime = null;
 
         // Return focus to the grid item that was clicked
-        if (this.currentMember) {
-            const gridItem = document.querySelector(`[data-member-id="${this.currentMember.id}"]`);
+        if (memberToFocus) {
+            const gridItem = document.querySelector(`[data-member-id="${memberToFocus.id}"]`);
             if (gridItem) {
                 gridItem.focus();
             }
@@ -754,7 +766,13 @@ class CollageManager {
 
     // Setup ELMNT video hover functionality
     setupElmntVideoHover(imageElement, member) {
-        if (!member.elmntVideoUrl) return;
+        // Only set up hover functionality if member actually has an ELMNT video
+        if (!member.elmntVideoUrl || member.elmntVideoUrl.trim() === '') {
+            console.log('No ELMNT video for member:', member.name);
+            return;
+        }
+        
+        console.log('Setting up ELMNT video hover for:', member.name, 'Video URL:', member.elmntVideoUrl);
 
         // Create hover overlay container
         const hoverOverlay = document.createElement('div');
@@ -773,6 +791,7 @@ class CollageManager {
             cursor: pointer;
             transition: opacity 0.3s ease;
             z-index: 10;
+            opacity: 0;
         `;
 
         // Create play button
@@ -789,7 +808,7 @@ class CollageManager {
         // Create text
         const hoverText = document.createElement('div');
         hoverText.className = 'elmnt-hover-text';
-        hoverText.textContent = 'Watch Them In their ELEMENT';
+        hoverText.textContent = 'Watch Them In Their ELMT';
         hoverText.style.cssText = `
             color: white;
             font-size: 16px;
@@ -806,28 +825,90 @@ class CollageManager {
         const imageContainer = imageElement.parentElement;
         if (imageContainer) {
             imageContainer.style.position = 'relative';
-            imageContainer.appendChild(hoverOverlay);
+            
+            // Add a small delay before attaching the overlay to prevent immediate triggers
+            setTimeout(() => {
+                imageContainer.appendChild(hoverOverlay);
+                
+                let hoverTimeout;
+                let isHovering = false;
+                
+                // Add hover event listeners with delay to prevent accidental triggers
+                imageContainer.addEventListener('mouseenter', (e) => {
+                    // Only show overlay if mouse is actually over the image container
+                    if (e.target === imageContainer || imageContainer.contains(e.target)) {
+                        isHovering = true;
+                        // Track hover time for safety check
+                        this.lastHoverTime = Date.now();
+                        
+                        // Add a small delay to prevent accidental hovers
+                        hoverTimeout = setTimeout(() => {
+                            if (isHovering) {
+                                hoverOverlay.style.display = 'flex';
+                                // Fade in animation
+                                setTimeout(() => {
+                                    if (isHovering) {
+                                        hoverOverlay.style.opacity = '1';
+                                    }
+                                }, 10);
+                            }
+                        }, 200); // 200ms delay before showing overlay
+                    }
+                });
 
-            // Add hover event listeners
-            imageContainer.addEventListener('mouseenter', () => {
-                hoverOverlay.style.display = 'flex';
-            });
+                imageContainer.addEventListener('mouseleave', (e) => {
+                    isHovering = false;
+                    clearTimeout(hoverTimeout);
+                    
+                    // Fade out animation
+                    hoverOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        if (!isHovering) {
+                            hoverOverlay.style.display = 'none';
+                        }
+                    }, 300);
+                });
 
-            imageContainer.addEventListener('mouseleave', () => {
-                hoverOverlay.style.display = 'none';
-            });
-
-            // Add click event listener to open video modal
-            hoverOverlay.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent opening member modal
-                this.openElmntVideoModal(member);
-            });
+                // Add click event listener to open video modal - ONLY when overlay is visible
+                hoverOverlay.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation(); // Prevent opening member modal
+                    e.stopImmediatePropagation(); // Prevent any other event handlers
+                    
+                    // Only open video modal if overlay is actually visible
+                    if (hoverOverlay.style.display === 'flex' && hoverOverlay.style.opacity === '1') {
+                        this.openElmntVideoModal(member);
+                    }
+                });
+                
+                // Prevent any accidental clicks on the image itself from triggering video modal
+                imageElement.addEventListener('click', (e) => {
+                    // If the overlay is not visible, don't interfere with normal modal opening
+                    if (hoverOverlay.style.display !== 'flex' || hoverOverlay.style.opacity !== '1') {
+                        // Let the normal member modal open
+                        return;
+                    }
+                });
+                
+            }, 100); // Small delay before setting up hover functionality
         }
     }
 
     // Open ELMNT video modal
     openElmntVideoModal(member) {
-        if (!member.elmntVideoUrl) return;
+        if (!member.elmntVideoUrl) {
+            console.warn('No ELMNT video URL found for member:', member.name);
+            return;
+        }
+
+        console.log('Opening ELMNT video modal for:', member.name);
+
+        // Additional safety check - ensure this is being called intentionally
+        const currentTime = Date.now();
+        if (!this.lastHoverTime || (currentTime - this.lastHoverTime) > 5000) {
+            console.warn('ELMNT video modal blocked - no recent hover interaction detected');
+            return;
+        }
 
         // Create video modal if it doesn't exist
         let videoModal = document.getElementById('elmnt-video-modal');

@@ -73,12 +73,12 @@
         <!-- 3D Sphere Background -->
         <div id="sphere-container" class="sphere-container">
             <canvas id="sphere-canvas" class="sphere-canvas"></canvas>
-            <div class="sphere-controls">
+        </div>
+                    <div class="sphere-controls">
                 <div class="control-hint">
                     <span>🖱️ Drag to rotate • 🔍 Scroll to zoom • 👆 Click to explore</span>
                 </div>
             </div>
-        </div>
         
         <!-- Desktop Logo (like a desktop wallpaper logo) -->
         <!-- <div class="desktop-logo">
@@ -115,12 +115,12 @@
     <div id="taskbar-placeholder"></div>
 
     <!-- Join Icon Popup -->
-    <div id="join-icon-popup" class="join-icon-popup" style="display: none;">
+    <!-- <div id="join-icon-popup" class="join-icon-popup" style="display: none;">
         <div class="popup-arrow"></div>
         <div class="popup-content">
             Click Me To Join!
         </div>
-    </div>
+    </div> -->
 
     <!-- Vignettes Window -->
     <div id="vignettes-window" class="app-window" style="display: none;">
@@ -413,7 +413,7 @@
                                         <strong>Click to browse files</strong>
                                     </div>
                                     <div class="file-upload-hint">PNG, JPG, GIF up to 10MB (Optional)</div>
-                                    <button type="button" class="browse-btn" onclick="document.getElementById('background-image').click()">Browse...</button>
+                                    <button type="button" class="browse-btn">Browse...</button>
                                 </div>
                                 <div class="image-preview" id="background-image-preview" style="display: none;">
                                     <img id="background-preview-image" src="" alt="Background Preview">
@@ -424,7 +424,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-help">Upload a background image for your profile modal (optional)</div>
+                            <div class="form-help">Upload a background image for your profile card (optional)</div>
                             <div class="form-error" id="background-image-error"></div>
                         </div>
                         
@@ -440,7 +440,7 @@
                                         <strong>Click to browse files</strong>
                                     </div>
                                     <div class="file-upload-hint">MP4, MOV, AVI up to 100MB (Optional)</div>
-                                    <button type="button" class="browse-btn" onclick="document.getElementById('elmnt-video').click()">Browse...</button>
+                                    <button type="button" class="browse-btn">Browse...</button>
                                 </div>
                                 <div class="video-preview" id="elmnt-video-preview" style="display: none;">
                                     <video id="elmnt-preview-video" controls style="max-width: 100%; max-height: 200px;">

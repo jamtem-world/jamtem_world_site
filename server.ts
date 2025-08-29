@@ -19,11 +19,12 @@ async function uploadToCloudinary(imageFile: File): Promise<string> {
   
   // Parameters to include in signature (alphabetical order, excluding file and api_key)
   const folder = "jamtem_community";
-  const paramsToSign = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
+  const paramsToSign = `folder=${folder}&timestamp=${timestamp}`;
+  const stringToSign = paramsToSign + apiSecret;
   
   // Create signature for secure upload
   const encoder = new TextEncoder();
-  const data = encoder.encode(paramsToSign);
+  const data = encoder.encode(stringToSign);
   const hashBuffer = await crypto.subtle.digest("SHA-1", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -76,11 +77,26 @@ async function uploadVideoToCloudinary(videoFile: File): Promise<string> {
   // Parameters to include in signature (alphabetical order, excluding file and api_key)
   const folder = "jamtem_community/elmnt_videos";
   const resourceType = "video";
-  const paramsToSign = `folder=${folder}&resource_type=${resourceType}&timestamp=${timestamp}${apiSecret}`;
+  
+  // Create parameters object for signature (excluding file, api_key, and resource_type)
+  // Note: resource_type is sent in form data but NOT included in signature for video uploads
+  const params = {
+    folder: folder,
+    timestamp: timestamp
+  };
+  
+  // Sort parameters alphabetically and create query string
+  const sortedParams = Object.keys(params)
+    .sort()
+    .map(key => `${key}=${params[key as keyof typeof params]}`)
+    .join('&');
+  
+  // Append API secret to create string to sign
+  const stringToSign = sortedParams + apiSecret;
   
   // Create signature for secure upload
   const encoder = new TextEncoder();
-  const data = encoder.encode(paramsToSign);
+  const data = encoder.encode(stringToSign);
   const hashBuffer = await crypto.subtle.digest("SHA-1", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');

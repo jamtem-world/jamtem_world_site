@@ -609,7 +609,16 @@ class JoinFormManager {
             this.backgroundFileUploadArea.addEventListener('dragover', (e) => this.handleBackgroundDragOver(e));
             this.backgroundFileUploadArea.addEventListener('dragleave', (e) => this.handleBackgroundDragLeave(e));
             this.backgroundFileUploadArea.addEventListener('drop', (e) => this.handleBackgroundDrop(e));
-            this.backgroundFileUploadArea.addEventListener('click', () => this.backgroundImageInput.click());
+            
+            // Only add click handler to specific elements, not the entire area
+            const backgroundBrowseBtn = this.backgroundFileUploadArea.querySelector('.browse-btn');
+            if (backgroundBrowseBtn) {
+                backgroundBrowseBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.backgroundImageInput.click();
+                });
+            }
         }
         
         // ELMNT video removal
@@ -627,7 +636,16 @@ class JoinFormManager {
             this.elmntVideoUploadArea.addEventListener('dragover', (e) => this.handleVideoDragOver(e));
             this.elmntVideoUploadArea.addEventListener('dragleave', (e) => this.handleVideoDragLeave(e));
             this.elmntVideoUploadArea.addEventListener('drop', (e) => this.handleVideoDrop(e));
-            this.elmntVideoUploadArea.addEventListener('click', () => this.elmntVideoInput.click());
+            
+            // Only add click handler to specific elements, not the entire area
+            const videoBrowseBtn = this.elmntVideoUploadArea.querySelector('.browse-btn');
+            if (videoBrowseBtn) {
+                videoBrowseBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.elmntVideoInput.click();
+                });
+            }
         }
         
         // Real-time validation
