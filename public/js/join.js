@@ -722,7 +722,8 @@ class JoinFormManager {
             const formData = new FormData();
             
             // Add form fields
-            formData.append('name', document.getElementById('name').value.trim());
+            formData.append('first_name', document.getElementById('first_name').value.trim());
+            formData.append('last_name', document.getElementById('last_name').value.trim());
             formData.append('email', document.getElementById('email').value.trim());
             formData.append('craft', document.getElementById('craft').value.trim());
             formData.append('location', document.getElementById('location').value.trim());
@@ -777,7 +778,7 @@ class JoinFormManager {
         let isValid = true;
         
         // Required fields
-        const requiredFields = ['name', 'email', 'bio'];
+        const requiredFields = ['first_name', 'last_name', 'email', 'bio'];
         requiredFields.forEach(fieldName => {
             const field = document.getElementById(fieldName);
             if (!this.validateField(field)) {

@@ -29,6 +29,9 @@
     <meta property="twitter:image:alt" content="Jamtem World Logo">
     
     <link rel="icon" type="image/png" href="https://storage.googleapis.com/jamtem_website_media/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/desktop.css">
     <link rel="stylesheet" href="css/join-components.css">
     
@@ -301,13 +304,23 @@
                     <div class="form-section">
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="name" class="form-label">
-                                    Name <span class="required">*</span>
+                                <label for="first_name" class="form-label">
+                                    First Name <span class="required">*</span>
                                 </label>
-                                <input type="text" id="name" name="name" class="form-input" required placeholder="Enter your name">
-                                <div class="form-error" id="name-error"></div>
+                                <input type="text" id="first_name" name="first_name" class="form-input" required placeholder="Enter your first name">
+                                <div class="form-error" id="first_name-error"></div>
                             </div>
-                            
+
+                            <div class="form-group">
+                                <label for="last_name" class="form-label">
+                                    Last Name
+                                </label>
+                                <input type="text" id="last_name" name="last_name" class="form-input" placeholder="Enter your last name">
+                                <div class="form-error" id="last_name-error"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
                             <div class="form-group">
                                 <label for="email" class="form-label">
                                     Email Address <span class="required">*</span>
@@ -428,7 +441,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-help">Upload a background image for your profile card (optional)</div>
+                            <div class="form-help">Upload a background image for your profile card (optional). If not provided, your profile image will be used as the default background.</div>
                             <div class="form-error" id="background-image-error"></div>
                         </div>
                         
@@ -504,8 +517,15 @@
         <div class="modal-container">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 id="modal-member-name" class="modal-member-name"></h2>
-                    <p id="modal-member-craft" class="modal-member-craft"></p>
+                    <div class="card_name_shape">
+                        <img src="media/images/jamtem_card_shape.png" alt="" class="name_corner">                    <h2 id="modal-member-name" class="modal-member-name"></h2>
+                        <h2 id="modal-member-name" class="modal-member-name"></h2>
+                    </div>
+                    <div class="header_emblems">
+                        <img src="media/emblems/jamtem_emblem_fashion.png" alt="" class="emblem">
+                        <img src="media/emblems/jamtem_emblem_film.png" alt="" class="emblem">
+                        <img src="media/emblems/jamtem_emblem_music.png" alt="" class="emblem">
+                    </div>
                 </div>
                 <div class="modal-image-section">
                     <div class="modal-image-container">
@@ -513,22 +533,26 @@
                         <div class="modal-image-placeholder" id="modal-image-placeholder">
                             No image available
                         </div>
-                    </div>
+                        <img src="media/images/member_pic_border.png" alt="" class="member_pic_border"></div>
                 </div>
                 <div class="modal-info-section">
                     <div class="modal-member-details">
-                        <div class="modal-location" id="modal-location-section" style="display: none;">
-                            <strong>Location:</strong>
-                            <span id="modal-member-location"></span>
-                        </div>
-                        <div class="modal-instagram" id="modal-instagram-section" style="display: none;">
-                            <strong>Instagram:</strong>
-                            <span id="modal-member-instagram"></span>
+                        <div class="location_instagram">
+                            <div class="modal-location" id="modal-location-section" style="display: none;">
+                                <img src="media/images/location_icon_black.png" alt="" class="icon">
+                                <span id="modal-member-location"></span>
+                            </div>
+                            <div class="modal-instagram" id="modal-instagram-section" style="display: none;">
+                                <img src="media/images/instagram_black_icon.png" alt="" class="icon">
+                                <span id="modal-member-instagram"></span>
+                            </div>
                         </div>
                         <div class="modal-bio">
                             <strong>About:</strong>
                             <p id="modal-member-bio"></p>
                         </div>
+                        <p id="modal-member-craft" class="modal-member-craft"></p>
+
                     </div>
                 </div>
             </div>

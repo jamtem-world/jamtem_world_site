@@ -281,7 +281,8 @@ Deno.serve({ port: PORT }, async (req: Request) => {
         // Transform the data to a cleaner format for the frontend
         const members = result.records.map((record: any) => ({
           id: record.id,
-          name: record.fields.Name || "",
+          first_name: record.fields["First Name"] || "",
+          last_name: record.fields["Last Name"] || "",
           craft: record.fields.Craft || "",
           location: record.fields.Location || "",
           instagram: record.fields.Instagram || "",
@@ -362,7 +363,8 @@ Deno.serve({ port: PORT }, async (req: Request) => {
         const formData = await req.formData();
         
         // Extract form fields
-        const name = formData.get("name")?.toString().trim();
+        const firstName = formData.get("first_name")?.toString().trim();
+        const lastName = formData.get("last_name")?.toString().trim();
         const email = formData.get("email")?.toString().trim();
         const craftData = formData.get("craft")?.toString().trim();
         const location = formData.get("location")?.toString().trim();
@@ -377,17 +379,17 @@ Deno.serve({ port: PORT }, async (req: Request) => {
         const craftArray = craftData ? craftData.split(',').map(item => item.trim()).filter(item => item) : [];
 
         // Validate required fields
-        if (!name || !email || !craftData || craftArray.length === 0 || !bio) {
+        if (!firstName || !email || !craftData || craftArray.length === 0 || !bio) {
           return new Response(
-            JSON.stringify({ 
-              error: "Missing required fields: name, email, craft (at least one), and bio are required." 
+            JSON.stringify({
+              error: "Missing required fields: first name, email, craft (at least one), and bio are required."
             }),
-            { 
-              status: 400, 
-              headers: { 
+            {
+              status: 400,
+              headers: {
                 "Content-Type": "application/json",
-                ...corsHeaders 
-              } 
+                ...corsHeaders
+              }
             }
           );
         }
@@ -535,7 +537,8 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           fields: Record<string, any>
         } = {
           fields: {
-            "Name": name,
+            "First Name": firstName,
+            "Last Name": lastName || "",
             "Email": email,
             "Craft": craftArray, // Send as array for Airtable multi-select field
             "Location": location || "",

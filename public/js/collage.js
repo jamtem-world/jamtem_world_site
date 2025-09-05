@@ -131,10 +131,10 @@ class CollageManager {
         
         if (searchTerm) {
             filteredMembers = this.members.filter(member => {
-                const name = (member.name || '').toString().toLowerCase();
+                const name = (member.first_name || '').toString().toLowerCase();
                 const bio = (member.bio || '').toString().toLowerCase();
                 const instagram = (member.instagram || '').toString().toLowerCase();
-                
+
                 // Handle craft field - it might be a string or array
                 let craftText = '';
                 if (Array.isArray(member.craft)) {
@@ -142,9 +142,9 @@ class CollageManager {
                 } else {
                     craftText = (member.craft || '').toString().toLowerCase();
                 }
-                
-                return name.includes(searchTerm) || 
-                       craftText.includes(searchTerm) || 
+
+                return name.includes(searchTerm) ||
+                       craftText.includes(searchTerm) ||
                        bio.includes(searchTerm) ||
                        instagram.includes(searchTerm);
             });
@@ -331,7 +331,7 @@ class CollageManager {
         gridItem.setAttribute('data-member-id', member.id);
         gridItem.setAttribute('tabindex', '0');
         gridItem.setAttribute('role', 'button');
-        gridItem.setAttribute('aria-label', `View ${member.name}'s profile`);
+        gridItem.setAttribute('aria-label', `View ${member.first_name}'s profile`);
 
         if (member.imageUrl) {
             const img = document.createElement('img');
@@ -383,8 +383,14 @@ class CollageManager {
             modalContainer.style.backgroundSize = 'cover';
             modalContainer.style.backgroundPosition = 'center';
             modalContainer.style.backgroundRepeat = 'no-repeat';
+        } else if (member.imageUrl && modalContainer) {
+            // Use profile image as background if no background image is provided
+            modalContainer.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${member.imageUrl})`;
+            modalContainer.style.backgroundSize = 'cover';
+            modalContainer.style.backgroundPosition = 'center';
+            modalContainer.style.backgroundRepeat = 'no-repeat';
         } else if (modalContainer) {
-            // Clear background image if no background image is provided
+            // Clear background image if no images are available
             modalContainer.style.backgroundImage = '';
             modalContainer.style.backgroundSize = '';
             modalContainer.style.backgroundPosition = '';
@@ -408,7 +414,7 @@ class CollageManager {
         }
 
         // Set text content
-        if (modalName) modalName.textContent = member.name || 'Unknown';
+        if (modalName) modalName.textContent = member.first_name || 'Unknown';
         
         // Handle craft field - format properly if it's an array
         if (modalCraft) {
@@ -431,7 +437,7 @@ class CollageManager {
         const modalLocationSection = document.getElementById('modal-location-section');
         if (member.location && member.location.trim() && modalLocation && modalLocationSection) {
             modalLocation.textContent = member.location;
-            modalLocationSection.style.display = 'block';
+            modalLocationSection.style.display = 'flex';
         } else if (modalLocationSection) {
             modalLocationSection.style.display = 'none';
         }
@@ -439,7 +445,7 @@ class CollageManager {
         // Handle Instagram
         if (member.instagram && member.instagram.trim() && modalInstagram && modalInstagramSection) {
             modalInstagram.textContent = member.instagram;
-            modalInstagramSection.style.display = 'block';
+            modalInstagramSection.style.display = 'flex';
         } else if (modalInstagramSection) {
             modalInstagramSection.style.display = 'none';
         }
@@ -634,10 +640,10 @@ class CollageManager {
             if (currentSearch) {
                 const searchTerm = currentSearch.toLowerCase();
                 membersToShow = this.members.filter(member => {
-                    const name = (member.name || '').toString().toLowerCase();
+                    const name = (member.first_name || '').toString().toLowerCase();
                     const bio = (member.bio || '').toString().toLowerCase();
                     const instagram = (member.instagram || '').toString().toLowerCase();
-                    
+
                     // Handle craft field - it might be a string or array
                     let craftText = '';
                     if (Array.isArray(member.craft)) {
@@ -645,9 +651,9 @@ class CollageManager {
                     } else {
                         craftText = (member.craft || '').toString().toLowerCase();
                     }
-                    
-                    return name.includes(searchTerm) || 
-                           craftText.includes(searchTerm) || 
+
+                    return name.includes(searchTerm) ||
+                           craftText.includes(searchTerm) ||
                            bio.includes(searchTerm) ||
                            instagram.includes(searchTerm);
                 });
