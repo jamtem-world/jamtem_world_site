@@ -4,7 +4,7 @@ class ComponentLoader {
         this.components = {
             header: '/components/header.html',
             footer: '/components/footer.html',
-            taskbar: '/components/taskbaR.html'
+            taskbar: '/components/taskbar.html'
         };
     }
 
@@ -172,7 +172,7 @@ class ComponentLoader {
     //             <div class="taskbar">
     //                 <div class="taskbar-left">
     //                     <button class="start-button">
-    //                         <img src="/media/images/logo.png" alt="Start" class="start-icon">
+    //                         <img src="/https://storage.googleapis.com/jamtem_website_media/logo.png" alt="Start" class="start-icon">
     //                         <span>Start</span>
     //                     </button>
     //                 </div>

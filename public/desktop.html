@@ -28,7 +28,7 @@
     <meta property="twitter:image" content="https://jamtemworld.com/media/images/jamtem_logo_w_bg.png">
     <meta property="twitter:image:alt" content="Jamtem World Logo">
     
-    <link rel="icon" type="image/png" href="media/images/logo.png">
+    <link rel="icon" type="image/png" href="https://storage.googleapis.com/jamtem_website_media/logo.png">
     <link rel="stylesheet" href="css/desktop.css">
     <link rel="stylesheet" href="css/join-components.css">
     
@@ -52,7 +52,7 @@
         <div class="loading-window">
             <div class="loading-titlebar">
                 <div class="loading-title">
-                    <img src="media/images/logo.png" alt="" class="loading-icon">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/logo.png" alt="" class="loading-icon">
                     <span>Jamtem World</span>
                 </div>
             </div>
@@ -74,15 +74,19 @@
         <div id="sphere-container" class="sphere-container">
             <canvas id="sphere-canvas" class="sphere-canvas"></canvas>
         </div>
-                    <div class="sphere-controls">
+            <div class="sphere-controls">
                 <div class="control-hint">
                     <span>🖱️ Drag to rotate • 🔍 Scroll to zoom • 👆 Click to explore</span>
                 </div>
+                <button class="sphere-join-btn" id="sphere-join-btn">
+                    <span class="btn-icon">👥</span>
+                    <span class="btn-text">Join Community</span>
+                </button>
             </div>
         
         <!-- Desktop Logo (like a desktop wallpaper logo) -->
         <!-- <div class="desktop-logo">
-            <img src="media/images/logo.png" alt="Jamtem World" class="desktop-logo-img">
+            <img src="https://storage.googleapis.com/jamtem_website_media/logo.png" alt="Jamtem World" class="desktop-logo-img">
         </div> -->
         
         <!-- Main Desktop Icons Grid -->
@@ -126,7 +130,7 @@
     <div id="vignettes-window" class="app-window" style="display: none;">
         <div class="window-titlebar">
             <div class="window-title">
-                <img src="media/images/logo.png" alt="" class="window-icon">
+                <img src="https://storage.googleapis.com/jamtem_website_media/logo.png" alt="" class="window-icon">
                 <span>Jamtem Vignettes</span>
             </div>
             <div class="window-controls">
@@ -194,7 +198,7 @@
     <div id="products-window" class="app-window" style="display: none;">
         <div class="window-titlebar">
             <div class="window-title">
-                <img src="media/images/logo.png" alt="" class="window-icon">
+                <img src="https://storage.googleapis.com/jamtem_website_media/logo.png" alt="" class="window-icon">
                 <span>Jamtem Products</span>
             </div>
             <div class="window-controls">
@@ -233,7 +237,7 @@
     <div id="collage-window" class="app-window" style="display: none;">
         <div class="window-titlebar">
             <div class="window-title">
-                <img src="media/images/logo.png" alt="" class="window-icon">
+                <img src="https://storage.googleapis.com/jamtem_website_media/logo.png" alt="" class="window-icon">
                 <span>Community Collage</span>
             </div>
             <div class="window-controls">
@@ -277,7 +281,7 @@
     <div id="join-window" class="app-window" style="display: none;">
         <div class="window-titlebar">
             <div class="window-title">
-                <img src="media/images/logo.png" alt="" class="window-icon">
+                <img src="https://storage.googleapis.com/jamtem_website_media/logo.png" alt="" class="window-icon">
                 <span>Join JAMTEM Community</span>
             </div>
             <div class="window-controls">
@@ -316,7 +320,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="craft-filter" class="form-label">
-                                    Your Craft/Passion <span class="required">*</span>
+                                    Your Craft/Passion (Maximum of 5)<span class="required">*</span>
                                 </label>
                                 <div class="craft-selector-container">
                                     <input type="text" id="craft-filter" placeholder="Filter crafts..." class="craft-filter-input" autocomplete="off">
@@ -535,7 +539,7 @@
     <div id="video-window" class="video-window" style="display: none;">
         <div class="window-titlebar">
             <div class="window-title">
-                <img src="media/images/logo.png" alt="" class="window-icon">
+                <img src="https://storage.googleapis.com/jamtem_website_media/logo.png" alt="" class="window-icon">
                 <span id="window-title-text">Jamtem Video</span>
             </div>
             <div class="window-controls">
@@ -559,10 +563,10 @@
     </div>
 
     <!-- Product Modal -->
-    <div id="product-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-container product-modal-container">
-            <button class="modal-close" id="product-modal-close">&times;</button>
-            <div class="modal-content product-modal-content">
+    <div id="product-modal" class="product-modal-overlay" style="display: none;">
+        <div class="product-modal-container">
+            <button class="product-modal-close" id="product-modal-close">&times;</button>
+            <div class="product-modal-content">
                 <div class="modal-image-section">
                     <div class="modal-image-container">
                         <img id="modal-product-image" class="modal-product-image" src="" alt="">

@@ -1012,7 +1012,7 @@ class DesktopInterface {
     // Initialize desktop sphere background
     async initializeDesktopSphere() {
         console.log('Initializing desktop sphere...');
-        
+
         try {
             // Get the desktop sphere canvas
             const sphereCanvas = document.getElementById('sphere-canvas');
@@ -1020,39 +1020,55 @@ class DesktopInterface {
                 console.warn('Desktop sphere canvas not found');
                 return;
             }
-            
+
             // Load community members data
             const members = await this.loadCommunityMembers();
             if (!members || members.length === 0) {
                 console.warn('No community members data available for desktop sphere');
                 return;
             }
-            
+
             console.log(`Loaded ${members.length} community members for desktop sphere`);
-            
+
             // Import and initialize the SphereCollageManager
             const { default: SphereCollageManager } = await import('./collage-3d.js');
-            
+
             // Create sphere manager instance
             this.desktopSphereManager = new SphereCollageManager();
-            
+
             // Initialize the sphere with the canvas and members data
             const success = await this.desktopSphereManager.init(sphereCanvas, members);
-            
+
             if (success) {
                 console.log('Desktop sphere initialized successfully');
-                
+
                 // Store reference for potential cleanup
                 window.desktopSphereManager = this.desktopSphereManager;
-                
+
                 // Trigger the drop animation after sphere is initialized
                 this.triggerSphereDropAnimation();
+
+                // Setup sphere controls after sphere is initialized
+                this.setupSphereControls();
             } else {
                 console.error('Failed to initialize desktop sphere');
             }
-            
+
         } catch (error) {
             console.error('Error initializing desktop sphere:', error);
+        }
+    }
+
+    // Setup sphere controls (join button)
+    setupSphereControls() {
+        const joinBtn = document.getElementById('sphere-join-btn');
+        if (joinBtn) {
+            joinBtn.addEventListener('click', () => {
+                console.log('Sphere join button clicked');
+                this.openApp('join-window');
+            });
+        } else {
+            console.warn('Sphere join button not found');
         }
     }
     
@@ -1100,6 +1116,8 @@ class DesktopInterface {
     // Trigger sphere drop animation
     triggerSphereDropAnimation() {
         const sphereContainer = document.getElementById('sphere-container');
+        const desktop = document.querySelector('.desktop');
+        
         if (sphereContainer) {
             console.log('Triggering sphere drop animation...');
             
@@ -1110,6 +1128,18 @@ class DesktopInterface {
             }, 500);
         } else {
             console.warn('Sphere container not found for drop animation');
+        }
+        
+        // Delay desktop background animation by 2 seconds
+        if (desktop) {
+            // Temporarily pause the background animation
+            desktop.style.animationPlayState = 'paused';
+            
+            setTimeout(() => {
+                // Resume background animation after 2 second delay
+                desktop.style.animationPlayState = 'running';
+                console.log('Desktop background animation resumed after 2 second delay');
+            }, 2000);
         }
     }
     

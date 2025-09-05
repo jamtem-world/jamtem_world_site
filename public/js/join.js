@@ -285,7 +285,7 @@ class CraftSelector {
         this.hiddenInput = document.getElementById('craft');
         
         this.selectedCrafts = new Set();
-        this.maxSelections = 10; // Optional limit
+        this.maxSelections = 5; // Maximum 5 crafts allowed
         
         this.init();
     }

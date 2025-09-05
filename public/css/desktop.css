@@ -233,7 +233,7 @@ body {
   overflow: hidden;
   background-image: 
     linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),
-    url('../media/images/cloud_bg_2.jpg');
+    url('https://storage.googleapis.com/jamtem_website_media/cloud_bg_2.jpg');
   background-size: 120%;
   background-position: center;
   background-repeat: no-repeat;
@@ -440,16 +440,14 @@ body {
   background: linear-gradient(to bottom, #d6d3ce 0%, #ece9d8 50%, #f2efea 100%);
 }
 
-/* Disabled taskbar buttons for media and products */
-.taskbar-button[data-app="vignettes"],
-.taskbar-button[data-app="products"] {
+/* Disabled taskbar buttons for media */
+.taskbar-button[data-app="vignettes"] {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
 }
 
-.mobile-app-button[data-app="vignettes"],
-.mobile-app-button[data-app="products"] {
+.mobile-app-button[data-app="vignettes"] {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
@@ -1883,7 +1881,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 200;
+  z-index: 1600;
 }
 
 .modal-container {
@@ -2173,6 +2171,7 @@ body {
 }
 
 .sphere-controls {
+  position: relative;
   background: rgba(0, 0, 0, 0.7);
   color: white;
   padding: 8px 16px;
@@ -2181,6 +2180,49 @@ body {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.sphere-join-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(to bottom, #ece9d8 0%, #d6d3ce 50%, #ada5a0 100%);
+  border: 1px outset #d4d0c8;
+  border-radius: 0;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  color: #000000;
+  cursor: pointer;
+  min-width: 120px;
+  justify-content: center;
+  transition: all 0.1s ease;
+  -webkit-tap-highlight-color: rgba(0, 120, 212, 0.2);
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.sphere-join-btn:hover {
+  background: linear-gradient(to bottom, #f2efea 0%, #ddd9d4 50%, #b5aca7 100%);
+}
+
+.sphere-join-btn:active {
+  border: 1px inset #d4d0c8;
+  background: linear-gradient(to bottom, #d6d3ce 0%, #ece9d8 50%, #f2efea 100%);
+  transform: scale(0.98);
+}
+
+.sphere-join-btn .btn-icon {
+  font-size: 14px;
+}
+
+.sphere-join-btn .btn-text {
+  white-space: nowrap;
 }
 
 .control-hint {
@@ -2201,7 +2243,10 @@ body {
 }
 
 @media (max-width: 480px) {
-
+  .sphere-controls {
+    position: absolute;
+    bottom: 85px;
+  }
 }
 
 /* Error and Loading States */
@@ -2263,10 +2308,17 @@ body {
     max-height: var(--mobile-window-max-height);
   }
   
-  /* .modal-content {
-    padding: 12px;
-  } */
+  .modal-content {
+    grid-template-rows: 40px 1fr 1fr;
+    height: 550px;
+  }
 
+  .modal-image-container {
+    height: 200px;
+  }
+
+  .modal-member-image {
+  }
   .sphere-container {
     /* width: auto;
     height: 120%; */
@@ -2510,11 +2562,55 @@ body {
   font-weight: bold;
 }
 
-/* Product Modal Styles */
+/* Product Modal Styles - Separate from Member Modal */
+.product-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1600;
+}
+
 .product-modal-container {
+  position: relative;
+  background: #c0c0c0;
+  border: 2px outset #c0c0c0;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
   width: 800px;
   max-width: 95vw;
   max-height: 90vh;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  overflow: scroll;
+}
+
+.product-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(to bottom, #ece9d8 0%, #d6d3ce 100%);
+  border: 1px outset #d4d0c8;
+  border-radius: 0;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  color: #000000;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.product-modal-close:hover {
+  background: linear-gradient(to bottom, #ff6b6b 0%, #ee5a52 100%);
+  color: white;
 }
 
 .product-modal-content {
@@ -2522,13 +2618,16 @@ body {
   grid-template-columns: 300px 1fr;
   gap: 20px;
   padding: 20px;
-  min-height: 500px;
+  /* min-height: 500px; */
+  background: #c0c0c0;
+  height: calc(100% - 40px);
+  overflow-y: auto;
 }
 
 .modal-product-image {
   width: 100%;
   height: 250px;
-  object-fit: cover;
+  object-fit: contain;
   border: 1px solid #808080;
   background: white;
 }
@@ -2778,6 +2877,173 @@ body {
   font-size: 12px;
 }
 
+/* ELMNT Mobile Tap Indicator Styles */
+.elmnt-tap-indicator {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  z-index: 15;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.3s ease;
+}
+
+.elmnt-tap-indicator.show {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.elmnt-tap-indicator.pulse {
+  animation: tapPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes tapPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* ELMNT Video Modal Styles */
+.elmnt-video-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.elmnt-modal-content {
+  background: #000;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 90vw;
+  max-height: 90vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.elmnt-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+  z-index: 1001;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.elmnt-modal-close:hover {
+  color: #ff6b6b;
+}
+
+.elmnt-modal-title {
+  color: white;
+  margin: 0 0 20px 0;
+  text-align: center;
+  font-size: 24px;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+}
+
+.elmnt-modal-video {
+  max-width: 100%;
+  max-height: 70vh;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Mobile-specific ELMNT styles */
+@media (max-width: 768px) {
+  .elmnt-tap-indicator {
+    font-size: 9px;
+    padding: 3px 6px;
+    max-width: 70px;
+    bottom: 6px;
+    right: 6px;
+  }
+  
+  .elmnt-modal-content {
+    padding: 15px;
+    max-width: 95vw;
+    max-height: 95vh;
+  }
+  
+  .elmnt-modal-title {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+  
+  .elmnt-modal-video {
+    max-height: 60vh;
+  }
+  
+  .elmnt-modal-close {
+    top: 5px;
+    right: 10px;
+    font-size: 24px;
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .elmnt-tap-indicator {
+    font-size: 8px;
+    padding: 2px 4px;
+    max-width: 60px;
+    bottom: 4px;
+    right: 4px;
+    border-radius: 3px;
+  }
+  
+  .elmnt-modal-content {
+    padding: 10px;
+  }
+  
+  .elmnt-modal-title {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  
+  .elmnt-modal-video {
+    max-height: 50vh;
+  }
+}
+
 /* Join Icon Popup Styles */
 .join-icon-popup {
   position: absolute;
@@ -2875,49 +3141,49 @@ body {
   }
 }
 
-@media (max-width: 480px) {
+/* Mobile responsiveness for product modal */
+@media (max-width: 768px) {
+  .product-modal-container {
+    width: var(--mobile-window-max-width);
+    max-width: var(--mobile-window-max-width);
+    max-height: var(--mobile-window-max-height);
+  }
 
+  .product-modal-content {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .modal-product-image {
+    height: 200px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
   .products-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
     padding: 8px;
   }
-  
+
   .product-card {
     min-height: 120px;
   }
-  
+
   .product-image-grid {
     min-height: 80px;
   }
-  
+
   .product-modal-container {
-    width: var(--mobile-window-max-width);
-    max-height: var(--mobile-window-max-height);
-  }
-  
-  .product-modal-content {
-    padding: 12px;
-  }
-}
-
-/* Benefits Content Styles */
-.benefits-content {
-  padding: 16px;
-}
-
-.benefits-content h2 {
-  font-size: 16px;
-  color: #000000;
-  margin-bottom: 16px;
-  text-align: center;
-}
-
-.benefits-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
 }
 
 .benefit-item {
@@ -3203,4 +3469,5 @@ body {
 .dialog-window:focus {
   outline: 1px dotted #000000;
   outline-offset: -2px;
+}
 }

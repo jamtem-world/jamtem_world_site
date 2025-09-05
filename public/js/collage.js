@@ -774,6 +774,148 @@ class CollageManager {
         
         console.log('Setting up ELMNT video hover for:', member.name, 'Video URL:', member.elmntVideoUrl);
 
+        // Detect if device is mobile/touch
+        const isMobile = this.isMobileDevice();
+
+        // Make image container relative positioned
+        const imageContainer = imageElement.parentElement;
+        if (!imageContainer) return;
+        
+        imageContainer.style.position = 'relative';
+
+        if (isMobile) {
+            // Mobile: Add persistent tap indicator
+            this.setupMobileElmntIndicator(imageContainer, member);
+        } else {
+            // Desktop: Use existing hover functionality
+            this.setupDesktopElmntHover(imageContainer, member);
+        }
+    }
+
+    // Check if device is mobile/touch
+    isMobileDevice() {
+        return (
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+            ('ontouchstart' in window) ||
+            (navigator.maxTouchPoints > 0) ||
+            (navigator.msMaxTouchPoints > 0)
+        );
+    }
+
+    // Setup mobile tap indicator
+    setupMobileElmntIndicator(imageContainer, member) {
+        // Create tap indicator with icon
+        const tapIndicator = document.createElement('div');
+        tapIndicator.className = 'elmnt-tap-indicator';
+        tapIndicator.innerHTML = 'Tap'; // Clear tap instruction
+        tapIndicator.style.cssText = `
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            font-family: 'MS Sans Serif', monospace;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            z-index: 15;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s ease;
+        `;
+
+        imageContainer.appendChild(tapIndicator);
+
+        // Animation to show the indicator periodically
+        let animationInterval;
+        let isVisible = false;
+
+        const showIndicator = () => {
+            if (!isVisible) {
+                isVisible = true;
+                tapIndicator.style.opacity = '1';
+                tapIndicator.style.transform = 'scale(1)';
+                
+                // Hide after 2 seconds
+                setTimeout(() => {
+                    if (isVisible) {
+                        tapIndicator.style.opacity = '0';
+                        tapIndicator.style.transform = 'scale(0.5)';
+                        isVisible = false;
+                    }
+                }, 2000);
+            }
+        };
+
+        // Show indicator initially after a short delay
+        setTimeout(showIndicator, 1000);
+
+        // Show indicator periodically (every 8 seconds)
+        animationInterval = setInterval(showIndicator, 8000);
+
+        // Add touch event listeners
+        let touchStartTime = 0;
+        
+        imageContainer.addEventListener('touchstart', (e) => {
+            touchStartTime = Date.now();
+            // Show indicator and add visual feedback
+            tapIndicator.style.opacity = '1';
+            tapIndicator.style.transform = 'scale(0.9)';
+            tapIndicator.style.background = 'rgba(0, 120, 212, 0.9)';
+            isVisible = true;
+        });
+
+        imageContainer.addEventListener('touchend', (e) => {
+            const touchDuration = Date.now() - touchStartTime;
+            
+            // Reset visual feedback
+            setTimeout(() => {
+                tapIndicator.style.background = 'rgba(0, 0, 0, 0.8)';
+                tapIndicator.style.transform = 'scale(1)';
+                // Hide indicator after touch
+                setTimeout(() => {
+                    tapIndicator.style.opacity = '0';
+                    tapIndicator.style.transform = 'scale(0.5)';
+                    isVisible = false;
+                }, 500);
+            }, 150);
+            
+            // Only trigger if it was a quick tap (not a long press or scroll)
+            if (touchDuration < 500) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.lastHoverTime = Date.now(); // Set for safety check
+                this.openElmntVideoModal(member);
+            }
+        });
+
+        // Handle touch move (scrolling)
+        imageContainer.addEventListener('touchmove', (e) => {
+            // Reset visual feedback if user starts scrolling
+            tapIndicator.style.background = 'rgba(0, 0, 0, 0.8)';
+            tapIndicator.style.transform = 'scale(1)';
+        });
+
+        // Clean up interval when modal is closed
+        const originalCloseModal = this.closeModal.bind(this);
+        this.closeModal = () => {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+            }
+            originalCloseModal();
+        };
+    }
+
+    // Setup desktop hover functionality (existing behavior)
+    setupDesktopElmntHover(imageContainer, member) {
         // Create hover overlay container
         const hoverOverlay = document.createElement('div');
         hoverOverlay.className = 'elmnt-hover-overlay';
@@ -808,7 +950,7 @@ class CollageManager {
         // Create text
         const hoverText = document.createElement('div');
         hoverText.className = 'elmnt-hover-text';
-        hoverText.textContent = 'Watch Them In Their ELMT';
+        hoverText.textContent = 'Watch Them In Their ELMNT';
         hoverText.style.cssText = `
             color: white;
             font-size: 16px;
@@ -821,77 +963,71 @@ class CollageManager {
         hoverOverlay.appendChild(playButton);
         hoverOverlay.appendChild(hoverText);
 
-        // Make image container relative positioned
-        const imageContainer = imageElement.parentElement;
-        if (imageContainer) {
-            imageContainer.style.position = 'relative';
+        // Add a small delay before attaching the overlay to prevent immediate triggers
+        setTimeout(() => {
+            imageContainer.appendChild(hoverOverlay);
             
-            // Add a small delay before attaching the overlay to prevent immediate triggers
-            setTimeout(() => {
-                imageContainer.appendChild(hoverOverlay);
-                
-                let hoverTimeout;
-                let isHovering = false;
-                
-                // Add hover event listeners with delay to prevent accidental triggers
-                imageContainer.addEventListener('mouseenter', (e) => {
-                    // Only show overlay if mouse is actually over the image container
-                    if (e.target === imageContainer || imageContainer.contains(e.target)) {
-                        isHovering = true;
-                        // Track hover time for safety check
-                        this.lastHoverTime = Date.now();
-                        
-                        // Add a small delay to prevent accidental hovers
-                        hoverTimeout = setTimeout(() => {
-                            if (isHovering) {
-                                hoverOverlay.style.display = 'flex';
-                                // Fade in animation
-                                setTimeout(() => {
-                                    if (isHovering) {
-                                        hoverOverlay.style.opacity = '1';
-                                    }
-                                }, 10);
-                            }
-                        }, 200); // 200ms delay before showing overlay
-                    }
-                });
-
-                imageContainer.addEventListener('mouseleave', (e) => {
-                    isHovering = false;
-                    clearTimeout(hoverTimeout);
+            let hoverTimeout;
+            let isHovering = false;
+            
+            // Add hover event listeners with delay to prevent accidental triggers
+            imageContainer.addEventListener('mouseenter', (e) => {
+                // Only show overlay if mouse is actually over the image container
+                if (e.target === imageContainer || imageContainer.contains(e.target)) {
+                    isHovering = true;
+                    // Track hover time for safety check
+                    this.lastHoverTime = Date.now();
                     
-                    // Fade out animation
-                    hoverOverlay.style.opacity = '0';
-                    setTimeout(() => {
-                        if (!isHovering) {
-                            hoverOverlay.style.display = 'none';
+                    // Add a small delay to prevent accidental hovers
+                    hoverTimeout = setTimeout(() => {
+                        if (isHovering) {
+                            hoverOverlay.style.display = 'flex';
+                            // Fade in animation
+                            setTimeout(() => {
+                                if (isHovering) {
+                                    hoverOverlay.style.opacity = '1';
+                                }
+                            }, 10);
                         }
-                    }, 300);
-                });
+                    }, 200); // 200ms delay before showing overlay
+                }
+            });
 
-                // Add click event listener to open video modal - ONLY when overlay is visible
-                hoverOverlay.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation(); // Prevent opening member modal
-                    e.stopImmediatePropagation(); // Prevent any other event handlers
-                    
-                    // Only open video modal if overlay is actually visible
-                    if (hoverOverlay.style.display === 'flex' && hoverOverlay.style.opacity === '1') {
-                        this.openElmntVideoModal(member);
-                    }
-                });
+            imageContainer.addEventListener('mouseleave', (e) => {
+                isHovering = false;
+                clearTimeout(hoverTimeout);
                 
-                // Prevent any accidental clicks on the image itself from triggering video modal
-                imageElement.addEventListener('click', (e) => {
-                    // If the overlay is not visible, don't interfere with normal modal opening
-                    if (hoverOverlay.style.display !== 'flex' || hoverOverlay.style.opacity !== '1') {
-                        // Let the normal member modal open
-                        return;
+                // Fade out animation
+                hoverOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    if (!isHovering) {
+                        hoverOverlay.style.display = 'none';
                     }
-                });
+                }, 300);
+            });
+
+            // Add click event listener to open video modal - ONLY when overlay is visible
+            hoverOverlay.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent opening member modal
+                e.stopImmediatePropagation(); // Prevent any other event handlers
                 
-            }, 100); // Small delay before setting up hover functionality
-        }
+                // Only open video modal if overlay is actually visible
+                if (hoverOverlay.style.display === 'flex' && hoverOverlay.style.opacity === '1') {
+                    this.openElmntVideoModal(member);
+                }
+            });
+            
+            // Prevent any accidental clicks on the image itself from triggering video modal
+            imageElement.addEventListener('click', (e) => {
+                // If the overlay is not visible, don't interfere with normal modal opening
+                if (hoverOverlay.style.display !== 'flex' || hoverOverlay.style.opacity !== '1') {
+                    // Let the normal member modal open
+                    return;
+                }
+            });
+            
+        }, 100); // Small delay before setting up hover functionality
     }
 
     // Open ELMNT video modal
@@ -921,7 +1057,7 @@ class CollageManager {
         const modalVideo = videoModal.querySelector('.elmnt-modal-video');
 
         if (modalTitle) {
-            modalTitle.textContent = `${member.name} - In their ELEMENT`;
+            modalTitle.textContent = `${member.name} - In Their ELMNT`;
         }
 
         if (modalVideo) {
