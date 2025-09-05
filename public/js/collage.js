@@ -1,3 +1,8 @@
+/*
+// Note: SKILL_EMBLEMS constant is defined in join.js and shared across files
+// This avoids duplicate declarations when both scripts are loaded on the same page
+*/
+
 // Collage Manager - Handles dynamic grid and member data
 class CollageManager {
     constructor() {
@@ -450,9 +455,41 @@ class CollageManager {
             modalInstagramSection.style.display = 'none';
         }
 
+        // Handle Skill Emblems
+        const modalEmblems = document.getElementById('modal-emblems');
+        if (modalEmblems) {
+            modalEmblems.innerHTML = '';
+
+            // Only show emblems if the member actually has skill emblems selected
+            if (member.skillEmblems && Array.isArray(member.skillEmblems) && member.skillEmblems.length > 0) {
+                member.skillEmblems.forEach(emblemTitle => {
+                    // Find the corresponding emblem data
+                    const emblemData = SKILL_EMBLEMS.find(e => e.title === emblemTitle);
+                    if (emblemData) {
+                        const img = document.createElement('img');
+                        img.src = emblemData.image;
+                        img.alt = emblemData.title;
+                        img.className = 'emblem';
+                        img.title = emblemData.title; // Tooltip on hover
+
+                        // Add click handler to prevent modal close
+                        img.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                        });
+
+                        modalEmblems.appendChild(img);
+                    }
+                });
+            }
+            // If no skill emblems are selected, leave the container empty
+        }
+
         // Show modal
         this.modal.style.display = 'flex';
         document.body.classList.add('modal-open');
+
+        // Setup share button functionality
+        this.setupShareButton(member);
 
         // Focus management for accessibility
         const closeBtn = document.getElementById('modal-close');
@@ -464,19 +501,30 @@ class CollageManager {
     closeModal() {
         if (!this.modal) return;
 
-        // Clean up any existing ELMNT hover overlays
-        const existingOverlays = this.modal.querySelectorAll('.elmnt-hover-overlay');
+        // Clean up any existing ELMNT hover overlays and tap indicators
+        const existingOverlays = this.modal.querySelectorAll('.elmnt-hover-overlay, .elmnt-tap-indicator');
         existingOverlays.forEach(overlay => {
             overlay.remove();
         });
 
+        // Clean up any lingering ELMNT video event listeners on modal image containers
+        const modalImageContainers = this.modal.querySelectorAll('.modal-image-container');
+        modalImageContainers.forEach(container => {
+            // Remove any ELMNT-related event listeners by cloning and replacing the container
+            const newContainer = container.cloneNode(true);
+            container.parentNode.replaceChild(newContainer, container);
+        });
+
         this.modal.style.display = 'none';
         document.body.classList.remove('modal-open');
-        
+
         // Store current member for focus return before clearing
         const memberToFocus = this.currentMember;
         this.currentMember = null;
-        
+
+        // Clear current video member reference for complete data separation
+        this.currentVideoMember = null;
+
         // Clear hover time to prevent accidental video modal triggers
         this.lastHoverTime = null;
 
@@ -1058,18 +1106,35 @@ class CollageManager {
             videoModal = this.createElmntVideoModal();
         }
 
-        // Update modal content
+        // Complete reset of modal state before setting new content
         const modalTitle = videoModal.querySelector('.elmnt-modal-title');
         const modalVideo = videoModal.querySelector('.elmnt-modal-video');
 
+        // Clear previous content completely
         if (modalTitle) {
-            modalTitle.textContent = `${member.name} - In Their ELMNT`;
+            modalTitle.textContent = '';
+        }
+
+        if (modalVideo) {
+            // Stop any playing video and clear source
+            modalVideo.pause();
+            modalVideo.currentTime = 0;
+            modalVideo.src = '';
+            modalVideo.load(); // Reset the video element completely
+        }
+
+        // Set new content for this specific member
+        if (modalTitle) {
+            modalTitle.textContent = `${member.first_name || member.name || 'Member'} - In Their ELMNT`;
         }
 
         if (modalVideo) {
             modalVideo.src = member.elmntVideoUrl;
-            modalVideo.load(); // Reload the video element
+            modalVideo.load(); // Load the new video
         }
+
+        // Store current member reference for state isolation
+        this.currentVideoMember = member;
 
         // Show modal
         videoModal.style.display = 'flex';
@@ -1191,10 +1256,53 @@ class CollageManager {
         if (video) {
             video.pause();
             video.currentTime = 0;
+            video.src = ''; // Clear the video source to prevent persistence
+            video.load(); // Reset the video element
+        }
+
+        // Clear the modal title
+        const modalTitle = videoModal.querySelector('.elmnt-modal-title');
+        if (modalTitle) {
+            modalTitle.textContent = '';
         }
 
         videoModal.style.display = 'none';
         document.body.classList.remove('modal-open');
+    }
+
+    // Setup share button functionality
+    setupShareButton(member) {
+        const shareBtn = document.getElementById('share-profile-btn');
+        if (!shareBtn) return;
+
+        // Remove any existing event listeners
+        const newShareBtn = shareBtn.cloneNode(true);
+        shareBtn.parentNode.replaceChild(newShareBtn, shareBtn);
+
+        // Add new event listener
+        newShareBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const shareUrl = `${window.location.origin}/member/${member.id}`;
+
+            // Try to use the Web Share API if available
+            if (navigator.share) {
+                navigator.share({
+                    title: `${member.first_name} - JAMTEM Community`,
+                    text: `Check out ${member.first_name}'s creative profile on JAMTEM!`,
+                    url: shareUrl
+                }).catch(console.error);
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert('Share link copied to clipboard!');
+                }).catch(() => {
+                    // Final fallback: show the URL
+                    alert(`Share this link: ${shareUrl}`);
+                });
+            }
+        });
     }
 
     // Public method to retry loading (called from retry button)

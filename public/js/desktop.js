@@ -359,12 +359,12 @@ class DesktopInterface {
         // Bio character counter
         const bioTextarea = document.getElementById('bio');
         const bioCounter = document.getElementById('bio-counter');
-        
+
         if (bioTextarea && bioCounter) {
             bioTextarea.addEventListener('input', () => {
                 const length = bioTextarea.value.length;
                 bioCounter.textContent = `${length}/500`;
-                
+
                 if (length > 500) {
                     bioCounter.style.color = '#ff0000';
                 } else {
@@ -372,18 +372,12 @@ class DesktopInterface {
                 }
             });
         }
-        
+
         // File upload functionality
         this.setupFileUpload();
-        
-        // Form submission
-        const joinForm = document.getElementById('join-form');
-        if (joinForm) {
-            joinForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.submitJoinForm();
-            });
-        }
+
+        // Note: Form submission is now handled by join.js (JoinFormManager)
+        // Removed duplicate form submission handler to prevent conflicts
     }
     
     // Setup file upload
@@ -469,26 +463,7 @@ class DesktopInterface {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
     
-    // Submit join form
-    submitJoinForm() {
-        // Basic validation
-        const name = document.getElementById('name')?.value;
-        const email = document.getElementById('email')?.value;
-        const craft = document.getElementById('craft')?.value;
-        const bio = document.getElementById('bio')?.value;
-        const image = document.getElementById('image')?.files[0];
-        
-        if (!name || !email || !craft || !bio || !image) {
-            alert('Please fill in all required fields and upload an image.');
-            return;
-        }
-        
-        // Simulate successful submission - removed alert, now handled by join.js
-        // alert('Welcome to JAMTEM!\n\nThank you for joining our community of passionate creators. We\'re excited to have you on board!');
-        
-        // Don't close join window - let join.js handle the success message display
-        // this.closeWindow('join-window');
-    }
+
     
     // Close any window
     closeWindow(windowId) {
@@ -1238,10 +1213,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Load taskbar component
             const loader = new ComponentLoader();
             await loader.loadComponent('taskbar', '#taskbar-placeholder');
-            
+
             // Initialize desktop interface
             window.desktop = new DesktopInterface();
             window.desktop.setupDesktopContextMenu();
+
+            // Ensure cart functionality is set up after taskbar loads
+            if (window.cartManager) {
+                window.cartManager.setupCartEventListeners();
+            }
         }, 3000);
     } else {
         // Fallback if loading overlay not found

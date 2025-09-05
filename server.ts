@@ -161,11 +161,377 @@ async function serveHtmlFile(filePath: string): Promise<Response> {
     });
   } catch (error) {
     console.error(`Error serving ${filePath}:`, error);
-    return new Response('Page not found', { 
+    return new Response('Page not found', {
       status: 404,
       headers: { 'Content-Type': 'text/plain' }
     });
   }
+}
+
+// Helper function to serve member sharing page
+async function serveMemberPage(memberId: string): Promise<Response> {
+  try {
+    // Fetch member data from Airtable
+    const airtableApiKey = Deno.env.get("AIRTABLE_API_KEY");
+    const airtableBaseId = Deno.env.get("AIRTABLE_BASE_ID");
+    const airtableTableId = Deno.env.get("AIRTABLE_TABLE_ID");
+
+    if (!airtableApiKey || !airtableBaseId || !airtableTableId) {
+      throw new Error("Missing Airtable credentials");
+    }
+
+    // Fetch specific member by ID
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${airtableTableId}/${memberId}`;
+
+    const airtableResponse = await fetch(airtableUrl, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${airtableApiKey}`,
+      },
+    });
+
+    if (!airtableResponse.ok) {
+      if (airtableResponse.status === 404) {
+        return new Response('Member not found', { status: 404 });
+      }
+      throw new Error(`Airtable API error: ${airtableResponse.status}`);
+    }
+
+    const result = await airtableResponse.json();
+
+    // Transform member data
+    const member = {
+      id: result.id,
+      first_name: result.fields["First Name"] || "",
+      last_name: result.fields["Last Name"] || "",
+      craft: result.fields.Craft || "",
+      skillEmblems: result.fields.Skill_Emblems || [],
+      location: result.fields.Location || "",
+      instagram: result.fields.Instagram || "",
+      bio: result.fields.Bio || "",
+      imageUrl: result.fields.Image && result.fields.Image[0] ? result.fields.Image[0].url : null,
+      backgroundImageUrl: result.fields["Background Image"] && result.fields["Background Image"][0] ? result.fields["Background Image"][0].url : null,
+      elmntVideoUrl: result.fields.ELMNT && result.fields.ELMNT[0] ? result.fields.ELMNT[0].url : null
+    };
+
+    if (!member.imageUrl) {
+      return new Response('Member profile not available', { status: 404 });
+    }
+
+    // Generate HTML for member sharing page
+    const html = generateMemberPageHTML(member);
+
+    return new Response(html, {
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
+
+  } catch (error) {
+    console.error('Error serving member page:', error);
+    return new Response('Error loading member profile', { status: 500 });
+  }
+}
+
+// Generate HTML for member sharing page
+function generateMemberPageHTML(member: any): string {
+  const fullName = `${member.first_name} ${member.last_name}`.trim();
+  const craftText = Array.isArray(member.craft) ? member.craft.join(', ') : member.craft;
+  const shareUrl = `https://jamtemworld.com/member/${member.id}`;
+  const shareText = `Check out ${member.first_name}'s creative profile on JAMTEM! ${shareUrl} #JAMTEM`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${fullName} - JAMTEM Community</title>
+    <meta name="description" content="Discover ${fullName}, a ${craftText} in the JAMTEM creative community.">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="profile">
+    <meta property="og:url" content="${shareUrl}">
+    <meta property="og:title" content="${fullName} - JAMTEM Community">
+    <meta property="og:description" content="Discover ${fullName}, a ${craftText} in the JAMTEM creative community.">
+    <meta property="og:image" content="${member.imageUrl}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="${shareUrl}">
+    <meta property="twitter:title" content="${fullName} - JAMTEM Community">
+    <meta property="twitter:description" content="Discover ${fullName}, a ${craftText} in the JAMTEM creative community.">
+    <meta property="twitter:image" content="${member.imageUrl}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/desktop.css">
+    <link rel="stylesheet" href="/css/join-components.css">
+    <style>
+        .share-buttons {
+            position: fixed;
+            top: 5px;
+            left: 5px;
+            display: flex;
+            flex-direction: rows;
+            gap: 10px;
+            z-index: 3000;
+        }
+        .share-button {
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+            width: 30px;
+            height: 30px;
+        }
+        .share-button:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+        .share-button.instagram { background: #E4405F; }
+        .share-button.twitter { background: #1DA1F2; }
+        .share-button.facebook { background: #1877F2; }
+        .share-button.copy { background: #0078d4; }
+
+        /* Desktop Modal Styles */
+        .desktop-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)),
+                        url('https://storage.googleapis.com/jamtem_website_media/cloud_bg_2.jpg');
+            background-size: 200%;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            overflow: hidden;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Desktop Background -->
+    <div class="desktop-modal">
+        <!-- 3D Sphere Background -->
+        <div id="sphere-container" class="sphere-container">
+            <canvas id="sphere-canvas" class="sphere-canvas"></canvas>
+        </div>
+
+        <!-- Member Modal (exact copy from desktop.html) -->
+        <div id="member-modal" class="modal-overlay" style="display: flex;">
+                    <button class="modal-close" id="modal-close">&times;</button>
+
+        <div class="modal-container">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="card_name_shape">
+                        <img src="/media/images/jamtem_card_shape.png" alt="" class="name_corner">                    <h2 id="modal-member-name" class="modal-member-name"></h2>
+                        <h2 id="modal-member-name" class="modal-member-name"></h2>
+                    </div>
+                    <div class="header_emblems" id="modal-emblems">
+                        <!-- Emblems will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-image-section">
+                    <div class="modal-image-container">
+                        <img id="modal-member-image" class="modal-member-image" src="" alt="">
+
+                        <img src="/media/images/member_pic_border.png" alt="" class="member_pic_border"></div>
+                </div>
+                <div class="modal-info-section">
+                    <div class="modal-member-details">
+                        <div class="location_instagram">
+                            <div class="modal-location" id="modal-location-section" style="display: none;">
+                                <img src="/media/images/location_icon_black.png" alt="" class="icon">
+                                <span id="modal-member-location"></span>
+                            </div>
+                            <div class="modal-instagram" id="modal-instagram-section" style="display: none;">
+                                <img src="/media/images/instagram_black_icon.png" alt="" class="icon">
+                                <span id="modal-member-instagram"></span>
+                            </div>
+                        </div>
+                        <div class="modal-bio">
+                            <strong>About:</strong>
+                            <p id="modal-member-bio"></p>
+                        </div>
+                        <p id="modal-member-craft" class="modal-member-craft"></p>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Social Share Buttons -->
+        <div class="share-buttons">
+            <button class="share-button copy" onclick="copyToClipboard('${shareUrl}')">📋</button>
+            <button class="share-button twitter" onclick="shareToTwitter('${encodeURIComponent(shareText)}')">X</button>
+            <button class="share-button facebook" onclick="shareToFacebook('${shareUrl}', '${encodeURIComponent(fullName + ' - JAMTEM Community')}')">FB</button>
+            <button class="share-button instagram" onclick="shareToInstagram()">IG</button>
+        </div>
+    </div>
+
+    <script>
+        // Skill emblems data for shareable pages
+        const SKILL_EMBLEMS = [
+            { id: 'activism', title: 'Activism', image: '/media/emblems/emblem_activism.png' },
+            { id: 'art', title: 'Art', image: '/media/emblems/emblem_art.png' },
+            { id: 'culinary_arts', title: 'Culinary Arts', image: '/media/emblems/emblem_culinary_arts.png' },
+            { id: 'fashion', title: 'Fashion', image: '/media/emblems/emblem_fashion.png' },
+            { id: 'film', title: 'Film', image: '/media/emblems/emblem_film.png' },
+            { id: 'graphic_design', title: 'Graphic Design', image: '/media/emblems/emblem_graphic_design.png' },
+            { id: 'music', title: 'Music', image: '/media/emblems/emblem_music.png' },
+            { id: 'performance_arts', title: 'Performance Arts', image: '/media/emblems/emblem_performance_arts.png' },
+            { id: 'photography', title: 'Photography', image: '/media/emblems/emblem_photography.png' },
+            { id: 'sports', title: 'Sports', image: '/media/emblems/emblem_sports.png' },
+            { id: 'writing', title: 'Writing', image: '/media/emblems/emblem_writing.png' }
+        ];
+
+        // Populate member modal with data
+        document.addEventListener('DOMContentLoaded', function() {
+            const memberData = ${JSON.stringify(member).replace(/</g, '\\u003c')};
+
+            // Set modal content
+            const modalImage = document.getElementById('modal-member-image');
+            const modalName = document.getElementById('modal-member-name');
+            const modalCraft = document.getElementById('modal-member-craft');
+            const modalBio = document.getElementById('modal-member-bio');
+            const modalLocation = document.getElementById('modal-member-location');
+            const modalLocationSection = document.getElementById('modal-location-section');
+            const modalInstagram = document.getElementById('modal-member-instagram');
+            const modalInstagramSection = document.getElementById('modal-instagram-section');
+            const modalContainer = document.querySelector('.modal-container');
+
+            // Set background image for modal container with dark overlay
+            if (memberData.backgroundImageUrl && modalContainer) {
+                modalContainer.style.backgroundImage = \`linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(\${memberData.backgroundImageUrl})\`;
+                modalContainer.style.backgroundSize = 'cover';
+                modalContainer.style.backgroundPosition = 'center';
+                modalContainer.style.backgroundRepeat = 'no-repeat';
+            } else if (memberData.imageUrl && modalContainer) {
+                // Use profile image as background if no background image is provided
+                modalContainer.style.backgroundImage = \`linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(\${memberData.imageUrl})\`;
+                modalContainer.style.backgroundSize = 'cover';
+                modalContainer.style.backgroundPosition = 'center';
+                modalContainer.style.backgroundRepeat = 'no-repeat';
+            } else if (modalContainer) {
+                // Clear background image if no images are available
+                modalContainer.style.backgroundImage = '';
+                modalContainer.style.backgroundSize = '';
+                modalContainer.style.backgroundPosition = '';
+                modalContainer.style.backgroundRepeat = '';
+            }
+
+            // Set image
+            if (modalImage && memberData.imageUrl) {
+                modalImage.src = memberData.imageUrl;
+                modalImage.style.display = 'block';
+            }
+
+            // Set name
+            if (modalName) {
+                modalName.textContent = memberData.first_name || 'Unknown';
+            }
+
+            // Set craft
+            if (modalCraft) {
+                let craftText = 'Creator';
+                if (memberData.craft) {
+                    if (Array.isArray(memberData.craft)) {
+                        craftText = memberData.craft.join(', ');
+                    } else {
+                        craftText = memberData.craft.toString();
+                    }
+                }
+                modalCraft.textContent = craftText;
+            }
+
+            // Set bio
+            if (modalBio) {
+                modalBio.textContent = memberData.bio || 'No bio available';
+            }
+
+            // Set location
+            if (memberData.location && memberData.location.trim() && modalLocation && modalLocationSection) {
+                modalLocation.textContent = memberData.location;
+                modalLocationSection.style.display = 'flex';
+            } else if (modalLocationSection) {
+                modalLocationSection.style.display = 'none';
+            }
+
+            // Set Instagram
+            if (memberData.instagram && memberData.instagram.trim() && modalInstagram && modalInstagramSection) {
+                modalInstagram.textContent = memberData.instagram;
+                modalInstagramSection.style.display = 'flex';
+            } else if (modalInstagramSection) {
+                modalInstagramSection.style.display = 'none';
+            }
+
+            // Handle Skill Emblems
+            const modalEmblems = document.getElementById('modal-emblems');
+            if (modalEmblems) {
+                modalEmblems.innerHTML = '';
+
+                // Only show emblems if the member actually has skill emblems selected
+                if (memberData.skillEmblems && Array.isArray(memberData.skillEmblems) && memberData.skillEmblems.length > 0) {
+                    memberData.skillEmblems.forEach(emblemTitle => {
+                        // Find the corresponding emblem data
+                        const emblemData = SKILL_EMBLEMS.find(e => e.title === emblemTitle);
+                        if (emblemData) {
+                            const img = document.createElement('img');
+                            img.src = emblemData.image;
+                            img.alt = emblemData.title;
+                            img.className = 'emblem';
+                            img.title = emblemData.title; // Tooltip on hover
+
+                            modalEmblems.appendChild(img);
+                        }
+                    });
+                }
+            }
+        });
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Link copied to clipboard!');
+            });
+        }
+
+        function shareToTwitter(text) {
+            window.open('https://twitter.com/intent/tweet?text=' + text, '_blank');
+        }
+
+        function shareToFacebook(url, title) {
+            window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + title, '_blank');
+        }
+
+        function shareToInstagram() {
+            // Instagram doesn't support direct web sharing, so copy to clipboard
+            copyToClipboard('${shareUrl}');
+            alert('Link copied! You can now paste it in Instagram.');
+        }
+    </script>
+</body>
+</html>`;
 }
 
 const PORT = 8000;
@@ -192,6 +558,14 @@ Deno.serve({ port: PORT }, async (req: Request) => {
   // Handle server-side routes
   if (routes[pathname]) {
     return await serveHtmlFile(routes[pathname]);
+  }
+
+  // Handle dynamic member sharing route
+  if (pathname.startsWith('/member/')) {
+    const memberId = pathname.split('/member/')[1];
+    if (memberId) {
+      return await serveMemberPage(memberId);
+    }
   }
 
   // Handle API routes for Shopify integration
@@ -284,6 +658,7 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           first_name: record.fields["First Name"] || "",
           last_name: record.fields["Last Name"] || "",
           craft: record.fields.Craft || "",
+          skillEmblems: record.fields.Skill_Emblems || [],
           location: record.fields.Location || "",
           instagram: record.fields.Instagram || "",
           bio: record.fields.Bio || "",
@@ -371,6 +746,7 @@ Deno.serve({ port: PORT }, async (req: Request) => {
         const bio = formData.get("bio")?.toString().trim();
         const website = formData.get("website")?.toString().trim();
         const instagram = formData.get("instagram")?.toString().trim();
+        const skillEmblemsData = formData.get("skill_emblems")?.toString().trim();
         const imageFile = formData.get("image") as File;
         const backgroundImageFile = formData.get("background-image") as File;
         const elmntVideoFile = formData.get("elmnt-video") as File;
@@ -378,11 +754,14 @@ Deno.serve({ port: PORT }, async (req: Request) => {
         // Process craft field - convert comma-separated string to array for Airtable multi-select
         const craftArray = craftData ? craftData.split(',').map(item => item.trim()).filter(item => item) : [];
 
+        // Process skill emblems field - convert comma-separated string to array for Airtable multi-select
+        const skillEmblemsArray = skillEmblemsData ? skillEmblemsData.split(',').map(item => item.trim()).filter(item => item) : [];
+
         // Validate required fields
-        if (!firstName || !email || !craftData || craftArray.length === 0 || !bio) {
+        if (!firstName || !email || !craftData || craftArray.length === 0 || !bio || !skillEmblemsData || skillEmblemsArray.length === 0) {
           return new Response(
             JSON.stringify({
-              error: "Missing required fields: first name, email, craft (at least one), and bio are required."
+              error: "Missing required fields: first name, email, craft (at least one), skill emblems (at least one), and bio are required."
             }),
             {
               status: 400,
@@ -541,6 +920,7 @@ Deno.serve({ port: PORT }, async (req: Request) => {
             "Last Name": lastName || "",
             "Email": email,
             "Craft": craftArray, // Send as array for Airtable multi-select field
+            "Skill_Emblems": skillEmblemsArray, // Send as array for Airtable multi-select field
             "Location": location || "",
             "Bio": bio,
             "Website": website || "",

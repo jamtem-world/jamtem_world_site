@@ -330,10 +330,29 @@
                             </div>
                         </div>
                         
+                        <div class="form-row-single">
+                            <div class="form-group">
+                                <label for="skill-emblems-selector" class="form-label">
+                                    Skill Emblems (Maximum of 3)<span class="required">*</span>
+                                </label>
+                                <div class="emblems-selector-container">
+                                    <div class="emblems-grid" id="emblems-grid">
+                                        <!-- Emblem items will be populated by JavaScript -->
+                                    </div>
+                                    <div class="selected-emblems" id="selected-emblems">
+                                        <!-- Selected emblem tags will appear here -->
+                                    </div>
+                                    <input type="hidden" id="skill_emblems" name="skill_emblems" required>
+                                </div>
+                                <div class="form-help">Select up to 3 emblems that represent your skills and passions</div>
+                                <div class="form-error" id="skill_emblems-error"></div>
+                            </div>
+                        </div>
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="craft-filter" class="form-label">
-                                    Your Craft/Passion (Maximum of 5)<span class="required">*</span>
+                                    Other Passions (Maximum of 5)<span class="required">*</span>
                                 </label>
                                 <div class="craft-selector-container">
                                     <input type="text" id="craft-filter" placeholder="Filter crafts..." class="craft-filter-input" autocomplete="off">
@@ -345,10 +364,10 @@
                                     </div>
                                     <input type="hidden" id="craft" name="craft" required>
                                 </div>
-                                <div class="form-help">Select multiple crafts/passions that represent your creative interests</div>
+                                <div class="form-help">Select other creative interests and passions</div>
                                 <div class="form-error" id="craft-error"></div>
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="location-filter" class="form-label">Location</label>
                                 <div class="location-selector-container">
@@ -364,14 +383,14 @@
                                 <div class="form-error" id="location-error"></div>
                             </div>
                         </div>
-                        
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="website" class="form-label">Website</label>
                                 <input type="text" id="website" name="website" class="form-input" placeholder="Enter your website or social media">
                                 <div class="form-error" id="website-error"></div>
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="instagram" class="form-label">Instagram</label>
                                 <div class="input-with-prefix">
@@ -513,18 +532,18 @@
     <!-- Member Modal -->
     <div id="member-modal" class="modal-overlay" style="display: none;">
                     <button class="modal-close" id="modal-close">&times;</button>
+                    <button class="share-profile-btn" id="share-profile-btn" title="Share this profile">📤</button>
 
         <div class="modal-container">
             <div class="modal-content">
                 <div class="modal-header">
                     <div class="card_name_shape">
-                        <img src="media/images/jamtem_card_shape.png" alt="" class="name_corner">                    <h2 id="modal-member-name" class="modal-member-name"></h2>
+                        <img src="media/images/jamtem_card_shape.png" alt="" class="name_corner">                   
+                     <h2 id="modal-member-name" class="modal-member-name"></h2>
                         <h2 id="modal-member-name" class="modal-member-name"></h2>
                     </div>
-                    <div class="header_emblems">
-                        <img src="media/emblems/jamtem_emblem_fashion.png" alt="" class="emblem">
-                        <img src="media/emblems/jamtem_emblem_film.png" alt="" class="emblem">
-                        <img src="media/emblems/jamtem_emblem_music.png" alt="" class="emblem">
+                    <div class="header_emblems" id="modal-emblems">
+                        <!-- Emblems will be populated by JavaScript -->
                     </div>
                 </div>
                 <div class="modal-image-section">

@@ -121,6 +121,21 @@ const LOCATION_OPTIONS = [
     'Yorkville, ON'
 ]; // Already sorted alphabetically
 
+// Skill emblems options with their corresponding image files
+const SKILL_EMBLEMS = [
+    { id: 'activism', title: 'Activism', image: '/media/emblems/emblem_activism.png' },
+    { id: 'art', title: 'Art', image: '/media/emblems/emblem_art.png' },
+    { id: 'culinary_arts', title: 'Culinary Arts', image: '/media/emblems/emblem_culinary_arts.png' },
+    { id: 'fashion', title: 'Fashion', image: '/media/emblems/emblem_fashion.png' },
+    { id: 'film', title: 'Film', image: '/media/emblems/emblem_film.png' },
+    { id: 'graphic_design', title: 'Graphic Design', image: '/media/emblems/emblem_graphic_design.png' },
+    { id: 'music', title: 'Music', image: '/media/emblems/emblem_music.png' },
+    { id: 'performance_arts', title: 'Performance Arts', image: '/media/emblems/emblem_performance_arts.png' },
+    { id: 'photography', title: 'Photography', image: '/media/emblems/emblem_photography.png' },
+    { id: 'sports', title: 'Sports', image: '/media/emblems/emblem_sports.png' },
+    { id: 'writing', title: 'Writing', image: '/media/emblems/emblem_writing.png' }
+];
+
 class LocationSelector {
     constructor() {
         this.filterInput = document.getElementById('location-filter');
@@ -438,6 +453,172 @@ class CraftSelector {
     }
 }
 
+class SkillEmblemsSelector {
+    constructor() {
+        this.gridContainer = document.getElementById('emblems-grid');
+        this.selectedContainer = document.getElementById('selected-emblems');
+        this.hiddenInput = document.getElementById('skill_emblems');
+
+        this.selectedEmblems = new Set();
+        this.maxSelections = 3; // Maximum 3 emblems allowed
+
+        this.init();
+    }
+
+    init() {
+        this.populateGrid();
+        this.setupEventListeners();
+    }
+
+    populateGrid() {
+        if (!this.gridContainer) return;
+
+        this.gridContainer.innerHTML = '';
+        SKILL_EMBLEMS.forEach(emblem => {
+            const item = document.createElement('div');
+            item.className = 'emblem-item';
+            item.dataset.emblemId = emblem.id;
+            item.dataset.title = emblem.title;
+            item.innerHTML = `
+                <img src="${emblem.image}" alt="${emblem.title}" class="emblem-image">
+                <div class="emblem-title">${emblem.title}</div>
+            `;
+
+            item.addEventListener('click', () => this.toggleEmblem(emblem.id));
+            this.gridContainer.appendChild(item);
+        });
+    }
+
+    setupEventListeners() {
+        // No additional event listeners needed for now
+    }
+
+    toggleEmblem(emblemId) {
+        const emblem = SKILL_EMBLEMS.find(e => e.id === emblemId);
+        if (!emblem) return;
+
+        if (this.selectedEmblems.has(emblemId)) {
+            this.removeEmblem(emblemId);
+        } else {
+            this.addEmblem(emblemId);
+        }
+    }
+
+    addEmblem(emblemId) {
+        const emblem = SKILL_EMBLEMS.find(e => e.id === emblemId);
+        if (!emblem) return;
+
+        if (this.selectedEmblems.size >= this.maxSelections) {
+            // Could show a warning message here
+            return;
+        }
+
+        // Add to selected set
+        this.selectedEmblems.add(emblemId);
+
+        // Update visual state
+        this.updateGridItemState(emblemId, true);
+
+        // Update displays
+        this.updateSelectedDisplay();
+        this.updateHiddenInput();
+    }
+
+    removeEmblem(emblemId) {
+        const emblem = SKILL_EMBLEMS.find(e => e.id === emblemId);
+        if (!emblem) return;
+
+        // Remove from selected set
+        this.selectedEmblems.delete(emblemId);
+
+        // Update visual state
+        this.updateGridItemState(emblemId, false);
+
+        // Update displays
+        this.updateSelectedDisplay();
+        this.updateHiddenInput();
+    }
+
+    updateGridItemState(emblemId, isSelected) {
+        const item = this.gridContainer.querySelector(`[data-emblem-id="${emblemId}"]`);
+        if (item) {
+            if (isSelected) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        }
+    }
+
+    updateSelectedDisplay() {
+        if (!this.selectedContainer) return;
+
+        this.selectedContainer.innerHTML = '';
+
+        this.selectedEmblems.forEach(emblemId => {
+            const emblem = SKILL_EMBLEMS.find(e => e.id === emblemId);
+            if (!emblem) return;
+
+            const tag = document.createElement('div');
+            tag.className = 'selected-emblem-tag';
+            tag.innerHTML = `
+                <span>${emblem.title}</span>
+                <button type="button" class="emblem-tag-remove" aria-label="Remove ${emblem.title}">×</button>
+            `;
+
+            const removeBtn = tag.querySelector('.emblem-tag-remove');
+            removeBtn.addEventListener('click', () => this.removeEmblem(emblemId));
+
+            this.selectedContainer.appendChild(tag);
+        });
+    }
+
+    updateHiddenInput() {
+        if (!this.hiddenInput) return;
+
+        // Send as comma-separated titles for Airtable multi-select
+        const selectedTitles = Array.from(this.selectedEmblems).map(id => {
+            const emblem = SKILL_EMBLEMS.find(e => e.id === id);
+            return emblem ? emblem.title : '';
+        }).filter(title => title);
+
+        this.hiddenInput.value = selectedTitles.join(',');
+
+        // Trigger validation update
+        const event = new Event('input', { bubbles: true });
+        this.hiddenInput.dispatchEvent(event);
+    }
+
+    // Public method to get selected emblems
+    getSelectedEmblems() {
+        return Array.from(this.selectedEmblems);
+    }
+
+    // Public method to set selected emblems (for form reset)
+    setSelectedEmblems(emblemIds = []) {
+        // Clear current selections
+        this.selectedEmblems.clear();
+
+        // Reset all grid items
+        const items = this.gridContainer.querySelectorAll('.emblem-item');
+        items.forEach(item => {
+            item.classList.remove('selected');
+        });
+
+        // Add new selections
+        emblemIds.forEach(emblemId => {
+            if (SKILL_EMBLEMS.find(e => e.id === emblemId)) {
+                this.addEmblem(emblemId);
+            }
+        });
+    }
+
+    // Public method to validate selection
+    isValid() {
+        return this.selectedEmblems.size > 0;
+    }
+}
+
 class JoinFormManager {
     constructor() {
         this.form = document.getElementById('join-form');
@@ -469,9 +650,12 @@ class JoinFormManager {
         
         // Initialize craft selector
         this.craftSelector = new CraftSelector();
-        
+
         // Initialize location selector
         this.locationSelector = new LocationSelector();
+
+        // Initialize skill emblems selector
+        this.skillEmblemsSelector = new SkillEmblemsSelector();
         
         this.isSubmitting = false;
         this.selectedFile = null;
@@ -726,6 +910,7 @@ class JoinFormManager {
             formData.append('last_name', document.getElementById('last_name').value.trim());
             formData.append('email', document.getElementById('email').value.trim());
             formData.append('craft', document.getElementById('craft').value.trim());
+            formData.append('skill_emblems', document.getElementById('skill_emblems').value.trim());
             formData.append('location', document.getElementById('location').value.trim());
             formData.append('bio', document.getElementById('bio').value.trim());
             formData.append('website', document.getElementById('website').value.trim());
@@ -792,6 +977,14 @@ class JoinFormManager {
             isValid = false;
         } else {
             this.clearFieldError(document.getElementById('craft'));
+        }
+
+        // Skill emblems validation (using skill emblems selector)
+        if (!this.skillEmblemsSelector.isValid()) {
+            this.setFieldError('skill_emblems', 'Please select at least one skill emblem');
+            isValid = false;
+        } else {
+            this.clearFieldError(document.getElementById('skill_emblems'));
         }
         
         // Image validation
@@ -1217,9 +1410,12 @@ class JoinFormManager {
         
         // Reset craft selector
         this.craftSelector.setSelectedCrafts([]);
-        
+
         // Reset location selector
         this.locationSelector.setSelectedLocation(null);
+
+        // Reset skill emblems selector
+        this.skillEmblemsSelector.setSelectedEmblems([]);
         
         // Clear all field states
         const fieldGroups = this.form.querySelectorAll('.form-group');

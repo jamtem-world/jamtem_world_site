@@ -1589,6 +1589,13 @@ body {
   margin-bottom: 16px;
 }
 
+.form-row-single {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
 .form-group {
   margin-bottom: 12px;
 }
@@ -1884,6 +1891,11 @@ body {
   z-index: 1600;
 }
 
+/* Modal positioning wrapper for absolutely positioned children */
+.modal-overlay > .modal-container {
+  position: relative;
+}
+
 .modal-container {
   position: relative;
   background: #c0c0c0;
@@ -2031,7 +2043,8 @@ body {
 }
 
 .header_emblems {
-  margin: 10px 16px 0 0;
+  margin: 10px 0 0 0;
+  display: flex;
 }
 
 .modal-member-name {
@@ -2051,6 +2064,7 @@ body {
 .emblem {
   width: 45px;
   height: 45px;
+  margin-right: 8px;
 }
 
 .modal-member-craft {
@@ -3288,6 +3302,7 @@ body {
   }
 
   .product-modal-container {
+  }
 }
 
 .benefit-item {
@@ -3567,11 +3582,42 @@ body {
   }
 }
 
+/* Share Profile Button */
+.share-profile-btn {
+  position: absolute;
+  top: 8px;
+  right: 40px;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(to bottom, #ece9d8 0%, #d6d3ce 100%);
+  border: 1px outset #d4d0c8;
+  border-radius: 0;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  color: #000000;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  transition: all 0.1s ease;
+}
+
+.share-profile-btn:hover {
+  background: linear-gradient(to bottom, #f2efea 0%, #ddd9d4 100%);
+}
+
+.share-profile-btn:active {
+  border: 1px inset #d4d0c8;
+  background: linear-gradient(to bottom, #d6d3ce 0%, #ece9d8 100%);
+}
+
 /* Focus styles for new elements */
 .tab-button:focus,
 .nav-btn:focus,
+.share-profile-btn:focus,
 .dialog-window:focus {
   outline: 1px dotted #000000;
   outline-offset: -2px;
-}
 }
