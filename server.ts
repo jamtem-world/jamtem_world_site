@@ -338,7 +338,6 @@ function generateMemberPageHTML(member: any): string {
 
         <!-- Member Modal (exact copy from desktop.html) -->
         <div id="member-modal" class="modal-overlay" style="display: flex;">
-                    <button class="modal-close" id="modal-close">&times;</button>
 
         <div class="modal-container">
             <div class="modal-content">
@@ -382,12 +381,12 @@ function generateMemberPageHTML(member: any): string {
     </div>
 
         <!-- Social Share Buttons -->
-        <div class="share-buttons">
+        <!-- <div class="share-buttons">
             <button class="share-button copy" onclick="copyToClipboard('${shareUrl}')">📋</button>
             <button class="share-button twitter" onclick="shareToTwitter('${encodeURIComponent(shareText)}')">X</button>
             <button class="share-button facebook" onclick="shareToFacebook('${shareUrl}', '${encodeURIComponent(fullName + ' - JAMTEM Community')}')">FB</button>
             <button class="share-button instagram" onclick="shareToInstagram()">IG</button>
-        </div>
+        </div> -->
     </div>
 
     <script>
@@ -405,6 +404,460 @@ function generateMemberPageHTML(member: any): string {
             { id: 'sports', title: 'Sports', image: '/media/emblems/emblem_sports.png' },
             { id: 'writing', title: 'Writing', image: '/media/emblems/emblem_writing.png' }
         ];
+
+        // ELMNT Video functionality for member pages
+        let currentVideoMember = null;
+        let lastHoverTime = null;
+
+        // Setup ELMNT video hover functionality
+        function setupElmntVideoHover(imageElement, member) {
+            // Only set up hover functionality if member actually has an ELMNT video
+            if (!member.elmntVideoUrl || member.elmntVideoUrl.trim() === '') {
+                console.log('No ELMNT video for member:', member.first_name);
+                return;
+            }
+
+            console.log('Setting up ELMNT video hover for:', member.first_name, 'Video URL:', member.elmntVideoUrl);
+
+            // Detect if device is mobile/touch
+            const isMobile = isMobileDevice();
+
+            // Make image container relative positioned
+            const imageContainer = imageElement.parentElement;
+            if (!imageContainer) return;
+
+            imageContainer.style.position = 'relative';
+
+            if (isMobile) {
+                // Mobile: Add persistent tap indicator
+                setupMobileElmntIndicator(imageContainer, member);
+            } else {
+                // Desktop: Use existing hover functionality
+                setupDesktopElmntHover(imageContainer, member);
+            }
+        }
+
+        // Check if device is mobile/touch
+        function isMobileDevice() {
+            return (
+                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                ('ontouchstart' in window) ||
+                (navigator.maxTouchPoints > 0) ||
+                (navigator.msMaxTouchPoints > 0)
+            );
+        }
+
+        // Setup mobile tap indicator
+        function setupMobileElmntIndicator(imageContainer, member) {
+            // Create tap indicator with icon
+            const tapIndicator = document.createElement('div');
+            tapIndicator.className = 'elmnt-tap-indicator';
+            tapIndicator.innerHTML = 'Tap'; // Clear tap instruction
+            tapIndicator.style.cssText = \`
+                position: absolute;
+                bottom: 8px;
+                right: 8px;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                font-size: 12px;
+                font-weight: bold;
+                font-family: 'MS Sans Serif', monospace;
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                z-index: 15;
+                pointer-events: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                opacity: 0;
+                transform: scale(0.5);
+                transition: all 0.3s ease;
+            \`;
+
+            imageContainer.appendChild(tapIndicator);
+
+            // Animation to show the indicator periodically
+            let animationInterval;
+            let isVisible = false;
+
+            const showIndicator = () => {
+                if (!isVisible) {
+                    isVisible = true;
+                    tapIndicator.style.opacity = '1';
+                    tapIndicator.style.transform = 'scale(1)';
+
+                    // Hide after 2 seconds
+                    setTimeout(() => {
+                        if (isVisible) {
+                            tapIndicator.style.opacity = '0';
+                            tapIndicator.style.transform = 'scale(0.5)';
+                            isVisible = false;
+                        }
+                    }, 2000);
+                }
+            };
+
+            // Show indicator initially after a short delay
+            setTimeout(showIndicator, 1000);
+
+            // Show indicator periodically (every 8 seconds)
+            animationInterval = setInterval(showIndicator, 8000);
+
+            // Add touch event listeners
+            let touchStartTime = 0;
+
+            imageContainer.addEventListener('touchstart', (e) => {
+                touchStartTime = Date.now();
+                // Show indicator and add visual feedback
+                tapIndicator.style.opacity = '1';
+                tapIndicator.style.transform = 'scale(0.9)';
+                tapIndicator.style.background = 'rgba(0, 120, 212, 0.9)';
+                isVisible = true;
+            });
+
+            imageContainer.addEventListener('touchend', (e) => {
+                const touchDuration = Date.now() - touchStartTime;
+
+                // Reset visual feedback
+                setTimeout(() => {
+                    tapIndicator.style.background = 'rgba(0, 0, 0, 0.8)';
+                    tapIndicator.style.transform = 'scale(1)';
+                    // Hide indicator after touch
+                    setTimeout(() => {
+                        tapIndicator.style.opacity = '0';
+                        tapIndicator.style.transform = 'scale(0.5)';
+                        isVisible = false;
+                    }, 500);
+                }, 150);
+
+                // Only trigger if it was a quick tap (not a long press or scroll)
+                if (touchDuration < 500) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    lastHoverTime = Date.now(); // Set for safety check
+                    openElmntVideoModal(member);
+                }
+            });
+
+            // Handle touch move (scrolling)
+            imageContainer.addEventListener('touchmove', (e) => {
+                // Reset visual feedback if user starts scrolling
+                tapIndicator.style.background = 'rgba(0, 0, 0, 0.8)';
+                tapIndicator.style.transform = 'scale(1)';
+            });
+
+            // Store interval reference for cleanup
+            imageContainer._animationInterval = animationInterval;
+        }
+
+        // Setup desktop hover functionality
+        function setupDesktopElmntHover(imageContainer, member) {
+            // Create hover overlay container
+            const hoverOverlay = document.createElement('div');
+            hoverOverlay.className = 'elmnt-hover-overlay';
+            hoverOverlay.style.cssText = \`
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+                cursor: pointer;
+                transition: opacity 0.3s ease;
+                z-index: 1000;
+                opacity: 0;
+                border-radius: 20px;
+            \`;
+
+            // Create play button
+            const playButton = document.createElement('div');
+            playButton.className = 'elmnt-play-button';
+            playButton.innerHTML = '▶';
+            playButton.style.cssText = \`
+                font-size: 48px;
+                color: white;
+                margin-bottom: 10px;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            \`;
+
+            // Create text
+            const hoverText = document.createElement('div');
+            hoverText.className = 'elmnt-hover-text';
+            hoverText.textContent = 'Watch Them In Their ELMNT';
+            hoverText.style.cssText = \`
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+                text-align: center;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+                letter-spacing: 1px;
+            \`;
+
+            hoverOverlay.appendChild(playButton);
+            hoverOverlay.appendChild(hoverText);
+
+            // Add a small delay before attaching the overlay to prevent immediate triggers
+            setTimeout(() => {
+                imageContainer.appendChild(hoverOverlay);
+
+                let hoverTimeout;
+                let isHovering = false;
+
+                // Add hover event listeners with delay to prevent accidental triggers
+                imageContainer.addEventListener('mouseenter', (e) => {
+                    // Only show overlay if mouse is actually over the image container
+                    if (e.target === imageContainer || imageContainer.contains(e.target)) {
+                        isHovering = true;
+                        // Track hover time for safety check
+                        lastHoverTime = Date.now();
+
+                        // Add a small delay to prevent accidental hovers
+                        hoverTimeout = setTimeout(() => {
+                            if (isHovering) {
+                                hoverOverlay.style.display = 'flex';
+                                // Fade in animation
+                                setTimeout(() => {
+                                    if (isHovering) {
+                                        hoverOverlay.style.opacity = '1';
+                                    }
+                                }, 10);
+                            }
+                        }, 200); // 200ms delay before showing overlay
+                    }
+                });
+
+                imageContainer.addEventListener('mouseleave', (e) => {
+                    isHovering = false;
+                    clearTimeout(hoverTimeout);
+
+                    // Fade out animation
+                    hoverOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        if (!isHovering) {
+                            hoverOverlay.style.display = 'none';
+                        }
+                    }, 300);
+                });
+
+                // Add click event listener to open video modal - ONLY when overlay is visible
+                hoverOverlay.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation(); // Prevent opening member modal
+                    e.stopImmediatePropagation(); // Prevent any other event handlers
+
+                    // Only open video modal if overlay is actually visible
+                    if (hoverOverlay.style.display === 'flex' && hoverOverlay.style.opacity === '1') {
+                        openElmntVideoModal(member);
+                    }
+                });
+
+                // Prevent any accidental clicks on the image itself from triggering video modal
+                const modalImage = imageContainer.querySelector('#modal-member-image');
+                if (modalImage) {
+                    modalImage.addEventListener('click', (e) => {
+                        // If the overlay is not visible, don't interfere with normal modal opening
+                        if (hoverOverlay.style.display !== 'flex' || hoverOverlay.style.opacity !== '1') {
+                            // Let the normal member modal open
+                            return;
+                        }
+                    });
+                }
+
+            }, 100); // Small delay before setting up hover functionality
+        }
+
+        // Open ELMNT video modal
+        function openElmntVideoModal(member) {
+            if (!member.elmntVideoUrl) {
+                console.warn('No ELMNT video URL found for member:', member.first_name);
+                return;
+            }
+
+            console.log('Opening ELMNT video modal for:', member.first_name);
+
+            // Additional safety check - ensure this is being called intentionally
+            const currentTime = Date.now();
+            if (!lastHoverTime || (currentTime - lastHoverTime) > 5000) {
+                console.warn('ELMNT video modal blocked - no recent hover interaction detected');
+                return;
+            }
+
+            // Create video modal if it doesn't exist
+            let videoModal = document.getElementById('elmnt-video-modal');
+            if (!videoModal) {
+                videoModal = createElmntVideoModal();
+            }
+
+            // Complete reset of modal state before setting new content
+            const modalTitle = videoModal.querySelector('.elmnt-modal-title');
+            const modalVideo = videoModal.querySelector('.elmnt-modal-video');
+
+            // Clear previous content completely
+            if (modalTitle) {
+                modalTitle.textContent = '';
+            }
+
+            if (modalVideo) {
+                // Stop any playing video and clear source
+                modalVideo.pause();
+                modalVideo.currentTime = 0;
+                modalVideo.src = '';
+                modalVideo.load(); // Reset the video element completely
+            }
+
+            // Set new content for this specific member
+            if (modalTitle) {
+                modalTitle.textContent = \`\${member.first_name || member.name || 'Member'} - In Their ELMNT\`;
+            }
+
+            if (modalVideo) {
+                modalVideo.src = member.elmntVideoUrl;
+                modalVideo.load(); // Load the new video
+            }
+
+            // Store current member reference for state isolation
+            currentVideoMember = member;
+
+            // Show modal
+            videoModal.style.display = 'flex';
+            document.body.classList.add('modal-open');
+
+            // Auto-play video if possible
+            if (modalVideo) {
+                modalVideo.play().catch(error => {
+                    console.log('Auto-play prevented:', error);
+                    // Auto-play was prevented, user will need to click play
+                });
+            }
+        }
+
+        // Create ELMNT video modal
+        function createElmntVideoModal() {
+            const modal = document.createElement('div');
+            modal.id = 'elmnt-video-modal';
+            modal.className = 'elmnt-video-modal';
+            modal.style.cssText = \`
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 2000;
+                padding: 20px;
+                box-sizing: border-box;
+            \`;
+
+            const modalContent = document.createElement('div');
+            modalContent.className = 'elmnt-modal-content';
+            modalContent.style.cssText = \`
+                background: #000;
+                border-radius: 8px;
+                padding: 20px;
+                max-width: 90vw;
+                max-height: 90vh;
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            \`;
+
+            const closeButton = document.createElement('button');
+            closeButton.className = 'elmnt-modal-close';
+            closeButton.innerHTML = '×';
+            closeButton.style.cssText = \`
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 30px;
+                cursor: pointer;
+                z-index: 1001;
+                padding: 0;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            \`;
+
+            const title = document.createElement('h3');
+            title.className = 'elmnt-modal-title';
+            title.style.cssText = \`
+                color: white;
+                margin: 0 0 20px 0;
+                text-align: center;
+                font-size: 24px;
+            \`;
+
+            const video = document.createElement('video');
+            video.className = 'elmnt-modal-video';
+            video.controls = true;
+            video.style.cssText = \`
+                max-width: 100%;
+                max-height: 70vh;
+                border-radius: 4px;
+            \`;
+
+            modalContent.appendChild(closeButton);
+            modalContent.appendChild(title);
+            modalContent.appendChild(video);
+            modal.appendChild(modalContent);
+
+            // Add event listeners
+            closeButton.addEventListener('click', () => closeElmntVideoModal());
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeElmntVideoModal();
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.style.display === 'flex') {
+                    closeElmntVideoModal();
+                }
+            });
+
+            // Append to body
+            document.body.appendChild(modal);
+            return modal;
+        }
+
+        // Close ELMNT video modal
+        function closeElmntVideoModal() {
+            const videoModal = document.getElementById('elmnt-video-modal');
+            if (!videoModal) return;
+
+            const video = videoModal.querySelector('.elmnt-modal-video');
+            if (video) {
+                video.pause();
+                video.currentTime = 0;
+                video.src = ''; // Clear the video source to prevent persistence
+                video.load(); // Reset the video element
+            }
+
+            // Clear the modal title
+            const modalTitle = videoModal.querySelector('.elmnt-modal-title');
+            if (modalTitle) {
+                modalTitle.textContent = '';
+            }
+
+            videoModal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
 
         // Populate member modal with data
         document.addEventListener('DOMContentLoaded', function() {
@@ -445,6 +898,9 @@ function generateMemberPageHTML(member: any): string {
             if (modalImage && memberData.imageUrl) {
                 modalImage.src = memberData.imageUrl;
                 modalImage.style.display = 'block';
+
+                // Setup ELMNT video hover functionality
+                setupElmntVideoHover(modalImage, memberData);
             }
 
             // Set name

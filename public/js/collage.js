@@ -986,8 +986,9 @@ class CollageManager {
             flex-direction: column;
             cursor: pointer;
             transition: opacity 0.3s ease;
-            z-index: 10;
+            z-index: 1000;
             opacity: 0;
+            border-radius: 20px;
         `;
 
         // Create play button
