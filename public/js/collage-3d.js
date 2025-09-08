@@ -445,13 +445,34 @@ class SphereCollageManager {
 
         if (intersects.length > 0) {
             const mesh = intersects[0].object;
-            const member = mesh.userData.member;
-            
-            // Trigger modal opening (will be handled by main collage manager)
-            if (window.collageManager && typeof window.collageManager.openModal === 'function') {
-                window.collageManager.openModal(member);
+
+            // Check if the mesh is visible from the camera's perspective
+            if (this.isMeshVisibleFromCamera(mesh)) {
+                const member = mesh.userData.member;
+
+                // Trigger modal opening (will be handled by main collage manager)
+                if (window.collageManager && typeof window.collageManager.openModal === 'function') {
+                    window.collageManager.openModal(member);
+                }
             }
         }
+    }
+
+    // Check if a mesh is visible from the camera's perspective
+    isMeshVisibleFromCamera(mesh) {
+        // For a sphere centered at origin, check if mesh is on the front side
+        // Vector from sphere center (0,0,0) to camera
+        const centerToCamera = this.camera.position.clone().normalize();
+
+        // Vector from sphere center (0,0,0) to mesh
+        const centerToMesh = mesh.position.clone().normalize();
+
+        // Calculate dot product
+        const dotProduct = centerToCamera.dot(centerToMesh);
+
+        // If dot product is positive, mesh is on the same side of the sphere as the camera
+        // If negative, mesh is on the opposite side of the sphere
+        return dotProduct > 0;
     }
 
     updateHover() {
@@ -465,11 +486,14 @@ class SphereCollageManager {
             this.canvas.style.cursor = 'grab';
         }
 
-        // Apply hover effect
+        // Apply hover effect only if mesh is visible from camera
         if (intersects.length > 0) {
-            this.hoveredMesh = intersects[0].object;
-            this.hoveredMesh.scale.multiplyScalar(1.2);
-            this.canvas.style.cursor = 'pointer';
+            const mesh = intersects[0].object;
+            if (this.isMeshVisibleFromCamera(mesh)) {
+                this.hoveredMesh = mesh;
+                this.hoveredMesh.scale.multiplyScalar(1.2);
+                this.canvas.style.cursor = 'pointer';
+            }
         }
     }
 
