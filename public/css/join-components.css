@@ -665,3 +665,227 @@
     max-width: 50px;
   }
 }
+
+/* Image Cropping Modal Styles */
+.crop-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.crop-modal-content {
+  background: #c0c0c0;
+  border: 2px outset #c0c0c0;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  overflow: hidden;
+}
+
+.crop-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 24px;
+  background: linear-gradient(to right, #0078d4 0%, #106ebe 100%);
+  color: white;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.crop-modal-header h3 {
+  margin: 0;
+  font-size: 12px;
+}
+
+.crop-modal-close {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(to bottom, #ece9d8 0%, #d6d3ce 100%);
+  border: 1px outset #d4d0c8;
+  border-radius: 0;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  color: #000000;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crop-modal-close:hover {
+  background: linear-gradient(to bottom, #ff6b6b 0%, #ee5a52 100%);
+  color: white;
+}
+
+.crop-container {
+  padding: 16px;
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  max-height: 400px;
+  overflow: hidden;
+}
+
+.crop-container img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+.crop-controls {
+  padding: 12px;
+  background: #f0f0f0;
+  border-top: 1px solid #d6d3ce;
+}
+
+.crop-instructions {
+  margin-bottom: 12px;
+  font-size: 11px;
+  color: #333;
+  text-align: center;
+}
+
+.crop-instructions p {
+  margin: 4px 0;
+}
+
+.crop-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.crop-buttons .btn {
+  padding: 6px 16px;
+  font-size: 11px;
+}
+
+/* Preview Modal Styles */
+#preview-modal .modal-container {
+  width: 415px;
+  max-width: 90vw;
+}
+
+#preview-modal .modal-content {
+  width: 385px;
+}
+
+/* Responsive Preview Modal - matching submitted member card responsiveness */
+@media (max-width: 480px) {
+  #preview-modal .modal-container {
+    width: var(--mobile-window-max-width);
+    max-width: var(--mobile-window-max-width);
+    max-height: var(--mobile-window-max-height);
+  }
+
+  #preview-modal .modal-content {
+    width: 100%;
+    grid-template-rows: 40px 200px 150px;
+    gap: 15px;
+  }
+
+  #preview-modal .modal-image-container {
+    height: 200px;
+  }
+
+  #preview-modal .modal-member-name {
+    font-size: 1.2rem;
+    translate: -10px;
+  }
+
+  #preview-modal .emblem {
+    width: 35px;
+    height: 35px;
+  }
+
+  #preview-modal .modal-info-section {
+    padding: 3px;
+    margin: 0 10px 10px 10px;
+  }
+
+  #preview-modal .modal-member-craft {
+    font-size: 11px;
+  }
+
+  #preview-modal .modal-bio p {
+    font-size: 10px;
+  }
+}
+
+/* Crop Image Button */
+.crop-image-btn {
+  padding: 2px 8px;
+  background: linear-gradient(to bottom, #ece9d8 0%, #d6d3ce 100%);
+  border: 1px outset #d4d0c8;
+  border-radius: 0;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  font-size: 10px;
+  color: #000000;
+  cursor: pointer;
+  margin-right: 4px;
+}
+
+.crop-image-btn:hover {
+  background: linear-gradient(to bottom, #f2efea 0%, #ddd9d4 100%);
+}
+
+.crop-image-btn:active {
+  border: 1px inset #d4d0c8;
+  background: linear-gradient(to bottom, #d6d3ce 0%, #ece9d8 100%);
+}
+
+/* Mobile responsive for crop modal */
+@media (max-width: 768px) {
+  .crop-modal-content {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .crop-container {
+    min-height: 250px;
+    max-height: 300px;
+  }
+
+  .crop-controls {
+    padding: 8px;
+  }
+
+  .crop-buttons {
+    flex-direction: column;
+  }
+
+  .crop-buttons .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .crop-modal-content {
+    width: 98%;
+    max-height: 80vh;
+  }
+
+  .crop-container {
+    min-height: 200px;
+    max-height: 250px;
+    padding: 8px;
+  }
+
+  .crop-modal-header h3 {
+    font-size: 11px;
+  }
+}

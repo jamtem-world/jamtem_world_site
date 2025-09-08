@@ -38,7 +38,11 @@
     
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
+
+    <!-- Cropper.js for image cropping -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
     <!-- Three.js and dependencies for 3D collage -->
     <script type="importmap">
     {
@@ -429,7 +433,31 @@
                                     <div class="image-info">
                                         <div class="image-name" id="image-name"></div>
                                         <div class="image-size" id="image-size"></div>
+                                        <button type="button" class="crop-image-btn" id="crop-image">Crop Image</button>
                                         <button type="button" class="remove-image-btn" id="remove-image">Remove</button>
+                                    </div>
+                                </div>
+
+                                <!-- Image Cropping Modal -->
+                                <div class="crop-modal" id="crop-modal" style="display: none;">
+                                    <div class="crop-modal-content">
+                                        <div class="crop-modal-header">
+                                            <h3>Crop Your Showcase Image</h3>
+                                            <button type="button" class="crop-modal-close" id="crop-modal-close">&times;</button>
+                                        </div>
+                                        <div class="crop-container">
+                                            <img id="crop-image-element" src="" alt="Image to crop">
+                                        </div>
+                                        <div class="crop-controls">
+                                            <div class="crop-instructions">
+                                                <p>Drag to move the crop area. Use the corners to resize.</p>
+                                                <p>Recommended aspect ratio: 353×250 pixels</p>
+                                            </div>
+                                            <div class="crop-buttons">
+                                                <button type="button" class="btn btn-secondary" id="crop-cancel">Cancel</button>
+                                                <button type="button" class="btn btn-primary" id="crop-apply">Apply Crop</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -496,6 +524,9 @@
                     </div>
                     
                     <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="preview-btn">
+                            <span class="btn-text">Preview Card</span>
+                        </button>
                         <button type="submit" class="btn btn-primary btn-submit" id="submit-btn">
                             <span class="btn-text">Join Community</span>
                             <span class="btn-loading" style="display: none;">
@@ -572,6 +603,52 @@
                         </div>
                         <p id="modal-member-craft" class="modal-member-craft"></p>
 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="preview-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <button class="modal-close" id="preview-modal-close">&times;</button>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="card_name_shape">
+                        <img src="media/images/jamtem_card_shape.png" alt="" class="name_corner">
+                        <h2 id="preview-member-name" class="modal-member-name">Your Name</h2>
+                    </div>
+                    <div class="header_emblems" id="preview-emblems">
+                        <!-- Preview emblems will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-image-section">
+                    <div class="modal-image-container">
+                        <img id="preview-member-image" class="modal-member-image" src="" alt="">
+                        <div class="modal-image-placeholder" id="preview-image-placeholder">
+                            No image available
+                        </div>
+                        <img src="media/images/member_pic_border.png" alt="" class="member_pic_border">
+                    </div>
+                </div>
+                <div class="modal-info-section">
+                    <div class="modal-member-details">
+                        <div class="location_instagram">
+                            <div class="modal-location" id="preview-location-section" style="display: none;">
+                                <img src="media/images/location_icon_black.png" alt="" class="icon">
+                                <span id="preview-member-location"></span>
+                            </div>
+                            <div class="modal-instagram" id="preview-instagram-section" style="display: none;">
+                                <img src="media/images/instagram_black_icon.png" alt="" class="icon">
+                                <span id="preview-member-instagram"></span>
+                            </div>
+                        </div>
+                        <div class="modal-bio">
+                            <strong>About:</strong>
+                            <p id="preview-member-bio"></p>
+                        </div>
+                        <p id="preview-member-craft" class="modal-member-craft"></p>
                     </div>
                 </div>
             </div>

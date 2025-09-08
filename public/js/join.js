@@ -647,7 +647,7 @@ class JoinFormManager {
         
         this.bioTextarea = document.getElementById('bio');
         this.bioCounter = document.getElementById('bio-counter');
-        
+
         // Initialize craft selector
         this.craftSelector = new CraftSelector();
 
@@ -656,6 +656,20 @@ class JoinFormManager {
 
         // Initialize skill emblems selector
         this.skillEmblemsSelector = new SkillEmblemsSelector();
+
+        // Initialize image cropping
+        this.cropper = null;
+        this.cropModal = document.getElementById('crop-modal');
+        this.cropImageElement = document.getElementById('crop-image-element');
+        this.cropModalClose = document.getElementById('crop-modal-close');
+        this.cropCancelBtn = document.getElementById('crop-cancel');
+        this.cropApplyBtn = document.getElementById('crop-apply');
+        this.cropImageBtn = document.getElementById('crop-image');
+
+        // Initialize preview modal
+        this.previewModal = document.getElementById('preview-modal');
+        this.previewModalClose = document.getElementById('preview-modal-close');
+        this.previewBtn = document.getElementById('preview-btn');
         
         this.isSubmitting = false;
         this.selectedFile = null;
@@ -842,6 +856,44 @@ class JoinFormManager {
         // Instagram field formatting
         const instagramInput = document.getElementById('instagram');
         instagramInput.addEventListener('input', (e) => this.formatInstagramHandle(e));
+
+        // Image cropping functionality
+        if (this.cropImageBtn) {
+            this.cropImageBtn.addEventListener('click', () => this.openCropModal());
+        }
+        if (this.cropModalClose) {
+            this.cropModalClose.addEventListener('click', () => this.closeCropModal());
+        }
+        if (this.cropCancelBtn) {
+            this.cropCancelBtn.addEventListener('click', () => this.closeCropModal());
+        }
+        if (this.cropApplyBtn) {
+            this.cropApplyBtn.addEventListener('click', () => this.applyCrop());
+        }
+
+        // Preview modal functionality
+        if (this.previewBtn) {
+            this.previewBtn.addEventListener('click', () => this.showPreview());
+        }
+        if (this.previewModalClose) {
+            this.previewModalClose.addEventListener('click', () => this.closePreviewModal());
+        }
+
+        // Close modals when clicking outside
+        if (this.cropModal) {
+            this.cropModal.addEventListener('click', (e) => {
+                if (e.target === this.cropModal) {
+                    this.closeCropModal();
+                }
+            });
+        }
+        if (this.previewModal) {
+            this.previewModal.addEventListener('click', (e) => {
+                if (e.target === this.previewModal) {
+                    this.closePreviewModal();
+                }
+            });
+        }
     }
 
     setupFormValidation() {
@@ -1397,6 +1449,231 @@ class JoinFormManager {
         } catch {
             return false;
         }
+    }
+
+    // Image cropping methods
+    openCropModal() {
+        if (!this.selectedFile) return;
+
+        // Set the image source for cropping
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            this.cropImageElement.src = e.target.result;
+
+            // Initialize Cropper.js when image loads
+            this.cropImageElement.onload = () => {
+                // Destroy existing cropper if it exists
+                if (this.cropper) {
+                    this.cropper.destroy();
+                }
+
+                // Initialize new cropper with 353:250 aspect ratio
+                this.cropper = new Cropper(this.cropImageElement, {
+                    aspectRatio: 353 / 250, // Member card aspect ratio
+                    viewMode: 1,
+                    dragMode: 'move',
+                    responsive: true,
+                    restore: false,
+                    checkCrossOrigin: false,
+                    checkOrientation: false,
+                    modal: true,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    background: false,
+                    autoCropArea: 0.8,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false
+                });
+
+                // Show the modal
+                this.cropModal.style.display = 'flex';
+            };
+        };
+
+        reader.readAsDataURL(this.selectedFile);
+    }
+
+    closeCropModal() {
+        if (this.cropper) {
+            this.cropper.destroy();
+            this.cropper = null;
+        }
+        this.cropModal.style.display = 'none';
+        this.cropImageElement.src = '';
+    }
+
+    applyCrop() {
+        if (!this.cropper) return;
+
+        // Get the cropped canvas
+        const canvas = this.cropper.getCroppedCanvas({
+            width: 353,
+            height: 250,
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high'
+        });
+
+        if (!canvas) {
+            console.error('Failed to get cropped canvas');
+            return;
+        }
+
+        // Convert canvas to blob
+        canvas.toBlob((blob) => {
+            if (!blob) {
+                console.error('Failed to convert canvas to blob');
+                return;
+            }
+
+            // Create a new file from the blob
+            const croppedFile = new File([blob], this.selectedFile.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+            });
+
+            // Replace the selected file with the cropped version
+            this.selectedFile = croppedFile;
+
+            // Update the preview image
+            this.previewImage.src = canvas.toDataURL('image/jpeg', 0.9);
+
+            // Close the modal
+            this.closeCropModal();
+        }, 'image/jpeg', 0.9);
+    }
+
+    // Preview modal methods
+    showPreview() {
+        // Validate that we have required data
+        const firstName = document.getElementById('first_name').value.trim();
+        const lastName = document.getElementById('last_name').value.trim();
+        const bio = document.getElementById('bio').value.trim();
+
+        if (!firstName || !lastName || !bio || !this.selectedFile) {
+            alert('Please fill in all required fields and upload an image before previewing.');
+            return;
+        }
+
+        // Populate preview modal with form data
+        this.populatePreviewModal();
+
+        // Show the modal
+        this.previewModal.style.display = 'flex';
+    }
+
+    populatePreviewModal() {
+        // Get form values
+        const firstName = document.getElementById('first_name').value.trim();
+        const lastName = document.getElementById('last_name').value.trim();
+        const bio = document.getElementById('bio').value.trim();
+        const location = document.getElementById('location').value.trim();
+        const instagram = document.getElementById('instagram').value.trim();
+
+        // Set member name
+        document.getElementById('preview-member-name').textContent = firstName;
+
+        // Set bio
+        document.getElementById('preview-member-bio').textContent = bio;
+
+        // Set location
+        const locationSection = document.getElementById('preview-location-section');
+        const locationSpan = document.getElementById('preview-member-location');
+        if (location) {
+            locationSpan.textContent = location;
+            locationSection.style.display = 'flex';
+        } else {
+            locationSection.style.display = 'none';
+        }
+
+        // Set Instagram
+        const instagramSection = document.getElementById('preview-instagram-section');
+        const instagramSpan = document.getElementById('preview-member-instagram');
+        if (instagram) {
+            instagramSpan.textContent = `@${instagram}`;
+            instagramSection.style.display = 'flex';
+        } else {
+            instagramSection.style.display = 'none';
+        }
+
+        // Set member image
+        if (this.selectedFile) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('preview-member-image').src = e.target.result;
+                document.getElementById('preview-image-placeholder').style.display = 'none';
+            };
+            reader.readAsDataURL(this.selectedFile);
+        }
+
+        // Set background image if available
+        const previewModalContainer = document.querySelector('#preview-modal .modal-container');
+        if (this.selectedBackgroundFile) {
+            const bgReader = new FileReader();
+            bgReader.onload = (e) => {
+                // Apply background image with dark overlay for text readability (matching published member cards)
+                previewModalContainer.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${e.target.result})`;
+                previewModalContainer.style.backgroundSize = 'cover';
+                previewModalContainer.style.backgroundPosition = 'center';
+                previewModalContainer.style.backgroundRepeat = 'no-repeat';
+            };
+            bgReader.readAsDataURL(this.selectedBackgroundFile);
+        } else if (this.selectedFile) {
+            // Use showcase image as background if no background image is provided (matching published member cards)
+            const imgReader = new FileReader();
+            imgReader.onload = (e) => {
+                previewModalContainer.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${e.target.result})`;
+                previewModalContainer.style.backgroundSize = 'cover';
+                previewModalContainer.style.backgroundPosition = 'center';
+                previewModalContainer.style.backgroundRepeat = 'no-repeat';
+            };
+            imgReader.readAsDataURL(this.selectedFile);
+        } else {
+            // Reset background if no images are available
+            previewModalContainer.style.backgroundImage = '';
+            previewModalContainer.style.backgroundSize = '';
+            previewModalContainer.style.backgroundPosition = '';
+            previewModalContainer.style.backgroundRepeat = '';
+        }
+
+        // Set emblems
+        this.populatePreviewEmblems();
+
+        // Set crafts
+        this.populatePreviewCrafts();
+    }
+
+    populatePreviewEmblems() {
+        const emblemsContainer = document.getElementById('preview-emblems');
+        emblemsContainer.innerHTML = '';
+
+        const selectedEmblems = this.skillEmblemsSelector.getSelectedEmblems();
+        selectedEmblems.forEach(emblemId => {
+            const emblem = SKILL_EMBLEMS.find(e => e.id === emblemId);
+            if (emblem) {
+                const emblemImg = document.createElement('img');
+                emblemImg.src = emblem.image;
+                emblemImg.alt = emblem.title;
+                emblemImg.className = 'emblem';
+                emblemsContainer.appendChild(emblemImg);
+            }
+        });
+    }
+
+    populatePreviewCrafts() {
+        const craftSpan = document.getElementById('preview-member-craft');
+        const selectedCrafts = this.craftSelector.getSelectedCrafts();
+
+        if (selectedCrafts.length > 0) {
+            craftSpan.textContent = selectedCrafts.join(', ');
+        } else {
+            craftSpan.textContent = '';
+        }
+    }
+
+    closePreviewModal() {
+        this.previewModal.style.display = 'none';
     }
 
     // Public methods for global access

@@ -1189,8 +1189,8 @@ class CollageManager {
         closeButton.innerHTML = '×';
         closeButton.style.cssText = `
             position: absolute;
-            top: 10px;
-            right: 15px;
+            top: -35px;
+            right: -35px;
             background: none;
             border: none;
             color: white;
