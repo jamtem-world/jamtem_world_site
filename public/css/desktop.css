@@ -1925,7 +1925,27 @@ body {
   z-index: 1;
 }
 
-.modal-close:hover {
+.preview-modal-close {
+  position: absolute;
+  top: -35px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(to bottom, #ece9d8 0%, #d6d3ce 100%);
+  border: 1px outset #d4d0c8;
+  border-radius: 0;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  color: #000000;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.modal-close:hover, .preview-modal-close:hover {
   background: linear-gradient(to bottom, #ff6b6b 0%, #ee5a52 100%);
   color: white;
 }

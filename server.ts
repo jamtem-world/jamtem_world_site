@@ -61,6 +61,8 @@ async function uploadToCloudinary(imageFile: File): Promise<string> {
   return result.secure_url; // Return the HTTPS URL
 }
 
+
+
 // Utility function to upload video to Cloudinary
 async function uploadVideoToCloudinary(videoFile: File): Promise<string> {
   const cloudName = Deno.env.get("CLOUDINARY_CLOUD_NAME");
@@ -211,7 +213,8 @@ async function serveMemberPage(memberId: string): Promise<Response> {
       bio: result.fields.Bio || "",
       imageUrl: result.fields.Image && result.fields.Image[0] ? result.fields.Image[0].url : null,
       backgroundImageUrl: result.fields["Background Image"] && result.fields["Background Image"][0] ? result.fields["Background Image"][0].url : null,
-      elmntVideoUrl: result.fields.ELMNT && result.fields.ELMNT[0] ? result.fields.ELMNT[0].url : null
+      elmntVideoUrl: result.fields.ELMNT && result.fields.ELMNT[0] ? result.fields.ELMNT[0].url : null,
+      memberCardUrl: result.fields["Member Card"] && result.fields["Member Card"][0] ? result.fields["Member Card"][0].url : null
     };
 
     if (!member.imageUrl) {
@@ -343,7 +346,7 @@ function generateMemberPageHTML(member: any): string {
             <div class="modal-content">
                 <div class="modal-header">
                     <div class="card_name_shape">
-                        <img src="/media/images/jamtem_card_shape.png" alt="" class="name_corner">                    <h2 id="modal-member-name" class="modal-member-name"></h2>
+                        <img src="https://storage.googleapis.com/jamtem_website_media/jamtem_card_shape.png" alt="" class="name_corner">                    <h2 id="modal-member-name" class="modal-member-name"></h2>
                         <h2 id="modal-member-name" class="modal-member-name"></h2>
                     </div>
                     <div class="header_emblems" id="modal-emblems">
@@ -354,17 +357,17 @@ function generateMemberPageHTML(member: any): string {
                     <div class="modal-image-container">
                         <img id="modal-member-image" class="modal-member-image" src="" alt="">
 
-                        <img src="/media/images/member_pic_border.png" alt="" class="member_pic_border"></div>
+                        <img src="https://storage.googleapis.com/jamtem_website_media/member_pic_border.png" alt="" class="member_pic_border"></div>
                 </div>
                 <div class="modal-info-section">
                     <div class="modal-member-details">
                         <div class="location_instagram">
                             <div class="modal-location" id="modal-location-section" style="display: none;">
-                                <img src="/media/images/location_icon_black.png" alt="" class="icon">
+                                <img src="https://storage.googleapis.com/jamtem_website_media/location_icon_black.png" alt="" class="icon">
                                 <span id="modal-member-location"></span>
                             </div>
                             <div class="modal-instagram" id="modal-instagram-section" style="display: none;">
-                                <img src="/media/images/instagram_black_icon.png" alt="" class="icon">
+                                <img src="https://storage.googleapis.com/jamtem_website_media/instagram_black_icon.png" alt="" class="icon">
                                 <span id="modal-member-instagram"></span>
                             </div>
                         </div>
@@ -392,17 +395,17 @@ function generateMemberPageHTML(member: any): string {
     <script>
         // Skill emblems data for shareable pages
         const SKILL_EMBLEMS = [
-            { id: 'activism', title: 'Activism', image: '/media/emblems/emblem_activism.png' },
-            { id: 'art', title: 'Art', image: '/media/emblems/emblem_art.png' },
-            { id: 'culinary_arts', title: 'Culinary Arts', image: '/media/emblems/emblem_culinary_arts.png' },
-            { id: 'fashion', title: 'Fashion', image: '/media/emblems/emblem_fashion.png' },
-            { id: 'film', title: 'Film', image: '/media/emblems/emblem_film.png' },
-            { id: 'graphic_design', title: 'Graphic Design', image: '/media/emblems/emblem_graphic_design.png' },
-            { id: 'music', title: 'Music', image: '/media/emblems/emblem_music.png' },
-            { id: 'performance_arts', title: 'Performance Arts', image: '/media/emblems/emblem_performance_arts.png' },
-            { id: 'photography', title: 'Photography', image: '/media/emblems/emblem_photography.png' },
-            { id: 'sports', title: 'Sports', image: '/media/emblems/emblem_sports.png' },
-            { id: 'writing', title: 'Writing', image: '/media/emblems/emblem_writing.png' }
+            { id: 'activism', title: 'Activism', image: 'https://storage.googleapis.com/jamtem_website_media/emblem_activism.png' },
+            { id: 'art', title: 'Art', image: 'https://storage.googleapis.com/jamtem_website_media/emblem_art.png' },
+            { id: 'culinary_arts', title: 'Culinary Arts', image: 'https://storage.googleapis.com/jamtem_website_media/emblem_culinary_arts.png' },
+            { id: 'fashion', title: 'Fashion', image: 'https://storage.googleapis.com/jamtem_website_media/emblem_fashion.png' },
+            { id: 'film', title: 'Film', image: 'https://storage.googleapis.com/jamtem_website_media/emblem_film.png' },
+            { id: 'graphic_design', title: 'Graphic Design', image: 'https://storage.googleapis.com/jamtem_website_media/emblem_graphic_design.png' },
+            { id: 'music', title: 'Music', image: 'https://storage.googleapis.com/jamtem_website_media/emblem_music.png' },
+            { id: 'performance_arts', title: 'Performance Arts', image: 'https://storage.googleapis.com/jamtem_website_media/emblem_performance_arts.png' },
+            { id: 'photography', title: 'Photography', image: 'https://storage.googleapis.com/jamtem_website_media/emblem_photography.png' },
+            { id: 'sports', title: 'Sports', image: 'https://storage.googleapis.com/jamtem_website_media/emblem_sports.png' },
+            { id: 'writing', title: 'Writing', image: 'https://storage.googleapis.com/jamtem_website_media/emblem_writing.png' }
         ];
 
         // ELMNT Video functionality for member pages
@@ -990,9 +993,9 @@ function generateMemberPageHTML(member: any): string {
 </html>`;
 }
 
-const PORT = 8000;
+const PORT = parseInt(Deno.env.get("PORT") || "8000");
 
-console.log(`🚀 Starting Deno server on http://localhost:${PORT}`);
+console.log(`🚀 Starting Deno server on port ${PORT}`);
 console.log(`📁 Serving static files from ./public directory`);
 console.log(`🔗 Server-side routing enabled for: ${Object.keys(routes).join(', ')}`);
 
@@ -1120,7 +1123,8 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           bio: record.fields.Bio || "",
           imageUrl: record.fields.Image && record.fields.Image[0] ? record.fields.Image[0].url : null,
           backgroundImageUrl: record.fields["Background Image"] && record.fields["Background Image"][0] ? record.fields["Background Image"][0].url : null,
-          elmntVideoUrl: record.fields.ELMNT && record.fields.ELMNT[0] ? record.fields.ELMNT[0].url : null
+          elmntVideoUrl: record.fields.ELMNT && record.fields.ELMNT[0] ? record.fields.ELMNT[0].url : null,
+          memberCardUrl: record.fields["Member Card"] && record.fields["Member Card"][0] ? record.fields["Member Card"][0].url : null
         })).filter((member: any) => member.imageUrl); // Only include members with images
 
         return new Response(
@@ -1203,6 +1207,7 @@ Deno.serve({ port: PORT }, async (req: Request) => {
         const website = formData.get("website")?.toString().trim();
         const instagram = formData.get("instagram")?.toString().trim();
         const skillEmblemsData = formData.get("skill_emblems")?.toString().trim();
+        const memberCardPngBlob = formData.get("member_card_png") as File;
         const imageFile = formData.get("image") as File;
         const backgroundImageFile = formData.get("background-image") as File;
         const elmntVideoFile = formData.get("elmnt-video") as File;
@@ -1366,7 +1371,10 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           elmntVideoUrl = await uploadVideoToCloudinary(elmntVideoFile);
           console.log("ELMNT video uploaded successfully:", elmntVideoUrl);
         }
-        
+
+        // Client-side PNG generation - URL will be provided by frontend
+        console.log("Member data prepared for client-side PNG generation");
+
         // Prepare Airtable record data with Cloudinary URLs
         const recordData: {
           fields: Record<string, any>
@@ -1403,6 +1411,19 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           recordData.fields["ELMNT"] = [
             {
               "url": elmntVideoUrl
+            }
+          ];
+        }
+
+        // Add member card PNG if provided by client-side generation
+        if (memberCardPngBlob && memberCardPngBlob.size > 0) {
+          console.log("Uploading member card PNG to Cloudinary...");
+          const memberCardUrl = await uploadToCloudinary(memberCardPngBlob);
+          console.log("Member card PNG uploaded successfully:", memberCardUrl);
+
+          recordData.fields["Member Card"] = [
+            {
+              "url": memberCardUrl
             }
           ];
         }

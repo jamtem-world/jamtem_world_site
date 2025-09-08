@@ -2,6 +2,9 @@
 node_modules
 npm-debug.log
 
+# Deno specific
+deno.lock.json
+
 # Git files
 .git
 .gitignore
@@ -13,6 +16,7 @@ Dockerfile
 # Development files
 *.md
 README.md
+implementation_plan.md
 
 # OS generated files
 .DS_Store
@@ -46,5 +50,19 @@ coverage
 tmp
 temp
 
-# Media files
+# Environment files (keep .env.example if you have one)
+.env.local
+.env.*.local
 
+# Build artifacts
+dist
+build
+
+# Cache directories
+.cache
+.parcel-cache
+
+# Test files
+*.test.ts
+*.test.js
+__tests__

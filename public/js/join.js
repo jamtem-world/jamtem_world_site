@@ -969,10 +969,13 @@ class JoinFormManager {
     async submitForm() {
         this.isSubmitting = true;
         this.setLoadingState(true);
-        
+
         try {
+            // Generate member card PNG client-side
+            const memberCardBlob = await this.generateMemberCardPNG();
+
             const formData = new FormData();
-            
+
             // Add form fields
             formData.append('first_name', document.getElementById('first_name').value.trim());
             formData.append('last_name', document.getElementById('last_name').value.trim());
@@ -983,40 +986,45 @@ class JoinFormManager {
             formData.append('bio', document.getElementById('bio').value.trim());
             formData.append('website', document.getElementById('website').value.trim());
             formData.append('instagram', document.getElementById('instagram').value.trim());
-            
+
+            // Add member card PNG blob (server will upload to Cloudinary)
+            if (memberCardBlob) {
+                formData.append('member_card_png', memberCardBlob, 'member_card.png');
+            }
+
             // Add image file
             if (this.selectedFile) {
                 formData.append('image', this.selectedFile);
             }
-            
+
             // Add background image file
             if (this.selectedBackgroundFile) {
                 formData.append('background-image', this.selectedBackgroundFile);
             }
-            
+
             // Add ELMNT video file
             if (this.selectedVideoFile) {
                 formData.append('elmnt-video', this.selectedVideoFile);
             }
-            
+
             // Simple fetch configuration that works everywhere
             const response = await fetch('/api/join', {
                 method: 'POST',
                 body: formData
             });
-            
+
             const result = await response.json();
-            
+
             if (response.ok) {
                 this.showSuccess();
             } else {
                 throw new Error(result.error || 'Submission failed');
             }
-            
+
         } catch (error) {
             console.error('Submission error:', error);
             this.showError(error.message);
-            
+
             // Add haptic feedback on mobile if available
             if (navigator.vibrate) {
                 navigator.vibrate([200, 100, 200]);
@@ -1692,6 +1700,277 @@ class JoinFormManager {
         this.previewModal.style.display = 'none';
     }
 
+    // Generate member card PNG client-side and return blob for server upload
+    async generateMemberCardPNG() {
+        try {
+            // Create a temporary modal with user's data
+            const tempModal = await this.createTempMemberCard();
+
+            // Use html2canvas to capture the modal
+            const canvas = await html2canvas(tempModal, {
+                backgroundColor: 'transparent',
+                scale: 2, // Higher quality
+                useCORS: true,
+                allowTaint: false,
+                width: 415,
+                height: 570,
+                imageTimeout: 5000,
+                logging: false
+            });
+
+            // Remove temporary modal
+            document.body.removeChild(tempModal);
+
+            // Convert canvas to blob
+            const blob = await new Promise(resolve => {
+                canvas.toBlob(resolve, 'image/png', 0.9);
+            });
+
+            if (!blob) {
+                throw new Error('Failed to generate PNG blob');
+            }
+
+            // Return blob for server-side upload
+            return blob;
+
+        } catch (error) {
+            console.error('PNG generation failed:', error);
+            throw new Error('Failed to generate member card PNG');
+        }
+    }
+
+    // Create temporary member card modal for PNG generation
+    async createTempMemberCard() {
+        // Get form data
+        const firstName = document.getElementById('first_name').value.trim();
+        const lastName = document.getElementById('last_name').value.trim();
+        const bio = document.getElementById('bio').value.trim();
+        const location = document.getElementById('location').value.trim();
+        const instagram = document.getElementById('instagram').value.trim();
+        const selectedCrafts = this.craftSelector.getSelectedCrafts();
+        const selectedEmblems = this.skillEmblemsSelector.getSelectedEmblems();
+
+        // Create temporary modal container
+        const tempModal = document.createElement('div');
+        tempModal.style.cssText = `
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            width: 415px;
+            height: 570px;
+            background: transparent;
+            z-index: -1;
+        `;
+
+        // Create modal content structure (matching the existing modal)
+        tempModal.innerHTML = `
+            <div class="modal-container" style="
+                position: relative;
+                background: transparent;
+                width: 415px;
+                height: 570px;
+                padding: 15px;
+                border-radius: 20px;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+            ">
+                <div class="modal-content" style="
+                    position: relative;
+                    display: grid;
+                    grid-template-columns: 1fr;
+                    grid-template-rows: 50px 250px 200px;
+                    gap: 20px;
+                    background: linear-gradient(to bottom, #C0C0C0 75%, #FDFDFD);
+                    height: 100%;
+                ">
+                    <div class="modal-header" style="display: flex; justify-content: space-between;">
+                        <div class="card_name_shape" style="
+                            display: grid;
+                            grid-template-areas: 'main';
+                            height: auto;
+                        ">
+                            <img src="media/images/jamtem_card_shape.png" alt="" class="name_corner" style="
+                                grid-area: main;
+                                width: 220px;
+                                z-index: 1;
+                            ">
+                            <h2 class="modal-member-name" style="
+                                grid-area: main;
+                                font-family: 'Orbitron', monospace;
+                                font-size: 1.5rem;
+                                font-weight: bold;
+                                color: #000000;
+                                z-index: 2;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                text-align: center;
+                                translate: -15px;
+                            ">${firstName}</h2>
+                        </div>
+                        <div class="header_emblems" style="margin: 10px 0 0 0; display: flex;">
+                            ${this.generateEmblemHTML(selectedEmblems)}
+                        </div>
+                    </div>
+                    <div class="modal-image-section" style="
+                        display: flex;
+                        flex-direction: column;
+                        height: 350px;
+                        margin-inline: 16px;
+                    ">
+                        <div class="modal-image-container" style="
+                            position: relative;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            border-radius: 20px;
+                            height: 250px;
+                        ">
+                            <img id="temp-member-image" class="modal-member-image" style="
+                                width: 100%;
+                                height: 100%;
+                                object-fit: cover;
+                                border-radius: 50px;
+                            " src="" alt="">
+                            <img src="media/images/member_pic_border.png" alt="" class="member_pic_border" style="
+                                position: absolute;
+                                top: 0;
+                                left: -6px;
+                                width: 103%;
+                                height: 103%;
+                                pointer-events: none;
+                                z-index: 9999;
+                            ">
+                        </div>
+                    </div>
+                    <div class="modal-info-section" style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 16px;
+                        overflow-y: scroll;
+                        padding: 5px;
+                        margin: 0 16px 16px 16px;
+                        scrollbar-width: none;
+                    ">
+                        <div class="modal-member-details" style="display: flex; flex-direction: column; gap: 15px;">
+                            <div class="location_instagram" style="
+                                display: grid;
+                                grid-template-columns: 1fr;
+                                align-items: center;
+                                justify-items: start;
+                                gap: 10px;
+                            ">
+                                ${location ? `<div class="modal-location" style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 5px;
+                                ">
+                                    <img src="media/images/location_icon_black.png" alt="" style="width: 24px; height: 24px;">
+                                    <span style="font-size: 0.8rem; margin-top: 3px;">${location}</span>
+                                </div>` : ''}
+                                ${instagram ? `<div class="modal-instagram" style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 5px;
+                                ">
+                                    <img src="media/images/instagram_black_icon.png" alt="" style="width: 24px; height: 24px;">
+                                    <span style="font-size: 0.8rem; margin-top: 3px;">@${instagram}</span>
+                                </div>` : ''}
+                            </div>
+                            <div class="modal-bio" style="
+                                display: flex;
+                                flex-direction: column;
+                                gap: 8px;
+                            ">
+                                <strong style="
+                                    font-size: 1rem;
+                                    color: #000000;
+                                    display: block;
+                                    margin-bottom: 8px;
+                                ">About:</strong>
+                                <p style="
+                                    font-size: 11px;
+                                    line-height: 1.4;
+                                    color: #333333;
+                                ">${bio}</p>
+                            </div>
+                            <p class="modal-member-craft" style="
+                                font-size: 12px;
+                                color: #0078d4;
+                                font-weight: bold;
+                            ">${selectedCrafts.join(', ')}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Set background image
+        const modalContainer = tempModal.querySelector('.modal-container');
+        if (this.selectedBackgroundFile) {
+            // Use background image if provided
+            const bgReader = new FileReader();
+            await new Promise(resolve => {
+                bgReader.onload = () => {
+                    modalContainer.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${bgReader.result})`;
+                    modalContainer.style.backgroundSize = 'cover';
+                    modalContainer.style.backgroundPosition = 'center';
+                    modalContainer.style.backgroundRepeat = 'no-repeat';
+                    resolve();
+                };
+                bgReader.readAsDataURL(this.selectedBackgroundFile);
+            });
+        } else if (this.selectedFile) {
+            // Use profile image as background if no background image
+            const imgReader = new FileReader();
+            await new Promise(resolve => {
+                imgReader.onload = () => {
+                    modalContainer.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${imgReader.result})`;
+                    modalContainer.style.backgroundSize = 'cover';
+                    modalContainer.style.backgroundPosition = 'center';
+                    modalContainer.style.backgroundRepeat = 'no-repeat';
+                    resolve();
+                };
+                imgReader.readAsDataURL(this.selectedFile);
+            });
+        }
+
+        // Set profile image
+        if (this.selectedFile) {
+            const imgElement = tempModal.querySelector('#temp-member-image');
+            const imgReader = new FileReader();
+            await new Promise(resolve => {
+                imgReader.onload = () => {
+                    imgElement.src = imgReader.result;
+                    resolve();
+                };
+                imgReader.readAsDataURL(this.selectedFile);
+            });
+        }
+
+        // Add to body temporarily
+        document.body.appendChild(tempModal);
+
+        // Wait for images to load
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        return tempModal;
+    }
+
+    // Generate HTML for emblems
+    generateEmblemHTML(selectedEmblems) {
+        return selectedEmblems.map(emblemId => {
+            const emblem = SKILL_EMBLEMS.find(e => e.id === emblemId);
+            if (emblem) {
+                return `<img src="${emblem.image}" alt="${emblem.title}" class="emblem" style="width: 45px; height: 45px; margin-right: 8px;">`;
+            }
+            return '';
+        }).join('');
+    }
+
+
+
     // Download member card as PNG using html2canvas
     async downloadMemberCard(member, modalType = 'member') {
         try {
@@ -1769,6 +2048,7 @@ class JoinFormManager {
             wrapper.style.position = 'absolute !important';
             wrapper.style.left = '-9999px !important';
             wrapper.style.top = '-9999px !important';
+            wrapper.style.background = 'transparent !important';
             wrapper.style.setProperty('width', '415px', 'important');
             wrapper.style.setProperty('height', '570px', 'important');
             wrapper.style.setProperty('position', 'absolute', 'important');

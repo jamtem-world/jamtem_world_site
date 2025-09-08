@@ -1319,16 +1319,40 @@ class CollageManager {
         downloadBtn.parentNode.replaceChild(newDownloadBtn, downloadBtn);
 
         // Add new event listener
-        newDownloadBtn.addEventListener('click', (e) => {
+        newDownloadBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             e.stopPropagation();
 
-            // Use the downloadMemberCard function from join.js
-            if (window.joinFormManager && window.joinFormManager.downloadMemberCard) {
-                window.joinFormManager.downloadMemberCard(member, 'member');
-            } else {
-                console.error('Download function not available');
-                alert('Download functionality is not available. Please try again later.');
+            try {
+                // Check if member has a pre-generated card PNG
+                if (member.memberCardUrl) {
+                    // Download the pre-generated PNG directly
+                    const response = await fetch(member.memberCardUrl);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch member card');
+                    }
+
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${member.first_name}_jamtem_card.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } else {
+                    // Fallback: try the old method if no pre-generated card
+                    console.warn('No pre-generated card found, falling back to client-side generation');
+                    if (window.joinFormManager && window.joinFormManager.downloadMemberCard) {
+                        window.joinFormManager.downloadMemberCard(member, 'member');
+                    } else {
+                        alert('Download functionality is not available. Please try again later.');
+                    }
+                }
+            } catch (error) {
+                console.error('Download failed:', error);
+                alert('Failed to download member card. Please try again.');
             }
         });
     }
