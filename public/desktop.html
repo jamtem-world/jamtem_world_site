@@ -43,6 +43,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
+    <!-- html2canvas for screenshot functionality -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <!-- Three.js and dependencies for 3D collage -->
     <script type="importmap">
     {
@@ -564,6 +567,7 @@
     <div id="member-modal" class="modal-overlay" style="display: none;">
                     <button class="modal-close" id="modal-close">&times;</button>
                     <button class="share-profile-btn" id="share-profile-btn" title="Share this profile">📤</button>
+                    <button class="download-profile-btn" id="download-profile-btn" title="Download card as PNG">📸</button>
 
         <div class="modal-container">
             <div class="modal-content">
@@ -613,6 +617,7 @@
     <div id="preview-modal" class="modal-overlay" style="display: none;">
         <div class="modal-container">
             <button class="modal-close" id="preview-modal-close">&times;</button>
+            <button class="download-profile-btn" id="download-preview-btn" title="Download card as PNG">📸</button>
             <div class="modal-content">
                 <div class="modal-header">
                     <div class="card_name_shape">
@@ -697,7 +702,7 @@
                     <div class="modal-thumbnails" id="modal-thumbnails"></div>
                 </div>
                 <div class="modal-info-section">
-                    <div class="modal-header">
+                    <div class="product_modal_header">
                         <h2 id="modal-product-title" class="modal-product-title"></h2>
                         <p id="modal-product-vendor" class="modal-product-vendor"></p>
                         <div id="modal-product-price" class="modal-product-price"></div>

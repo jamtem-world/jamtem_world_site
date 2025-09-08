@@ -225,7 +225,7 @@ body {
   gap: 6rem;
   width: 100vw;
   height: 100%; /* Account for taskbar */
-  padding-bottom: 5rem;
+  /* padding-bottom: 5rem; */
   /* background: linear-gradient(135deg, #0078d4 0%, #106ebe 50%, #1e3a8a 100%);
   background-image: 
     radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 0%, transparent 50%),
@@ -2042,6 +2042,12 @@ body {
   justify-content: space-between;
 }
 
+.product_modal_header {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+}
+
 .header_emblems {
   margin: 10px 0 0 0;
   display: flex;
@@ -2271,15 +2277,15 @@ body {
     opacity: 0;
   }
   60% {
-    transform: translateY(10px);
+    transform: translateY(-4.1rem);
     opacity: 1;
   }
   80% {
-    transform: translateY(-5px);
+    transform: translateY(-4.5rem);
     opacity: 1;
   }
   100% {
-    transform: translateY(0);
+    transform: translateY(-4rem);
     opacity: 1;
   }
 }
@@ -3613,6 +3619,37 @@ body {
   background: linear-gradient(to bottom, #d6d3ce 0%, #ece9d8 100%);
 }
 
+/* Download Profile Button */
+.download-profile-btn {
+  position: absolute;
+  top: 8px;
+  right: 74px;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(to bottom, #ece9d8 0%, #d6d3ce 100%);
+  border: 1px outset #d4d0c8;
+  border-radius: 0;
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  color: #000000;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  transition: all 0.1s ease;
+}
+
+.download-profile-btn:hover {
+  background: linear-gradient(to bottom, #f2efea 0%, #ddd9d4 100%);
+}
+
+.download-profile-btn:active {
+  border: 1px inset #d4d0c8;
+  background: linear-gradient(to bottom, #d6d3ce 0%, #ece9d8 100%);
+}
+
 /* Focus styles for new elements */
 .tab-button:focus,
 .nav-btn:focus,
@@ -3620,4 +3657,146 @@ body {
 .dialog-window:focus {
   outline: 1px dotted #000000;
   outline-offset: -2px;
+}
+
+/* Desktop Screenshot Mode - Forces desktop appearance during screenshot capture */
+.desktop-screenshot-mode .modal-container {
+  width: 415px !important;
+  max-width: 415px !important;
+  height: 570px !important;
+  max-height: 570px !important;
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  border-radius: 20px !important;
+}
+
+.desktop-screenshot-mode .modal-content {
+  grid-template-columns: 1fr !important;
+  grid-template-rows: 50px 250px 200px !important;
+  gap: 20px !important;
+  background: linear-gradient(to bottom, #C0C0C0 75%, #FDFDFD) !important;
+}
+
+.desktop-screenshot-mode .modal-image-section {
+  height: 250px !important;
+  margin-inline: 16px !important;
+}
+
+.desktop-screenshot-mode .modal-image-container {
+  height: 250px !important;
+  border-radius: 20px !important;
+}
+
+.desktop-screenshot-mode .modal-member-image {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 50px !important;
+}
+
+.desktop-screenshot-mode .modal-info-section {
+  overflow-y: visible !important;
+  padding: 5px !important;
+  margin: 0 16px 16px 16px !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.desktop-screenshot-mode .modal-info-section::-webkit-scrollbar {
+  display: none !important;
+}
+
+.desktop-screenshot-mode .modal-member-name {
+  font-family: 'Orbitron', monospace !important;
+  font-size: 1.5rem !important;
+  font-weight: bold !important;
+  color: #000000 !important;
+  z-index: 2 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  translate: -15px !important;
+}
+
+.desktop-screenshot-mode .modal-member-craft {
+  font-size: 12px !important;
+  color: #0078d4 !important;
+  font-weight: bold !important;
+}
+
+.desktop-screenshot-mode .modal-bio p {
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+  color: #333333 !important;
+}
+
+.desktop-screenshot-mode .emblem {
+  width: 45px !important;
+  height: 45px !important;
+  margin-right: 8px !important;
+}
+
+.desktop-screenshot-mode .member_pic_border {
+  position: absolute !important;
+  top: 0 !important;
+  left: -6px !important;
+  width: 103% !important;
+  height: 103% !important;
+  pointer-events: none !important;
+  z-index: 9999 !important;
+}
+
+/* Hide mobile-specific elements during desktop screenshot */
+.desktop-screenshot-mode [class*="mobile"],
+.desktop-screenshot-mode [class*="tablet"],
+.desktop-screenshot-mode [class*="small"] {
+  display: none !important;
+}
+
+/* Ensure desktop layout for all responsive elements */
+.desktop-screenshot-mode .modal-location,
+.desktop-screenshot-mode .modal-instagram {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+.desktop-screenshot-mode .modal-location span,
+.desktop-screenshot-mode .modal-instagram span {
+  font-size: 0.8rem !important;
+  margin-top: 3px !important;
+}
+
+.desktop-screenshot-mode .icon {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.desktop-screenshot-mode .header_emblems {
+  margin: 10px 0 0 0 !important;
+  display: flex !important;
+}
+
+.desktop-screenshot-mode .modal-member-details {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 15px !important;
+}
+
+.desktop-screenshot-mode .location_instagram {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  align-items: center !important;
+  justify-items: start !important;
+  gap: 10px !important;
+}
+
+.desktop-screenshot-mode .modal-bio strong {
+  font-size: 1rem !important;
+  color: #000000 !important;
+  display: block !important;
+  margin-bottom: 8px !important;
 }

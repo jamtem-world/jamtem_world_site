@@ -491,6 +491,9 @@ class CollageManager {
         // Setup share button functionality
         this.setupShareButton(member);
 
+        // Setup download button functionality
+        this.setupDownloadButton(member);
+
         // Focus management for accessibility
         const closeBtn = document.getElementById('modal-close');
         if (closeBtn) {
@@ -1302,6 +1305,30 @@ class CollageManager {
                     // Final fallback: show the URL
                     alert(`Share this link: ${shareUrl}`);
                 });
+            }
+        });
+    }
+
+    // Setup download button functionality
+    setupDownloadButton(member) {
+        const downloadBtn = document.getElementById('download-profile-btn');
+        if (!downloadBtn) return;
+
+        // Remove any existing event listeners
+        const newDownloadBtn = downloadBtn.cloneNode(true);
+        downloadBtn.parentNode.replaceChild(newDownloadBtn, downloadBtn);
+
+        // Add new event listener
+        newDownloadBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Use the downloadMemberCard function from join.js
+            if (window.joinFormManager && window.joinFormManager.downloadMemberCard) {
+                window.joinFormManager.downloadMemberCard(member, 'member');
+            } else {
+                console.error('Download function not available');
+                alert('Download functionality is not available. Please try again later.');
             }
         });
     }

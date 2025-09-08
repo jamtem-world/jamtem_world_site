@@ -1091,31 +1091,21 @@ class DesktopInterface {
     // Trigger sphere drop animation
     triggerSphereDropAnimation() {
         const sphereContainer = document.getElementById('sphere-container');
-        const desktop = document.querySelector('.desktop');
-        
+
         if (sphereContainer) {
             console.log('Triggering sphere drop animation...');
-            
-            // Add a small delay to ensure the sphere is fully rendered
+
+            // Add 2-second delay to allow components to load properly
             setTimeout(() => {
                 sphereContainer.classList.add('drop-in');
                 console.log('Sphere drop animation started');
-            }, 500);
+            }, 2000); // Increased from 500ms to 2000ms
         } else {
             console.warn('Sphere container not found for drop animation');
         }
-        
-        // Delay desktop background animation by 2 seconds
-        if (desktop) {
-            // Temporarily pause the background animation
-            desktop.style.animationPlayState = 'paused';
-            
-            setTimeout(() => {
-                // Resume background animation after 2 second delay
-                desktop.style.animationPlayState = 'running';
-                console.log('Desktop background animation resumed after 2 second delay');
-            }, 2000);
-        }
+
+        // Background animation runs continuously without interruption
+        console.log('Desktop background animation running continuously');
     }
     
     // Add desktop right-click context menu with Ctrl+Right-Click bypass
@@ -1193,41 +1183,55 @@ class DesktopInterface {
 
 // Initialize desktop interface when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
-    // Show loading overlay and initialize after 2 seconds
+    // Show loading overlay and start parallel loading immediately
     const loadingOverlay = document.getElementById('loading-overlay');
-    
+
     // Ensure loading overlay is visible
     if (loadingOverlay) {
         loadingOverlay.style.display = 'flex';
-        
-        // After 2 seconds, fade out loading and initialize desktop
+
+        // Start loading components with 1-second delay while modal is showing
+        const loadComponents = async () => {
+            try {
+                // Load taskbar component in parallel
+                const loader = new ComponentLoader();
+                await loader.loadComponent('taskbar', '#taskbar-placeholder');
+
+                // Initialize desktop interface (non-visual components first)
+                window.desktop = new DesktopInterface();
+                window.desktop.setupDesktopContextMenu();
+
+                // Ensure cart functionality is set up after taskbar loads
+                if (window.cartManager) {
+                    window.cartManager.setupCartEventListeners();
+                }
+
+                console.log('Components loaded successfully during modal period');
+            } catch (error) {
+                console.error('Error loading components:', error);
+            }
+        };
+
+        // Start loading after 1-second delay to avoid animation stutter
+        setTimeout(() => {
+            loadComponents();
+        }, 1300);
+
+        // After 3 seconds, fade out loading overlay
         setTimeout(async () => {
             // Start fade out animation
             loadingOverlay.classList.add('fade-out');
-            
+
             // Wait for fade animation to complete, then hide completely
             setTimeout(() => {
                 loadingOverlay.style.display = 'none';
             }, 500);
-            
-            // Load taskbar component
-            const loader = new ComponentLoader();
-            await loader.loadComponent('taskbar', '#taskbar-placeholder');
-
-            // Initialize desktop interface
-            window.desktop = new DesktopInterface();
-            window.desktop.setupDesktopContextMenu();
-
-            // Ensure cart functionality is set up after taskbar loads
-            if (window.cartManager) {
-                window.cartManager.setupCartEventListeners();
-            }
         }, 3000);
     } else {
         // Fallback if loading overlay not found
         const loader = new ComponentLoader();
         await loader.loadComponent('taskbar', '#taskbar-placeholder');
-        
+
         window.desktop = new DesktopInterface();
         window.desktop.setupDesktopContextMenu();
     }

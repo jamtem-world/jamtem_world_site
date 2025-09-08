@@ -879,6 +879,22 @@ class JoinFormManager {
             this.previewModalClose.addEventListener('click', () => this.closePreviewModal());
         }
 
+        // Preview modal download button
+        const downloadPreviewBtn = document.getElementById('download-preview-btn');
+        if (downloadPreviewBtn) {
+            downloadPreviewBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Create a mock member object from form data for preview download
+                const mockMember = {
+                    first_name: document.getElementById('first_name').value.trim() || 'Your Name'
+                };
+
+                this.downloadMemberCard(mockMember, 'preview');
+            });
+        }
+
         // Close modals when clicking outside
         if (this.cropModal) {
             this.cropModal.addEventListener('click', (e) => {
@@ -1674,6 +1690,180 @@ class JoinFormManager {
 
     closePreviewModal() {
         this.previewModal.style.display = 'none';
+    }
+
+    // Download member card as PNG using html2canvas
+    async downloadMemberCard(member, modalType = 'member') {
+        try {
+            // Determine which modal container to capture
+            const modalContainer = modalType === 'preview'
+                ? this.previewModal.querySelector('.modal-container')
+                : document.querySelector('#member-modal .modal-container');
+
+            if (!modalContainer) {
+                throw new Error('Modal container not found');
+            }
+
+            // Store original body classes to restore later
+            const originalBodyClasses = document.body.className;
+
+            // Trick the CSS into thinking we're on desktop by adding desktop class
+            document.body.classList.add('desktop-screenshot-mode');
+
+            // Force desktop viewport simulation by overriding CSS custom properties
+            const root = document.documentElement;
+            const originalViewportWidth = root.style.getPropertyValue('--mobile-window-max-width');
+            const originalViewportHeight = root.style.getPropertyValue('--mobile-window-max-height');
+
+            // Set desktop-like viewport dimensions
+            root.style.setProperty('--mobile-window-max-width', '415px');
+            root.style.setProperty('--mobile-window-max-height', 'auto');
+            root.style.setProperty('--mobile-safe-height', '100vh');
+            root.style.setProperty('--mobile-safe-height-dvh', '100dvh');
+
+            // Temporarily override modal container styles for consistent capture
+            const originalModalStyles = {
+                width: modalContainer.style.width,
+                height: modalContainer.style.height,
+                maxWidth: modalContainer.style.maxWidth,
+                maxHeight: modalContainer.style.maxHeight,
+                position: modalContainer.style.position,
+                left: modalContainer.style.left,
+                top: modalContainer.style.top,
+                transform: modalContainer.style.transform,
+                margin: modalContainer.style.margin,
+                padding: modalContainer.style.padding
+            };
+
+            // Force exact desktop dimensions with aggressive overrides
+            modalContainer.style.width = '415px !important';
+            modalContainer.style.height = '570px !important';
+            modalContainer.style.maxWidth = '415px !important';
+            modalContainer.style.maxHeight = '570px !important';
+            modalContainer.style.minWidth = '415px !important';
+            modalContainer.style.minHeight = '570px !important';
+            modalContainer.style.position = 'static !important';
+            modalContainer.style.left = 'auto !important';
+            modalContainer.style.top = 'auto !important';
+            modalContainer.style.transform = 'none !important';
+            modalContainer.style.margin = '0 !important';
+            modalContainer.style.padding = '15px !important';
+
+            // Also override any computed styles that might interfere
+            modalContainer.style.setProperty('width', '415px', 'important');
+            modalContainer.style.setProperty('height', '570px', 'important');
+            modalContainer.style.setProperty('max-width', '415px', 'important');
+            modalContainer.style.setProperty('max-height', '570px', 'important');
+
+            // Small delay to ensure CSS recalculations are complete
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            // Force the container to be exactly the right size before capture
+            modalContainer.style.boxSizing = 'border-box !important';
+            modalContainer.style.setProperty('box-sizing', 'border-box', 'important');
+
+            // Create a wrapper to ensure exact dimensions
+            const wrapper = document.createElement('div');
+            wrapper.style.width = '415px !important';
+            wrapper.style.height = '570px !important';
+            wrapper.style.position = 'absolute !important';
+            wrapper.style.left = '-9999px !important';
+            wrapper.style.top = '-9999px !important';
+            wrapper.style.setProperty('width', '415px', 'important');
+            wrapper.style.setProperty('height', '570px', 'important');
+            wrapper.style.setProperty('position', 'absolute', 'important');
+            wrapper.style.setProperty('left', '-9999px', 'important');
+            wrapper.style.setProperty('top', '-9999px', 'important');
+
+            // Move modal container into wrapper
+            const parent = modalContainer.parentNode;
+            const nextSibling = modalContainer.nextSibling;
+            wrapper.appendChild(modalContainer);
+            document.body.appendChild(wrapper);
+
+            // Calculate exact scale for 300 DPI print quality
+            const printScale = 300 / 96; // ≈ 3.125
+
+            // Capture the wrapper instead of the modal directly
+            const canvas = await html2canvas(wrapper, {
+                backgroundColor: 'transparent', // White background for print
+                scale: printScale,         // Exact 300 DPI calculation
+                useCORS: true,             // Handle cross-origin images
+                removeContainer: true,     // Clean up automatically
+                width: 415,                // Fixed desktop width
+                height: 570,               // Fixed desktop height
+                allowTaint: false,
+                foreignObjectRendering: false,
+                imageTimeout: 5000,        // Longer timeout for print quality
+                logging: false,            // Reduce console noise
+                ignoreElements: (element) => {
+                    // Ignore any elements that might interfere with dimensions
+                    return element.classList.contains('mobile') ||
+                           element.classList.contains('tablet') ||
+                           element.classList.contains('small');
+                },
+                // Print-optimized quality settings
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high',
+                // Crisp text rendering for print
+                letterRendering: true,
+                // Professional print DPI
+                dpi: 300
+            });
+
+            // Restore modal container to original position
+            if (nextSibling) {
+                parent.insertBefore(modalContainer, nextSibling);
+            } else {
+                parent.appendChild(modalContainer);
+            }
+            wrapper.remove();
+
+            // Restore original body classes
+            document.body.className = originalBodyClasses;
+
+            // Restore original CSS custom properties
+            if (originalViewportWidth) {
+                root.style.setProperty('--mobile-window-max-width', originalViewportWidth);
+            } else {
+                root.style.removeProperty('--mobile-window-max-width');
+            }
+            if (originalViewportHeight) {
+                root.style.setProperty('--mobile-window-max-height', originalViewportHeight);
+            } else {
+                root.style.removeProperty('--mobile-window-max-height');
+            }
+            root.style.removeProperty('--mobile-safe-height');
+            root.style.removeProperty('--mobile-safe-height-dvh');
+
+            // Restore original modal styles
+            Object.assign(modalContainer.style, originalModalStyles);
+
+            // Convert canvas to blob and trigger download
+            canvas.toBlob(blob => {
+                if (!blob) {
+                    throw new Error('Failed to convert canvas to blob');
+                }
+
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+
+                // Use member's first name for filename, fallback to generic name
+                const firstName = member?.first_name || 'Member';
+                a.download = `${firstName}_jamtem_card.png`;
+
+                // Trigger download
+                a.click();
+
+                // Clean up
+                URL.revokeObjectURL(url);
+            });
+
+        } catch (error) {
+            console.error('Download failed:', error);
+            alert('Failed to download card. Please try again.');
+        }
     }
 
     // Public methods for global access
