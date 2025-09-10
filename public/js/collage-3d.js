@@ -95,15 +95,27 @@ class SphereCollageManager {
     }
 
     setupCamera() {
-        // Use fixed camera settings - CSS controls all dimensions
+        // Use responsive camera settings based on screen width
         const fov = 75;
-        const cameraDistance = 7;
-        
+
+        // Get screen width for responsive camera distance
+        const screenWidth = window.innerWidth;
+
+        // Set camera distance based on screen size - more zoomed out for desktop
+        let cameraDistance;
+        if (screenWidth >= 768) {
+            // Desktop/tablet: more zoomed out
+            cameraDistance = 10;
+        } else {
+            // Mobile: keep current distance for optimal viewing
+            cameraDistance = 7;
+        }
+
         // Get aspect ratio from canvas for proper camera setup
         const width = this.canvas.clientWidth || 800;
         const height = this.canvas.clientHeight || 800;
         const aspect = width / height;
-        
+
         this.camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 1000);
         this.camera.position.set(0, 0, cameraDistance);
     }
@@ -141,7 +153,17 @@ class SphereCollageManager {
         this.controls.enableZoom = true;
         this.controls.enablePan = false;
         this.controls.minDistance = 3;
-        this.controls.maxDistance = 10;
+
+        // Set responsive max distance based on screen size
+        const screenWidth = window.innerWidth;
+        if (screenWidth >= 768) {
+            // Desktop/tablet: allow more zoom out
+            this.controls.maxDistance = 15;
+        } else {
+            // Mobile: keep reasonable max distance
+            this.controls.maxDistance = 10;
+        }
+
         this.controls.autoRotate = true;
         this.controls.autoRotateSpeed = 0.5;
     }

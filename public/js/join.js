@@ -1039,7 +1039,7 @@ class JoinFormManager {
         let isValid = true;
         
         // Required fields
-        const requiredFields = ['first_name', 'last_name', 'email', 'bio'];
+        const requiredFields = ['first_name', 'email', 'bio'];
         requiredFields.forEach(fieldName => {
             const field = document.getElementById(fieldName);
             if (!this.validateField(field)) {
@@ -1544,7 +1544,7 @@ class JoinFormManager {
             return;
         }
 
-        // Convert canvas to blob
+        // Convert canvas to blob with maximum quality
         canvas.toBlob((blob) => {
             if (!blob) {
                 console.error('Failed to convert canvas to blob');
@@ -1553,19 +1553,19 @@ class JoinFormManager {
 
             // Create a new file from the blob
             const croppedFile = new File([blob], this.selectedFile.name, {
-                type: 'image/jpeg',
+                type: 'image/png',
                 lastModified: Date.now()
             });
 
             // Replace the selected file with the cropped version
             this.selectedFile = croppedFile;
 
-            // Update the preview image
-            this.previewImage.src = canvas.toDataURL('image/jpeg', 0.9);
+            // Update the preview image with high quality
+            this.previewImage.src = canvas.toDataURL('image/png', 1.0);
 
             // Close the modal
             this.closeCropModal();
-        }, 'image/jpeg', 0.9);
+        }, 'image/png', 1.0); // Maximum quality for cropping
     }
 
     // Preview modal methods
@@ -1575,7 +1575,7 @@ class JoinFormManager {
         const lastName = document.getElementById('last_name').value.trim();
         const bio = document.getElementById('bio').value.trim();
 
-        if (!firstName || !lastName || !bio || !this.selectedFile) {
+        if (!firstName || !bio || !this.selectedFile) {
             alert('Please fill in all required fields and upload an image before previewing.');
             return;
         }
@@ -1706,24 +1706,34 @@ class JoinFormManager {
             // Create a temporary modal with user's data
             const tempModal = await this.createTempMemberCard();
 
-            // Use html2canvas to capture the modal
+            // Calculate high-quality scale for 300 DPI print resolution
+            const printScale = 300 / 96; // ≈ 3.125 for 300 DPI at 96 PPI screen
+
+            // Use html2canvas to capture the modal with high-quality settings
             const canvas = await html2canvas(tempModal, {
                 backgroundColor: 'transparent',
-                scale: 2, // Higher quality
+                scale: printScale, // High-quality 300 DPI scaling
                 useCORS: true,
                 allowTaint: false,
                 width: 415,
-                height: 570,
-                imageTimeout: 5000,
-                logging: false
+                height: 600,
+                imageTimeout: 10000, // Longer timeout for high quality
+                logging: false,
+                // High-quality rendering options
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high',
+                letterRendering: true, // Crisp text rendering
+                foreignObjectRendering: false, // Better compatibility
+                // Print-quality DPI settings
+                dpi: 300
             });
 
             // Remove temporary modal
             document.body.removeChild(tempModal);
 
-            // Convert canvas to blob
+            // Convert canvas to blob with maximum quality
             const blob = await new Promise(resolve => {
-                canvas.toBlob(resolve, 'image/png', 0.9);
+                canvas.toBlob(resolve, 'image/png', 1.0); // Maximum quality
             });
 
             if (!blob) {
@@ -1757,7 +1767,7 @@ class JoinFormManager {
             left: -9999px;
             top: -9999px;
             width: 415px;
-            height: 570px;
+            height: 600px;
             background: transparent;
             z-index: -1;
         `;
@@ -1768,7 +1778,7 @@ class JoinFormManager {
                 position: relative;
                 background: transparent;
                 width: 415px;
-                height: 570px;
+                height: 600px;
                 padding: 15px;
                 border-radius: 20px;
                 display: flex;
@@ -1779,7 +1789,7 @@ class JoinFormManager {
                     position: relative;
                     display: grid;
                     grid-template-columns: 1fr;
-                    grid-template-rows: 50px 250px 200px;
+                    grid-template-rows: 50px 250px 230px;
                     gap: 20px;
                     background: linear-gradient(to bottom, #C0C0C0 75%, #FDFDFD);
                     height: 100%;
@@ -2016,11 +2026,11 @@ class JoinFormManager {
 
             // Force exact desktop dimensions with aggressive overrides
             modalContainer.style.width = '415px !important';
-            modalContainer.style.height = '570px !important';
+            modalContainer.style.height = '600px !important';
             modalContainer.style.maxWidth = '415px !important';
-            modalContainer.style.maxHeight = '570px !important';
+            modalContainer.style.maxHeight = '600px !important';
             modalContainer.style.minWidth = '415px !important';
-            modalContainer.style.minHeight = '570px !important';
+            modalContainer.style.minHeight = '600px !important';
             modalContainer.style.position = 'static !important';
             modalContainer.style.left = 'auto !important';
             modalContainer.style.top = 'auto !important';
@@ -2030,9 +2040,9 @@ class JoinFormManager {
 
             // Also override any computed styles that might interfere
             modalContainer.style.setProperty('width', '415px', 'important');
-            modalContainer.style.setProperty('height', '570px', 'important');
+            modalContainer.style.setProperty('height', '600px', 'important');
             modalContainer.style.setProperty('max-width', '415px', 'important');
-            modalContainer.style.setProperty('max-height', '570px', 'important');
+            modalContainer.style.setProperty('max-height', '600px', 'important');
 
             // Small delay to ensure CSS recalculations are complete
             await new Promise(resolve => setTimeout(resolve, 200));
@@ -2044,13 +2054,13 @@ class JoinFormManager {
             // Create a wrapper to ensure exact dimensions
             const wrapper = document.createElement('div');
             wrapper.style.width = '415px !important';
-            wrapper.style.height = '570px !important';
+            wrapper.style.height = '600px !important';
             wrapper.style.position = 'absolute !important';
             wrapper.style.left = '-9999px !important';
             wrapper.style.top = '-9999px !important';
             wrapper.style.background = 'transparent !important';
             wrapper.style.setProperty('width', '415px', 'important');
-            wrapper.style.setProperty('height', '570px', 'important');
+            wrapper.style.setProperty('height', '600px', 'important');
             wrapper.style.setProperty('position', 'absolute', 'important');
             wrapper.style.setProperty('left', '-9999px', 'important');
             wrapper.style.setProperty('top', '-9999px', 'important');
@@ -2071,7 +2081,7 @@ class JoinFormManager {
                 useCORS: true,             // Handle cross-origin images
                 removeContainer: true,     // Clean up automatically
                 width: 415,                // Fixed desktop width
-                height: 570,               // Fixed desktop height
+                height: 600,               // Fixed desktop height
                 allowTaint: false,
                 foreignObjectRendering: false,
                 imageTimeout: 5000,        // Longer timeout for print quality
@@ -2119,7 +2129,7 @@ class JoinFormManager {
             // Restore original modal styles
             Object.assign(modalContainer.style, originalModalStyles);
 
-            // Convert canvas to blob and trigger download
+            // Convert canvas to blob with maximum quality and trigger download
             canvas.toBlob(blob => {
                 if (!blob) {
                     throw new Error('Failed to convert canvas to blob');
@@ -2138,7 +2148,7 @@ class JoinFormManager {
 
                 // Clean up
                 URL.revokeObjectURL(url);
-            });
+            }, 'image/png', 1.0); // Maximum quality for download
 
         } catch (error) {
             console.error('Download failed:', error);

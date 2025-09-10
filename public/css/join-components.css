@@ -786,15 +786,15 @@
 
 /* Responsive Preview Modal - matching submitted member card responsiveness */
 @media (max-width: 480px) {
-  #preview-modal .modal-container {
+  /* #preview-modal .modal-container {
     width: var(--mobile-window-max-width);
     max-width: var(--mobile-window-max-width);
     max-height: var(--mobile-window-max-height);
-  }
+  } */
 
   #preview-modal .modal-content {
     width: 100%;
-    grid-template-rows: 40px 200px 150px;
+    grid-template-rows: 40px 200px 200px;
     gap: 15px;
   }
 
