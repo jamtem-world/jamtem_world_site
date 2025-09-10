@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -77,56 +77,59 @@
             </div>
         </div>
     </div>
+    <div class="content_container">
+                <!-- Desktop Background -->
+        <div class="desktop">
+            <!-- 3D Sphere Background -->
+            <div id="sphere-container" class="sphere-container">
+                <canvas id="sphere-canvas" class="sphere-canvas"></canvas>
+            </div>
 
-    <!-- Desktop Background -->
-    <div class="desktop">
-        <!-- 3D Sphere Background -->
-        <div id="sphere-container" class="sphere-container">
-            <canvas id="sphere-canvas" class="sphere-canvas"></canvas>
-        </div>
-            <div class="sphere-controls">
-                <div class="control-hint">
-                    <span>🖱️ Drag to rotate • 🔍 Scroll to zoom • 👆 Click to explore</span>
+            
+            <!-- Desktop Logo (like a desktop wallpaper logo) -->
+            <!-- <div class="desktop-logo">
+                <img src="https://storage.googleapis.com/jamtem_website_media/logo.png" alt="Jamtem World" class="desktop-logo-img">
+            </div> -->
+            
+            <!-- Main Desktop Icons Grid -->
+            <!-- <div class="desktop-icons">
+                
+                <div class="desktop-icon desktop-icon-live" data-app="collage">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/new_community_icon.png" alt="Collage" class="icon-image">
+                    <span class="icon-label">Community Showcase</span>
                 </div>
-                <button class="sphere-join-btn" id="sphere-join-btn">
-                    <span class="btn-icon">👥</span>
-                    <span class="btn-text">Join Community</span>
-                </button>
-            </div>
-        
-        <!-- Desktop Logo (like a desktop wallpaper logo) -->
-        <!-- <div class="desktop-logo">
-            <img src="https://storage.googleapis.com/jamtem_website_media/logo.png" alt="Jamtem World" class="desktop-logo-img">
-        </div> -->
-        
-        <!-- Main Desktop Icons Grid -->
-        <!-- <div class="desktop-icons">
-            
-            <div class="desktop-icon desktop-icon-live" data-app="collage">
-                <img src="https://storage.googleapis.com/jamtem_website_media/new_community_icon.png" alt="Collage" class="icon-image">
-                <span class="icon-label">Community Showcase</span>
-            </div>
-            
-            <div class="desktop-icon desktop-icon-live" data-app="join">
-                <img src="https://storage.googleapis.com/jamtem_website_media/new_join_icon.png" alt="Join" class="icon-image">
-                <span class="icon-label">Join Jamtem</span>
-            </div>
+                
+                <div class="desktop-icon desktop-icon-live" data-app="join">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/new_join_icon.png" alt="Join" class="icon-image">
+                    <span class="icon-label">Join Jamtem</span>
+                </div>
 
-            <div class="desktop-icon" data-app="vignettes">
-                <img src="https://storage.googleapis.com/jamtem_website_media/new_media_icon.png" alt="Vignettes" class="icon-image coming_soon">
-                <span class="icon-label">Media<br>(Coming Soon)</span>
-            </div>
+                <div class="desktop-icon" data-app="vignettes">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/new_media_icon.png" alt="Vignettes" class="icon-image coming_soon">
+                    <span class="icon-label">Media<br>(Coming Soon)</span>
+                </div>
+                
+                <div class="desktop-icon" data-app="products">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/neww_products_icon.png" alt="Products" class="icon-image coming_soon">
+                    <span class="icon-label">Products<br>(Coming Soon)</span>
+                </div>
+            </div> -->
             
-            <div class="desktop-icon" data-app="products">
-                <img src="https://storage.googleapis.com/jamtem_website_media/neww_products_icon.png" alt="Products" class="icon-image coming_soon">
-                <span class="icon-label">Products<br>(Coming Soon)</span>
+        </div>
+        <div class="sphere-controls">
+            <div class="control-hint">
+                <span>🖱️ Drag to rotate • 🔍 Scroll to zoom • 👆 Click to explore</span>
             </div>
-        </div> -->
-        
+            <button class="sphere-join-btn" id="sphere-join-btn">
+                <span class="btn-icon">👥</span>
+                <span class="btn-text">Join Community</span>
+            </button>
+        </div>
+
+        <!-- Taskbar Component Placeholder -->
+        <div id="taskbar-placeholder"></div>
     </div>
 
-    <!-- Taskbar Component Placeholder -->
-    <div id="taskbar-placeholder"></div>
 
     <!-- Join Icon Popup -->
     <!-- <div id="join-icon-popup" class="join-icon-popup" style="display: none;">
