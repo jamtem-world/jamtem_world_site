@@ -971,8 +971,9 @@ class JoinFormManager {
         this.setLoadingState(true);
 
         try {
-            // Generate member card PNG client-side
-            const memberCardBlob = await this.generateMemberCardPNG();
+            // Detect if device is mobile for hybrid generation approach
+            const isMobile = this.detectMobileDevice();
+            console.log(`Device detection: ${isMobile ? 'Mobile' : 'Desktop'} - using ${isMobile ? 'server-side' : 'client-side'} generation`);
 
             const formData = new FormData();
 
@@ -987,9 +988,23 @@ class JoinFormManager {
             formData.append('website', document.getElementById('website').value.trim());
             formData.append('instagram', document.getElementById('instagram').value.trim());
 
-            // Add member card PNG blob (server will upload to Cloudinary)
-            if (memberCardBlob) {
-                formData.append('member_card_png', memberCardBlob, 'member_card.png');
+            // Generate member card based on device type
+            if (!isMobile) {
+                // Desktop: Use client-side generation (existing behavior)
+                console.log('Generating member card client-side for desktop...');
+                try {
+                    const memberCardBlob = await this.generateMemberCardPNG();
+                    if (memberCardBlob) {
+                        formData.append('member_card_png', memberCardBlob, 'member_card.png');
+                        console.log('Client-side member card generated successfully');
+                    }
+                } catch (error) {
+                    console.error('Client-side generation failed:', error);
+                    // Continue without member card - server will handle if needed
+                }
+            } else {
+                // Mobile: Skip client-side generation, server will use HTMLCSStoImage
+                console.log('Skipping client-side generation for mobile - server will handle');
             }
 
             // Add image file
@@ -2156,6 +2171,12 @@ class JoinFormManager {
         }
     }
 
+    // Mobile device detection for hybrid generation approach
+    detectMobileDevice() {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+    }
+
     // Public methods for global access
     reset() {
         this.form.reset();
@@ -2164,7 +2185,7 @@ class JoinFormManager {
         this.form.style.display = 'block';
         this.successMessage.style.display = 'none';
         this.errorMessage.style.display = 'none';
-        
+
         // Reset craft selector
         this.craftSelector.setSelectedCrafts([]);
 
@@ -2173,13 +2194,13 @@ class JoinFormManager {
 
         // Reset skill emblems selector
         this.skillEmblemsSelector.setSelectedEmblems([]);
-        
+
         // Clear all field states
         const fieldGroups = this.form.querySelectorAll('.form-group');
         fieldGroups.forEach(group => {
             group.classList.remove('success', 'error');
         });
-        
+
         // Clear all error messages
         const errorElements = this.form.querySelectorAll('.form-error');
         errorElements.forEach(element => {

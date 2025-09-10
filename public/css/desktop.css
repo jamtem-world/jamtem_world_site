@@ -2253,6 +2253,7 @@ body {
   /* Initial position for drop animation - start above viewport */
   transform: translateY(-100vh);
   opacity: 0;
+  width: 100%;
 }
 
 /* Drop animation for sphere container */

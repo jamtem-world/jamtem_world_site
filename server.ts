@@ -75,27 +75,27 @@ async function uploadVideoToCloudinary(videoFile: File): Promise<string> {
 
   // Create timestamp for signature
   const timestamp = Math.round(Date.now() / 1000);
-  
+
   // Parameters to include in signature (alphabetical order, excluding file and api_key)
   const folder = "jamtem_community/elmnt_videos";
   const resourceType = "video";
-  
+
   // Create parameters object for signature (excluding file, api_key, and resource_type)
   // Note: resource_type is sent in form data but NOT included in signature for video uploads
   const params = {
     folder: folder,
     timestamp: timestamp
   };
-  
+
   // Sort parameters alphabetically and create query string
   const sortedParams = Object.keys(params)
     .sort()
     .map(key => `${key}=${params[key as keyof typeof params]}`)
     .join('&');
-  
+
   // Append API secret to create string to sign
   const stringToSign = sortedParams + apiSecret;
-  
+
   // Create signature for secure upload
   const encoder = new TextEncoder();
   const data = encoder.encode(stringToSign);
@@ -114,7 +114,7 @@ async function uploadVideoToCloudinary(videoFile: File): Promise<string> {
 
   // Upload to Cloudinary video endpoint
   const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`;
-  
+
   const response = await fetch(cloudinaryUrl, {
     method: "POST",
     body: formData,
@@ -127,13 +127,358 @@ async function uploadVideoToCloudinary(videoFile: File): Promise<string> {
   }
 
   const result = await response.json();
-  
+
   if (!result.secure_url) {
     console.error("Cloudinary video response missing secure_url:", result);
     throw new Error("Cloudinary video upload succeeded but no URL returned");
   }
-  
+
   return result.secure_url; // Return the HTTPS URL
+}
+
+// Utility function to detect mobile devices
+function isMobileDevice(userAgent: string): boolean {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+}
+
+// Generate member card HTML template for HTMLCSStoImage
+function generateMemberCardHTML(memberData: any): string {
+  const displayName = memberData.first_name || '';
+  const craftText = Array.isArray(memberData.craft) ? memberData.craft.join(', ') : memberData.craft || '';
+
+  // Generate emblems HTML
+  let emblemsHTML = '';
+  if (memberData.skillEmblems && Array.isArray(memberData.skillEmblems) && memberData.skillEmblems.length > 0) {
+    const emblemUrls: { [key: string]: string } = {
+      'activism': 'https://storage.googleapis.com/jamtem_website_media/emblem_activism.png',
+      'art': 'https://storage.googleapis.com/jamtem_website_media/emblem_art.png',
+      'culinary_arts': 'https://storage.googleapis.com/jamtem_website_media/emblem_culinary_arts.png',
+      'fashion': 'https://storage.googleapis.com/jamtem_website_media/emblem_fashion.png',
+      'film': 'https://storage.googleapis.com/jamtem_website_media/emblem_film.png',
+      'graphic_design': 'https://storage.googleapis.com/jamtem_website_media/emblem_graphic_design.png',
+      'music': 'https://storage.googleapis.com/jamtem_website_media/emblem_music.png',
+      'performance_arts': 'https://storage.googleapis.com/jamtem_website_media/emblem_performance_arts.png',
+      'photography': 'https://storage.googleapis.com/jamtem_website_media/emblem_photography.png',
+      'sports': 'https://storage.googleapis.com/jamtem_website_media/emblem_sports.png',
+      'writing': 'https://storage.googleapis.com/jamtem_website_media/emblem_writing.png'
+    };
+
+    emblemsHTML = memberData.skillEmblems.map((emblemTitle: string) => {
+      // Find emblem ID by title
+      const emblemEntry = Object.entries(emblemUrls).find(([id, url]) =>
+        id.replace(/_/g, ' ').toLowerCase() === emblemTitle.toLowerCase() ||
+        id === emblemTitle.toLowerCase().replace(/\s+/g, '_')
+      );
+      if (emblemEntry) {
+        return `<img src="${emblemEntry[1]}" alt="${emblemTitle}" style="width: 45px; height: 45px; margin-right: 8px;">`;
+      }
+      return '';
+    }).join('');
+  }
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAMTEM Member Card</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Reset to eliminate all default spacing */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 415px;
+            height: 600px;
+            overflow: hidden;
+            font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+        }
+
+        body {
+            background: transparent;
+            position: relative;
+        }
+
+        .modal-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: linear-gradient(to bottom, #C0C0C0 75%, #FDFDFD);
+            width: 415px;
+            height: 600px;
+            padding: 15px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            margin: 0;
+        }
+
+        .modal-content {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: 50px 250px 230px;
+            gap: 20px;
+            background: linear-gradient(to bottom, #C0C0C0 75%, #FDFDFD);
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card_name_shape {
+            display: grid;
+            grid-template-areas: 'main';
+            height: auto;
+        }
+
+        .name_corner {
+            grid-area: main;
+            width: 220px;
+            z-index: 1;
+        }
+
+        .modal-member-name {
+            grid-area: main;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #000000;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            translate: -15px;
+        }
+
+        .header_emblems {
+            margin: 10px 0 0 0;
+            display: flex;
+        }
+
+        .modal-image-section {
+            display: flex;
+            flex-direction: column;
+            height: 350px;
+            margin-inline: 16px;
+        }
+
+        .modal-image-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            height: 250px;
+        }
+
+        .modal-member-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50px;
+        }
+
+        .member_pic_border {
+            position: absolute;
+            top: 0;
+            left: -6px;
+            width: 103%;
+            height: 103%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .modal-info-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: scroll;
+            padding: 5px;
+            margin: 0 16px 16px 16px;
+            scrollbar-width: none;
+        }
+
+        .modal-member-details {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .location_instagram {
+            display: grid;
+            grid-template-columns: 1fr;
+            align-items: center;
+            justify-items: start;
+            gap: 10px;
+        }
+
+        .modal-location, .modal-instagram {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .modal-location img, .modal-instagram img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .modal-location span, .modal-instagram span {
+            font-size: 0.8rem;
+            margin-top: 3px;
+        }
+
+        .modal-bio {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .modal-bio strong {
+            font-size: 1rem;
+            color: #000000;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .modal-bio p {
+            font-size: 11px;
+            line-height: 1.4;
+            color: #333333;
+        }
+
+        .modal-member-craft {
+            font-size: 12px;
+            color: #0078d4;
+            font-weight: bold;
+        }
+
+        /* Background overlay for text readability */
+        .background-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
+            z-index: 1;
+        }
+
+        .modal-content {
+            position: relative;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="modal-container" style="background-image: ${memberData.backgroundImageUrl ? `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${memberData.backgroundImageUrl})` : memberData.imageUrl ? `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${memberData.imageUrl})` : 'linear-gradient(to bottom, #C0C0C0 75%, #FDFDFD)'}; background-size: cover; background-position: center; background-repeat: no-repeat;">
+        ${memberData.backgroundImageUrl || memberData.imageUrl ? '<div class="background-overlay"></div>' : ''}
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="card_name_shape">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/jamtem_card_shape.png" alt="" class="name_corner">
+                    <h2 class="modal-member-name">${displayName}</h2>
+                </div>
+                <div class="header_emblems">
+                    ${emblemsHTML}
+                </div>
+            </div>
+            <div class="modal-image-section">
+                <div class="modal-image-container">
+                    <img src="${memberData.imageUrl}" alt="${displayName}" class="modal-member-image">
+                    <img src="https://storage.googleapis.com/jamtem_website_media/member_pic_border.png" alt="" class="member_pic_border">
+                </div>
+            </div>
+            <div class="modal-info-section">
+                <div class="modal-member-details">
+                    <div class="location_instagram">
+                        ${memberData.location ? `<div class="modal-location">
+                            <img src="https://storage.googleapis.com/jamtem_website_media/location_icon_black.png" alt="">
+                            <span>${memberData.location}</span>
+                        </div>` : ''}
+                        ${memberData.instagram ? `<div class="modal-instagram">
+                            <img src="https://storage.googleapis.com/jamtem_website_media/instagram_black_icon.png" alt="">
+                            <span>@${memberData.instagram}</span>
+                        </div>` : ''}
+                    </div>
+                    <div class="modal-bio">
+                        <strong>About:</strong>
+                        <p>${memberData.bio || 'No bio available'}</p>
+                    </div>
+                    <p class="modal-member-craft">${craftText}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
+}
+
+// Generate member card using HTMLCSStoImage API
+async function generateMemberCardWithHCTI(memberData: any): Promise<string> {
+  const userId = Deno.env.get('HCTI_USER_ID');
+  const apiKey = Deno.env.get('HCTI_API_KEY');
+
+  if (!userId || !apiKey) {
+    throw new Error('HTMLCSStoImage credentials not configured. Please add HCTI_USER_ID and HCTI_API_KEY to your .env file.');
+  }
+
+  const html = generateMemberCardHTML(memberData);
+
+  console.log('Generating member card with HTMLCSStoImage...');
+
+  const response = await fetch('https://hcti.io/v1/image', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${btoa(`${userId}:${apiKey}`)}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      html: html,
+      google_fonts: "Orbitron",
+      width: 415,
+      height: 600,
+      device_scale: 1,
+      quality: 100,
+      full_page: false,
+      clip: {
+        x: 0,
+        y: 0,
+        width: 415,
+        height: 600
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('HTMLCSStoImage API error:', response.status, errorText);
+    throw new Error(`HTMLCSStoImage API error: ${response.status} - ${errorText}`);
+  }
+
+  const result = await response.json();
+
+  if (!result.url) {
+    console.error('HTMLCSStoImage response missing URL:', result);
+    throw new Error('HTMLCSStoImage API succeeded but no image URL returned');
+  }
+
+  console.log('Member card generated successfully:', result.url);
+  return result.url;
 }
 
 // Route definitions for clean URLs
@@ -1372,8 +1717,30 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           console.log("ELMNT video uploaded successfully:", elmntVideoUrl);
         }
 
-        // Client-side PNG generation - URL will be provided by frontend
-        console.log("Member data prepared for client-side PNG generation");
+        // Always use HTMLCSStoImage API for consistent member card generation
+        console.log("Generating member card with HTMLCSStoImage API...");
+        let memberCardUrl = null;
+
+        try {
+          const memberData = {
+            first_name: firstName,
+            last_name: lastName || "",
+            craft: craftArray,
+            skillEmblems: skillEmblemsArray,
+            location: location || "",
+            bio: bio,
+            instagram: instagram || "",
+            imageUrl: cloudinaryUrl,
+            backgroundImageUrl: backgroundCloudinaryUrl
+          };
+
+          memberCardUrl = await generateMemberCardWithHCTI(memberData);
+          console.log("Member card generated successfully:", memberCardUrl);
+        } catch (error) {
+          console.error("HTMLCSStoImage generation failed:", error);
+          // Continue without member card - don't fail the entire submission
+          console.log("Continuing submission without member card due to generation failure");
+        }
 
         // Prepare Airtable record data with Cloudinary URLs
         const recordData: {
@@ -1415,17 +1782,16 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           ];
         }
 
-        // Add member card PNG if provided by client-side generation
-        if (memberCardPngBlob && memberCardPngBlob.size > 0) {
-          console.log("Uploading member card PNG to Cloudinary...");
-          const memberCardUrl = await uploadToCloudinary(memberCardPngBlob);
-          console.log("Member card PNG uploaded successfully:", memberCardUrl);
-
+        // Add member card if generated/uploaded successfully
+        if (memberCardUrl) {
           recordData.fields["Member Card"] = [
             {
               "url": memberCardUrl
             }
           ];
+          console.log("Member card added to Airtable record");
+        } else {
+          console.log("No member card generated/uploaded - proceeding without it");
         }
 
         // Submit to Airtable
