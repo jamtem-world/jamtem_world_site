@@ -141,7 +141,7 @@ function isMobileDevice(userAgent: string): boolean {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
 }
 
-// Generate member card HTML template for HTMLCSStoImage
+// Generate member card HTML template for Pictify API
 function generateMemberCardHTML(memberData: any): string {
   const displayName = memberData.first_name || '';
   const craftText = Array.isArray(memberData.craft) ? memberData.craft.join(', ') : memberData.craft || '';
@@ -182,6 +182,8 @@ function generateMemberCardHTML(memberData: any): string {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JAMTEM Member Card</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         /* CSS Reset to eliminate all default spacing */
@@ -191,18 +193,16 @@ function generateMemberCardHTML(memberData: any): string {
             box-sizing: border-box;
         }
 
-        html, body {
+        body {
             margin: 0;
             padding: 0;
             width: 415px;
             height: 600px;
             overflow: hidden;
-            font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
-        }
-
-        body {
+            font-family: Tahoma, Verdana, sans-serif;
             background: transparent;
             position: relative;
+            letter-spacing: 0;
         }
 
         .modal-container {
@@ -248,6 +248,8 @@ function generateMemberCardHTML(memberData: any): string {
             grid-area: main;
             width: 220px;
             z-index: 1;
+            height: 55px;
+            transform: translateY(2px);
         }
 
         .modal-member-name {
@@ -385,7 +387,7 @@ function generateMemberCardHTML(memberData: any): string {
     </style>
 </head>
 <body>
-    <div class="modal-container" style="background-image: ${memberData.backgroundImageUrl ? `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${memberData.backgroundImageUrl})` : memberData.imageUrl ? `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${memberData.imageUrl})` : 'linear-gradient(to bottom, #C0C0C0 75%, #FDFDFD)'}; background-size: cover; background-position: center; background-repeat: no-repeat;">
+    <div class="modal-container" style="background-image: ${memberData.backgroundImageUrl ? `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${memberData.backgroundImageUrl})` : memberData.imageUrl ? `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${memberData.imageUrl})` : 'linear-gradient(to bottom, #C0C0C0 75%, #FDFDFD)'}; background-size: cover; background-position: center; background-repeat: no-repeat;">
         ${memberData.backgroundImageUrl || memberData.imageUrl ? '<div class="background-overlay"></div>' : ''}
         <div class="modal-content">
             <div class="modal-header">
@@ -428,7 +430,80 @@ function generateMemberCardHTML(memberData: any): string {
 </html>`;
 }
 
-// Generate member card using HTMLCSStoImage API
+// Generate member card using Pictify API
+async function generateMemberCardWithPictify(memberData: any): Promise<string> {
+  const apiKey = Deno.env.get('PICTIFY_API_KEY');
+
+  if (!apiKey) {
+    throw new Error('Pictify credentials not configured. Please add PICTIFY_API_KEY to your .env file.');
+  }
+
+  const html = generateMemberCardHTML(memberData);
+
+  console.log('Generating member card with Pictify API...');
+
+  const response = await fetch('https://api.pictify.io/image', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      html: html,
+      width: 1245,
+      height: 1800,
+      format: 'png',
+      quality: 100,
+      full_page: false,
+      clip: {
+        x: 0,
+        y: 0,
+        width: 1245,
+        height: 1800
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Pictify API error:', response.status, errorText);
+    throw new Error(`Pictify API error: ${response.status} - ${errorText}`);
+  }
+
+  const result = await response.json();
+
+  if (!result.url) {
+    console.error('Pictify response missing URL:', result);
+    throw new Error('Pictify API succeeded but no image URL returned');
+  }
+
+  console.log('Member card generated successfully:', result.url);
+
+  // Download the image from Pictify and upload to Cloudinary to avoid CORS issues
+  try {
+    console.log('Downloading image from Pictify to avoid CORS...');
+    const imageResponse = await fetch(result.url);
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to download image from Pictify: ${imageResponse.status}`);
+    }
+
+    const imageBlob = await imageResponse.blob();
+    const imageFile = new File([imageBlob], 'member-card.png', { type: 'image/png' });
+
+    console.log('Uploading to Cloudinary...');
+    const cloudinaryUrl = await uploadToCloudinary(imageFile);
+    console.log('Image uploaded to Cloudinary successfully:', cloudinaryUrl);
+
+    return cloudinaryUrl;
+  } catch (error) {
+    console.error('Failed to proxy image through Cloudinary:', error);
+    // Fallback to original Pictify URL if Cloudinary upload fails
+    console.log('Falling back to Pictify URL due to upload failure');
+    return result.url;
+  }
+}
+
+// Generate member card using HTMLCSStoImage API (deprecated)
 async function generateMemberCardWithHCTI(memberData: any): Promise<string> {
   const userId = Deno.env.get('HCTI_USER_ID');
   const apiKey = Deno.env.get('HCTI_API_KEY');
@@ -1717,8 +1792,8 @@ Deno.serve({ port: PORT }, async (req: Request) => {
           console.log("ELMNT video uploaded successfully:", elmntVideoUrl);
         }
 
-        // Always use HTMLCSStoImage API for consistent member card generation
-        console.log("Generating member card with HTMLCSStoImage API...");
+        // Always use Pictify API for consistent member card generation
+        console.log("Generating member card with Pictify API...");
         let memberCardUrl = null;
 
         try {
@@ -1734,10 +1809,10 @@ Deno.serve({ port: PORT }, async (req: Request) => {
             backgroundImageUrl: backgroundCloudinaryUrl
           };
 
-          memberCardUrl = await generateMemberCardWithHCTI(memberData);
+          memberCardUrl = await generateMemberCardWithPictify(memberData);
           console.log("Member card generated successfully:", memberCardUrl);
         } catch (error) {
-          console.error("HTMLCSStoImage generation failed:", error);
+          console.error("Pictify generation failed:", error);
           // Continue without member card - don't fail the entire submission
           console.log("Continuing submission without member card due to generation failure");
         }

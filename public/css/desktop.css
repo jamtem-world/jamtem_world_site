@@ -1,11 +1,11 @@
 /* Custom Font Face */
-@font-face {
+/* @font-face {
   font-family: '000webfont';
   src: url('../media/fonts/000webfont_Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
-}
+} */
 
 /* Loading Overlay Styles */
 .loading-overlay {
@@ -134,7 +134,7 @@
 
 /* Retro Cursor Styles */
 body {
-  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  font-family: Tahoma, Verdana, sans-serif;
   font-size: 11px;
   overflow: hidden;
   height: calc(var(--vh, 1vh) * 100);
