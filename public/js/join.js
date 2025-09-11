@@ -968,12 +968,14 @@ class JoinFormManager {
 
     async submitForm() {
         this.isSubmitting = true;
-        this.setLoadingState(true);
+        this.setLoadingState(true, 'Preparing submission...');
 
         try {
             // Detect if device is mobile for hybrid generation approach
             const isMobile = this.detectMobileDevice();
             console.log(`Device detection: ${isMobile ? 'Mobile' : 'Desktop'} - using ${isMobile ? 'server-side' : 'client-side'} generation`);
+
+            this.setLoadingState(true, 'Collecting form data...');
 
             const formData = new FormData();
 
@@ -992,6 +994,7 @@ class JoinFormManager {
             if (!isMobile) {
                 // Desktop: Use client-side generation (existing behavior)
                 console.log('Generating member card client-side for desktop...');
+                this.setLoadingState(true, 'Generating member card...');
                 try {
                     const memberCardBlob = await this.generateMemberCardPNG();
                     if (memberCardBlob) {
@@ -1006,6 +1009,8 @@ class JoinFormManager {
                 // Mobile: Skip client-side generation, server will use HTMLCSStoImage
                 console.log('Skipping client-side generation for mobile - server will handle');
             }
+
+            this.setLoadingState(true, 'Preparing files...');
 
             // Add image file
             if (this.selectedFile) {
@@ -1022,16 +1027,24 @@ class JoinFormManager {
                 formData.append('elmnt-video', this.selectedVideoFile);
             }
 
+            this.setLoadingState(true, 'Uploading to server...');
+
             // Simple fetch configuration that works everywhere
             const response = await fetch('/api/join', {
                 method: 'POST',
                 body: formData
             });
 
+            this.setLoadingState(true, 'Processing submission...');
+
             const result = await response.json();
 
             if (response.ok) {
-                this.showSuccess();
+                this.setLoadingState(true, 'Finalizing...');
+                // Small delay to show final status
+                setTimeout(() => {
+                    this.showSuccess();
+                }, 500);
             } else {
                 throw new Error(result.error || 'Submission failed');
             }
@@ -1046,7 +1059,7 @@ class JoinFormManager {
             }
         } finally {
             this.isSubmitting = false;
-            this.setLoadingState(false);
+            // Don't call setLoadingState(false) here as it's handled in showSuccess/showError
         }
     }
 
@@ -1431,33 +1444,65 @@ class JoinFormManager {
         e.target.value = value;
     }
 
-    setLoadingState(loading) {
+    setLoadingState(loading, statusText = 'Submitting...') {
         const btnText = this.submitBtn.querySelector('.btn-text');
         const btnLoading = this.submitBtn.querySelector('.btn-loading');
-        
+        const loadingText = this.submitBtn.querySelector('.loading-text-form');
+
         if (loading) {
-            btnText.style.display = 'none';
-            btnLoading.style.display = 'flex';
+            // Add loading class for enhanced visual feedback
+            this.submitBtn.classList.add('loading');
+
+            // Update loading text if provided
+            if (loadingText) {
+                loadingText.textContent = statusText;
+            }
+
+            // Disable the button and form
             this.submitBtn.disabled = true;
             this.form.classList.add('loading');
+
+            // Add visual feedback to form elements
+            const inputs = this.form.querySelectorAll('input, textarea, button:not(#submit-btn)');
+            inputs.forEach(input => {
+                if (input.type !== 'submit') {
+                    input.disabled = true;
+                    input.style.opacity = '0.6';
+                }
+            });
+
         } else {
-            btnText.style.display = 'inline';
-            btnLoading.style.display = 'none';
+            // Remove loading class
+            this.submitBtn.classList.remove('loading');
+
+            // Re-enable the button and form
             this.submitBtn.disabled = false;
             this.form.classList.remove('loading');
+
+            // Re-enable form elements
+            const inputs = this.form.querySelectorAll('input, textarea, button:not(#submit-btn)');
+            inputs.forEach(input => {
+                if (input.type !== 'submit') {
+                    input.disabled = false;
+                    input.style.opacity = '1';
+                }
+            });
         }
     }
 
     showSuccess() {
+        // Reset loading state
+        this.setLoadingState(false);
+
         // Hide the form immediately
         this.form.style.display = 'none';
-        
+
         // Hide any error messages
         this.errorMessage.style.display = 'none';
-        
+
         // Show the success message with the "View Community Collage" button
         this.successMessage.style.display = 'flex';
-        
+
         // Ensure the success message is visible and scrolled into view
         setTimeout(() => {
             this.successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1465,12 +1510,15 @@ class JoinFormManager {
     }
 
     showError(message) {
+        // Reset loading state
+        this.setLoadingState(false);
+
         const errorDetails = document.getElementById('error-details');
         errorDetails.textContent = message;
-        
+
         this.errorMessage.style.display = 'block';
         this.successMessage.style.display = 'none';
-        
+
         // Scroll to error message
         this.errorMessage.scrollIntoView({ behavior: 'smooth' });
     }
