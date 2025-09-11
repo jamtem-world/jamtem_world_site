@@ -1361,20 +1361,24 @@ class JoinFormManager {
 
     processVideoFile(file) {
         if (!file) return;
-        
+
         // Validate file type
         if (!file.type.startsWith('video/')) {
             this.setFieldError('elmnt-video', 'Please select a video file');
             return;
         }
-        
-        // Validate file size (100MB limit)
-        const maxSize = 100 * 1024 * 1024; // 100MB
+
+        // Set size limit based on device type
+        const isMobile = MOBILE_CONFIG.isMobile;
+        const maxSize = isMobile ? 25 * 1024 * 1024 : 100 * 1024 * 1024; // 25MB for mobile, 100MB for desktop
+        const sizeLimitText = isMobile ? '25MB' : '100MB';
+
+        // Validate file size
         if (file.size > maxSize) {
-            this.setFieldError('elmnt-video', 'Video must be smaller than 100MB');
+            this.setFieldError('elmnt-video', `Video must be smaller than ${sizeLimitText}`);
             return;
         }
-        
+
         this.selectedVideoFile = file;
         this.showVideoPreview(file);
         this.clearFieldError(this.elmntVideoInput);
